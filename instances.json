@@ -12,12 +12,5 @@
         "i2p": null,
         "yggdrasil": null,
         "country": "FI"
-    },
-    {
-        "url": "https://ig.kuuro.net",
-        "tor": "http://ig.kuu7oukh73yy4pn5iahfnm3k6vppyseqtt6xn3xs33big5cnlv2fr5yd.onion/",
-        "i2p": null,
-        "yggdrasil": "http://ygg.ig.kuuro.net/",
-        "country": "US"
     }
 ]
