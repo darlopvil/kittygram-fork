@@ -22,7 +22,7 @@ Kittygram also helps you avoid the heavy tracking instagram does, as all request
 |-----|-----------|
 |https://kittygr.am | An instance of kittygram operated by [FSKY](https://fsky.io) |
 |https://kittygram.irelephant.net | An instance of kittygram run by its creator |
-|https://ig.kuuro.net | An instance of kittygram operated by [Kuu7o](https://kuuro.net) |
+
 
 
 
