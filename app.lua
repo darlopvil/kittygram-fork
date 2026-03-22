@@ -53,7 +53,12 @@ app:get("/", function(self)
 end)
 
 local function show_post(self)
-    local post = get_post(self.params.shortcode)
+    local post, comments
+    if config.post_fetch_mode == "web" then
+        post, comments = get_post.web(self.params.shortcode)
+    elseif config.post_fetch_mode == "graphql" then
+        post = get_post.graphql(self.params.shortcode)
+    end
 
     if post.has_errors then
         self.error = post
@@ -70,9 +75,11 @@ local function show_post(self)
         end
     else
         self.post = post
-        self.page_title = "A post by " .. post.user.username
-        local comments = get_comments(post.id)
+        if config.post_fetch_mode == "graphql" then
+            comments = get_comments(post.id)
+        end
         self.comments = comments
+        self.page_title = "A post by " .. post.user.username
         if self.params.json == "true" and config.allow_json then
             return { json = post }
         end

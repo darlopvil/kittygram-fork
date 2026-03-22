@@ -4,11 +4,13 @@ local errors = require("lib.structures").errors
 local queries = require("lib.structures").queries
 local format_post = require("lib.structures").format_post
 local graphql_request = require("lib.send_instagram_graphql_request")
+local http = require("resty.http")
+local html = require("htmlparser")
+local helpers = require("lib.helpers")
 local config = require("lapis.config").get()
 
 local POSITIVE_EXPIRE_TIME = config.cache.expire_times.posts.positive
 local NEGATIVE_EXPIRE_TIME = config.cache.expire_times.posts.negative
-
 
 local function get_post_graphql(shortcode)
     local redis = get_redis()
@@ -24,7 +26,7 @@ local function get_post_graphql(shortcode)
         local post = json.decode(post_query)
         -- shortcodes that return no posts are cached.
         if post.has_errors and post.error_type == "not_found" then
-            return errors.not_found{
+            return errors.not_found {
                 message = "Post not found. (note: result was cached.)",
                 blob = json.decode(post.error_info.blob)
             }
@@ -37,27 +39,97 @@ local function get_post_graphql(shortcode)
 
         if post.data and post.data.xdt_shortcode_media == json.null then
             -- cache a post if its not found
-            local post_error = errors.not_found{
+            local post_error = errors.not_found {
                 message = "Post not found. (Note: this result was cached.)",
                 blob = post
             }
             if redis then
-                redis:set("ig:shortcode:" .. shortcode, json.encode(post_error), "EX", NEGATIVE_EXPIRE_TIME)
+                redis:set("ig:shortcode:" .. shortcode, json.encode(post_error),
+                          "EX", NEGATIVE_EXPIRE_TIME)
             end
             return post_error
         elseif post.status == "fail" and post.require_login == true then
-            return errors.ratelimited{
-                blob = post
-            }
+            return errors.ratelimited {blob = post}
         end
 
-        local formatted_post = format_post.from_shortcode(post.data.xdt_shortcode_media)
+        local formatted_post = format_post.from_shortcode(post.data
+                                                              .xdt_shortcode_media)
         if redis then
-            redis:set("ig:shortcode:" .. shortcode, json.encode(formatted_post), "EX", POSITIVE_EXPIRE_TIME)
+            redis:set("ig:shortcode:" .. shortcode, json.encode(formatted_post),
+                      "EX", POSITIVE_EXPIRE_TIME)
         end
         return formatted_post
     end
 end
 
 
-return get_post_graphql
+
+local totally_human_headers = {
+    ["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    ["Sec-Fetch-Mode"] = "navigate"
+}
+
+-- this is the old method of fetching posts. It is no longer used, but will be documented here.
+
+local function get_post_web(shortcode)
+    local httpc = http.new()
+
+    local post_request, err = httpc:request_uri(
+                                  "https://www.instagram.com/p/" .. shortcode ..
+                                      "/", {headers = totally_human_headers})
+
+    if not post_request then
+        ngx.log(ngx.ERR, "Request failed: " .. err)
+    end
+    local html_root = html.parse(post_request.body)
+    local script_elements = html_root:select("[type='application/json']")
+
+    local post_info = false
+    local post_comments = false
+
+    for _, element in pairs(script_elements) do
+        local element_json = json.decode(element:getcontent())
+
+        if helpers.check_nested_field(element_json, "require", 1, 4, 1,
+                                      "__bbox", "require", 1, 4, 2, "__bbox",
+                                      "result", "data",
+                                      "xdt_api__v1__media__shortcode__web_info") then
+            -- instagram's json structure is fucked.
+            post_info = element_json.require[1][4][1].__bbox.require[1][4][2]
+                            .__bbox.result.data
+                            .xdt_api__v1__media__shortcode__web_info.items[1]
+        end
+
+        if helpers.check_nested_field(element_json, "require", 1, 4, 1,
+                                      "__bbox", "require", 1, 4, 2, "__bbox",
+                                      "result", "data",
+                                      "xdt_api__v1__media__media_id__comments__connection",
+                                      "edges") then
+            post_comments =
+                element_json.require[1][4][1].__bbox.require[1][4][2].__bbox
+                    .result.data
+                    .xdt_api__v1__media__media_id__comments__connection.edges
+        end
+
+    end
+    if not post_info then
+        local post_error = errors.not_found {
+            message = "No post info was found in the post's HTML. This means that the post either doesn't exist, or something broke.",
+            blob = post_info
+        }
+        return post_info
+    end
+
+
+    if not post_comments then
+        post_comments = errors.not_found {
+            message = "Comments not found in post HTML.",
+            blob = post_comments
+        }
+    end
+
+    local formatted_post = format_post.from_web(post_info)
+    return formatted_post, post_comments
+end
+
+return { web = get_post_web, graphql = get_post_graphql }

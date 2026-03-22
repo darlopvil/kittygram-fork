@@ -193,7 +193,7 @@ local format_post = {
             formatted_post.likes = web_post.likes_count
         end
 
-        if web_post.caption and web_post.caption.text then
+        if web_post.caption ~= json.null and web_post.caption.text ~= json.null then
             formatted_post.caption = web_post.caption.text
         end
         if web_post.carousel_media ~= json.null then

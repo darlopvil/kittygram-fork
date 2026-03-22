@@ -16,6 +16,7 @@ config({"development", "production", "docker"}, {
   themes = themes, -- see: conf/themes.lua
   proxies = proxies, -- see: conf/proxies.lua
   cache = cache, -- see: conf/cache.lua
+  post_fetch_mode = "web", -- The method used to fetch posts. Can also be "graphql".
   sqlite = {
     database = "kittygram.sqlite"
   },
