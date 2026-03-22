@@ -116,7 +116,7 @@ local function get_post_web(shortcode)
             message = "No post info was found in the post's HTML. This means that the post either doesn't exist, or something broke.",
             blob = post_info
         }
-        return post_info
+        return post_error
     end
 
 
