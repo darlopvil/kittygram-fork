@@ -121,6 +121,7 @@ local errors = {
 -- all of instagram's apis return posts in a different format.
 -- this takes  posts from different formats and turns them into a universal format
 local format_post = {
+    -- posts from the graphql shortcode api.
     from_shortcode = function(shortcode)
         -- stuff that should be found across all posts
         local post = {
@@ -171,7 +172,58 @@ local format_post = {
 
         return post
     end,
+    -- posts from web post pages
+    from_web = function(web_post)
+        local formatted_post = {
+            shortcode = web_post.code,
+            alt_text = web_post.accessibility_caption,
+            timestamp = web_post.taken_at,
+            id = web_post.id,
+        }
+
+        formatted_post.user = {
+            username = web_post.user.username,
+            display_name = web_post.user.full_name,
+            id = web_post.user.id,
+            profile_picture = web_post.user.profile_pic_url,
+            is_verified = web_post.user.is_verified,
+        }
+
+        if web_post.likes_count then
+            formatted_post.likes = web_post.likes_count
+        end
+
+        if web_post.caption and web_post.caption.text then
+            formatted_post.caption = web_post.caption.text
+        end
+        if web_post.carousel_media ~= json.null then
+            formatted_post.images = {}
+            for _, item in ipairs(web_post.carousel_media) do
+                if item.video_versions ~= json.null then
+                    table.insert(formatted_post.images, {
+                        video_url = item.video_versions[1].url,
+                        alt_text = item.accessibility_caption
+                    })
+                else
+                    table.insert(formatted_post.images, {
+                        image_url = item.image_versions2.candidates[1].url,
+                        alt_text = item.accessibility_caption,
+                    })
+                end
+            end
+        elseif web_post.video_versions ~= json.null then
+            formatted_post.video_url = web_post.video_versions[1].url
+            formatted_post.video_thumbnail = web_post.display_uri
+
+        elseif web_post.image_versions2 ~= json.null then
+            formatted_post.image_url = web_post.image_versions2.candidates[1].url
+        end
+
+
+        return formatted_post
+    end,
     -- this doesn't yet handle videos in an image carousel.
+    -- not used _yet_
     from_timeline = function(item)
         local post = {
             shortcode = item.code,
@@ -194,10 +246,17 @@ local format_post = {
         elseif item.carousel_media then
             post.images = {}
             for _, item in ipairs(item.carousel_media) do
-                table.insert(post.images, {
-                    image_url = item.image_version2.candidates[1].url,
-                    alt_text = item.accessibility_caption
-                })
+                if type(item.video_versions) == "table" and #item.video_versions > 0 then
+                    table.insert(post.images, {
+                        video_url = item.video_versions[1].url,
+                        alt_text = item.accessibility_caption
+                    })
+                else
+                    table.insert(post.images, {
+                        image_url = item.image_version2.candidates[1].url,
+                        alt_text = item.accessibility_caption
+                    })
+                end
             end
         elseif item.image_versions2 and not item.video_versions and not item.carousel_media then
             post.image_url = item.image_versions2.candidates[1].url
