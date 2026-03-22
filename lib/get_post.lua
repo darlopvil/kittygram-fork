@@ -73,9 +73,18 @@ local totally_human_headers = {
 local function get_post_web(shortcode)
     local httpc = http.new()
 
+
+    local request_opts = {
+        headers = totally_human_headers
+    }
+    if config.proxies["posts"] then
+        request_opts.proxy_opts = {
+            https_proxy = config.proxies["posts"]
+        }
+    end
     local post_request, err = httpc:request_uri(
                                   "https://www.instagram.com/p/" .. shortcode ..
-                                      "/", {headers = totally_human_headers})
+                                      "/", request_opts)
 
     if not post_request then
         ngx.log(ngx.ERR, "Request failed: " .. err)
