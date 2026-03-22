@@ -58,6 +58,9 @@ local function show_post(self)
         post, comments = get_post.web(self.params.shortcode)
     elseif config.post_fetch_mode == "graphql" then
         post = get_post.graphql(self.params.shortcode)
+    else
+        ngx.log(ngx.ERR, "post_fetch_mode not set. Falling back to web.")
+        post, comments = get_post.web(self.params.shortcode)
     end
 
     if post.has_errors then
