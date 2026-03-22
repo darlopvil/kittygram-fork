@@ -189,8 +189,8 @@ local format_post = {
             is_verified = web_post.user.is_verified,
         }
 
-        if web_post.likes_count then
-            formatted_post.likes = web_post.likes_count
+        if web_post.like_count then
+            formatted_post.likes = web_post.like_count
         end
 
         if web_post.caption ~= json.null and web_post.caption.text ~= json.null then
