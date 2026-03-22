@@ -69,8 +69,7 @@ local totally_human_headers = {
     ["Sec-Fetch-Mode"] = "navigate"
 }
 
--- this is the old method of fetching posts. It is no longer used, but will be documented here.
-
+-- fetch posts through a json blob embedded in a post's html.
 local function get_post_web(shortcode)
     local httpc = http.new()
 
