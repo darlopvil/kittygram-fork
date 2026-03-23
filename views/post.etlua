@@ -4,12 +4,12 @@
 <main id="main">
     <div class="item-card post">
         <div class="user-info">
-                <img src="<%= proxy_url(post.user.profile_picture) %>">
+                <img src="<%= proxy_url(post.user.profile_picture) %>" loading="lazy">
                 <a class="username" href="<%= "/" .. post.user.username %>"> <%= post.user.username %> </a>
         </div>
         <div class="post-image">
             <% if post.video_url then %>
-                <video controls>
+                <video controls preload="none" poster="<%= proxy_url(post.video_thumbnail) %>">
                     <% if session.disable_video_proxying then %>
                         <source crossorigin="anonymous" src="<%= post.video_url %>">
                     <% else %>
@@ -20,7 +20,7 @@
                 <div class="carousel">
                     <% for _, image in ipairs(post.images) do %>
                         <% if image.video_url then %>
-                            <video controls>
+                            <video controls preload="none" poster="<%= proxy_url(image.video_thumbnail) %>">
                                 <% if session.disable_video_proxying then %>
                                     <source crossorigin="anonymous" src="<%= image.video_url %>">
                                 <% else %>
@@ -28,12 +28,12 @@
                                 <% end %>
                             </video>
                         <% else %>
-                            <img src="<%= proxy_url(image.image_url) %>" alt="<%= image.alt_text %>">
+                            <img src="<%= proxy_url(image.image_url) %>" alt="<%= image.alt_text %>" loading="lazy">
                         <% end %>
                     <% end %>
                 </div>
             <% elseif not post.images and post.image_url then %>
-                <img src="<%= proxy_url(post.image_url) %>" alt="<%= post.alt_text %>">
+                <img src="<%= proxy_url(post.image_url) %>" alt="<%= post.alt_text %>" loading="lazy">
             <% else %>
                 <p>Image couldn't be detected.</p>
             <% end %>
@@ -56,12 +56,12 @@
                         <% comment = comment.node %>
                         <article>
                             <header class="user-info">
-                                <img src="<%= proxy_url(comment.user.profile_pic_url) %>" >
+                                <img src="<%= proxy_url(comment.user.profile_pic_url) %>" loading="lazy">
                                 <a class="username" href="<%= "/" .. comment.user.username %>"> <%= comment.user.username %> </a>
                             </header>
                             <p class="comment-text"><%= comment.text %></p>
                             <% if type(comment.giphy_media_info) == "table" then %>
-                                <img src="<%= proxy_url(comment.giphy_media_info.first_party_cdn_proxied_images.fixed_height.url) %>">
+                                <img src="<%= proxy_url(comment.giphy_media_info.first_party_cdn_proxied_images.fixed_height.url) %>" loading="lazy">
                             <% end %>
                         </article>
                     <% end %>

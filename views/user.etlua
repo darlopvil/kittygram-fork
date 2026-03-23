@@ -3,7 +3,7 @@
 <main id="main">
     <div class="item-card user-info">
         <div class="profile-picture">
-            <img src="<%= proxy_url(user.profile_pic_url) %>">
+            <img src="<%= proxy_url(user.profile_pic_url) %>" loading="lazy">
         </div>
         <div class="usernames" >
             <p> <%= user.full_name %> </p>
@@ -31,28 +31,28 @@
             
                 <div class="item-card post">
                     <div class="user-info">
-                        <img src="<%= proxy_url(post.user.profile_pic_url) %>">
+                        <img src="<%= proxy_url(post.user.profile_pic_url) %>" loading="lazy">
                         <a class="username" href="<%= "/" .. post.user.username %>"> <%= post.user.username %> </a>
                     </div>
                     <div class="post-image">
                         <% if type(post.video_versions) == "table" then %>
                             <% if session.disable_video_proxying then %>
-                                <video controls>
-                                    <source crossorigin="anonymous" src="<%= post.video_versions[1].url %>"
+                                <video controls preload="none" poster="<%= proxy_url(post.image_versions2.candidates[1].url) %>">
+                                    <source crossorigin="anonymous" src="<%= post.video_versions[1].url %>">
                                 </video>
                             <% else %>
-                                <video controls>
+                                <video controls preload="none" poster="<%= proxy_url(post.image_versions2.candidates[1].url) %>">
                                     <source src="<%= proxy_url(post.video_versions[1].url) %>">
                                 </video>
                             <% end %>
                         <% elseif type(post.carousel_media_count) ~= "userdata"  and post.carousel_media_count > 0 then %>
                             <div class="carousel">
                                 <% for _, image in ipairs(post.carousel_media) do %>
-                                    <img src="<%= proxy_url(image.image_versions2.candidates[1].url) %>">
+                                    <img src="<%= proxy_url(image.image_versions2.candidates[1].url) %>" loading="lazy">
                                 <% end %>
                             </div>
                         <% elseif type(post.image_versions2) == "table" then %>
-                            <img src="<%= proxy_url(post.image_versions2.candidates[1].url) %>">
+                            <img src="<%= proxy_url(post.image_versions2.candidates[1].url) %>" loading="lazy">
                         <% end %>
                     </div>
                     <div class="post-info">
