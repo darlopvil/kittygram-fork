@@ -157,6 +157,7 @@ local format_post = {
                 if item.node.video_url then
                     table.insert(post.images, {
                         video_url = item.node.video_url,
+                        video_thumbnail = item.node.display_resources[1].src,
                         alt_text = item.node.accessibility_caption
                     })
                 else
@@ -202,6 +203,7 @@ local format_post = {
                 if item.video_versions ~= json.null then
                     table.insert(formatted_post.images, {
                         video_url = item.video_versions[1].url,
+                        video_thumbnail = item.image_versions2.candidates[1].url,
                         alt_text = item.accessibility_caption
                     })
                 else
@@ -249,6 +251,7 @@ local format_post = {
                 if type(item.video_versions) == "table" and #item.video_versions > 0 then
                     table.insert(post.images, {
                         video_url = item.video_versions[1].url,
+                        video_thumbnail = item.image_versions2.candidates[1].url,
                         alt_text = item.accessibility_caption
                     })
                 else
