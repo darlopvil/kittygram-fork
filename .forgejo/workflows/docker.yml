@@ -1,0 +1,25 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - 'instances.json'
+
+jobs:
+  build:
+    runs-on: codeberg-medium
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and push image
+        uses: codeberg.org/actions/buildah-simple@latest
+        with:
+          registry: codeberg.org
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+          image: kittygram
+          tags: latest
