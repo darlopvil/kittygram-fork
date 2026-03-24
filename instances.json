@@ -12,5 +12,12 @@
         "i2p": null,
         "yggdrasil": null,
         "country": "FI"
+    },
+    {
+        "url": "https://kittygram.nexussfan.cz",
+        "tor": null,
+        "i2p": null,
+        "yggdrasil": null,
+        "country": "CZ"
     }
 ]
