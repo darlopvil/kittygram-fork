@@ -18,9 +18,13 @@ jobs:
       - name: Install buildah
         run: apt-get update && apt-get install buildah ca-certificates -y
 
+      - name: Log in to Codeberg registry
+        run: buildah login --authfile=/tmp/auth.json --username=${{ secrets.REGISTRY_USER }} --password=${{ secrets.REGISTRY_TOKEN }} codeberg.org
+
       - name: Build and push image
         uses: https://codeberg.org/actions/buildah-simple@main
         with:
           tag: codeberg.org/${{ secrets.REGISTRY_USER }}/kittygram:latest
           context: .
           push: true
+          authfile: /tmp/auth.json
