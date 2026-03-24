@@ -15,11 +15,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install buildah
+        run: apt-get update && apt-get install buildah ca-certificates -y
+
       - name: Build and push image
         uses: https://codeberg.org/actions/buildah-simple@main
         with:
-          registry: codeberg.org
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
-          image: kittygram
-          tags: latest
+          tag: codeberg.org/${{ secrets.REGISTRY_USER }}/kittygram:latest
+          context: .
+          push: true
