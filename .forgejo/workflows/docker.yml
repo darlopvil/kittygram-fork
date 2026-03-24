@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build and push image
-        uses: codeberg.org/actions/buildah-simple@latest
+        uses: https://codeberg.org/actions/buildah-simple@latest
         with:
           registry: codeberg.org
           username: ${{ secrets.REGISTRY_USER }}
