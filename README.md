@@ -22,6 +22,10 @@ as all requests are handled by kittygram.
 - Instagram aggresively rate-limits requests coming from servers,
 which can make running a public instance difficult.
 
+## Screenshot
+
+![](screenshot.png)
+
 ## Instances
 
 | URL                                | Description                                                                       |
