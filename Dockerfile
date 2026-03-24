@@ -21,7 +21,7 @@ RUN apk add --no-cache openssl sqlite sqlite-dev
 COPY --from=builder /usr/local/openresty/luajit/share/lua/ /usr/local/openresty/luajit/share/lua/
 COPY --from=builder /usr/local/openresty/luajit/lib/ /usr/local/openresty/luajit/lib/
 COPY --from=builder /usr/local/openresty/luajit/bin/lapis /usr/local/openresty/luajit/bin/lapis
-COPY --from=builder /usr/local/openresty/lualib/ /usr/local/openresty/lualib/
+
 
 
 COPY . .
