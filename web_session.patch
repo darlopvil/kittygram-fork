@@ -1,0 +1,27 @@
+diff --git a/config.lua b/config.lua
+index b86fd62..1cd8f08 100644
+--- a/config.lua
++++ b/config.lua
+@@ -17,6 +17,7 @@ config({"development", "production", "docker"}, {
+   proxies = proxies, -- see: conf/proxies.lua
+   cache = cache, -- see: conf/cache.lua
+   post_fetch_mode = "web", -- The method used to fetch posts. Can also be "graphql".
++  web_session = "ig_did=<INSERT_DID_HERE>; mid=<INSER_MID_HERE>; ds_user_id=<INSERT_ID_HERE>;sessionid=<INSERT_SESSION_HERE>;", -- The cookies (sessionid, ig_did, mid and ds_user_id) for an account. Formatted as http cookies. Set this to false to not send any cookies.
+   sqlite = {
+     database = "kittygram.sqlite"
+   },
+diff --git a/lib/send_instagram_graphql_request.lua b/lib/send_instagram_graphql_request.lua
+index f3ed8ed..4758d46 100644
+--- a/lib/send_instagram_graphql_request.lua
++++ b/lib/send_instagram_graphql_request.lua
+@@ -22,6 +22,10 @@ local function graphql_request(request_payload, doc_id, request_type)
+         body = request_body,
+     }
+ 
++    if config.web_session and request_type == "search" then
++        request_opts.headers["Cookie"] = config.web_session
++    end
++
+     -- check if there is a proxy url for the request type.
+     if request_type and config.proxies[request_type] then
+         request_opts.proxy_opts = {

@@ -59,6 +59,7 @@ nav img {
 
 .item-card {
   box-shadow: var(--main-shadow);
+  background-color: var(--card-color);
   margin: 0 auto;
   width: 90%;
   max-width: 45em;

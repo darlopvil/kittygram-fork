@@ -88,7 +88,7 @@ local function arrange_user_data(username, after_cursor)
         return user_posts
     end
 
-    if #user_posts < 1 then
+    if #user_posts.posts < 1 then
         if user_id_db.get_user_id(username) then
             user_id = user_id_db.get_user_id(username)
         else
@@ -103,10 +103,10 @@ local function arrange_user_data(username, after_cursor)
     else
         if not helpers.check_nested_field(user_posts.posts[1], "node", "coauthor_producers", 1) then
             user_id = user_posts.posts[1].node.owner.id
-            user_id_db.save_user_id(user_posts.posts[1].node.owner.username, user_id)
+            user_id_db.save_user_id(user_posts.posts[1].node.user.username, user_id)
         elseif helpers.check_nested_field(user_posts[1], "node", "coauthor_producers", 1) then
             -- I'm not entirely sure if this is always accurate, so user ids found here aren't saved.
-            user_id = post.node.coauthor_producers[1]
+            user_id = user_posts.posts[1].node.coauthor_producers[1].id
         end
     end
 
