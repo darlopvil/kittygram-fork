@@ -104,7 +104,7 @@ local function arrange_user_data(username, after_cursor)
         if not helpers.check_nested_field(user_posts.posts[1], "node", "coauthor_producers", 1) then
             user_id = user_posts.posts[1].node.owner.id
             user_id_db.save_user_id(user_posts.posts[1].node.user.username, user_id)
-        elseif helpers.check_nested_field(user_posts[1], "node", "coauthor_producers", 1) then
+        elseif helpers.check_nested_field(user_posts.posts[1], "node", "coauthor_producers", 1) then
             -- I'm not entirely sure if this is always accurate, so user ids found here aren't saved.
             user_id = user_posts.posts[1].node.coauthor_producers[1].id
         end
