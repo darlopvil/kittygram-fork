@@ -94,6 +94,8 @@ app:get("/p/:shortcode(/)", show_post)
 app:get("/:username/p/:shortcode(/)", show_post)
 app:get("/reel/:shortcode(/)", show_post)
 app:get("/:username/reel/:shortcode(/)", show_post)
+app:get("/reels/:shortcode(/)", show_post)
+app:get("/:username/reels/:shortcode(/)", show_post)
 
 
 
