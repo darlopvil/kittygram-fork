@@ -1,0 +1,34 @@
+:root {
+
+    --bg-color: #eff1f5;
+    --card-color: #bcc0cc;
+    --main-text-color: #4c4f69;
+    --alt-text-color: #5c5f77;
+
+
+    --main-shadow: 0px 4px 12px rgba(0, 0, 0, 0.32);
+    --outline-shadow: rgba(230, 233, 239, 0.96) 0px 1px 3px 0px;
+
+
+    --nav-icon-hover-color: none; /* setting this to a proper colour interferes with the filter */
+
+    --button-bg-color: #7287fd;
+    --button-text-color: #eff1f5;
+    --button-border-radius: 20px;
+    --button-border: 2px solid #acb0be;
+
+    --button-bg-color-on-hover: #4c4f69;
+    --button-text-color-on-hover: #eff1f5;
+
+
+    --searchbar-border: 2px solid #acb0be;
+
+    --link-text-color: #1e66f5;
+    --link-hover-color: #209fb5;
+    --link-visited-color: #7287fd;
+}
+
+nav img {
+    filter: brightness(0) invert(1);
+}
+
