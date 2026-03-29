@@ -29,6 +29,6 @@
 }
 
 nav img {
-    filter: brightness(0) invert(1);
+    filter: brightness(0) saturate(100%) invert(37%) sepia(18%) saturate(510%) hue-rotate(196deg) brightness(95%) contrast(90%);
 }
 
