@@ -157,6 +157,8 @@ app:get("/settings(/)", function(self)
     self.themes = config.themes
     if self.session.theme then
         self.selected_theme = self.session.theme
+    else
+        self.selected_theme = config.default_theme
     end
     if self.session.disable_video_proxying == "on" then
         self.disable_video_proxying = true
