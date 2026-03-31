@@ -184,7 +184,18 @@ input[type="text"] {
 .search-form {
   width: 20em;
 }
+.settings-form, .reset-form  {
+  display: inline;
+}
 
+.settings-form span {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.settings-form span input, .settings-form span select {
+  float: right;
+}
 pre {
   white-space: pre-line;
   background-color: #c9c9c9;

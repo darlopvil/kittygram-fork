@@ -1,29 +1,29 @@
 <main id="main">
     <h2 class="item-heading">Settings</h2>
     <div class="item-card">
-        <form method="POST" action="/settings/save">
-            <label for="theme">Theme</label>
-            <select name="theme">
-                <% for _, theme in pairs(themes) do %>
-                    <% if theme.name == selected_theme then %>
-                        <option value="<%= theme.name %>" selected><%= theme.display_name %></option>
-                    <% else %>
-                       <option value="<%= theme.name %>"><%= theme.display_name %></option>
+        <form class="settings-form" method="POST" action="/settings/save">
+            <span>
+                <label for="theme">Theme</label>
+                <select name="theme">
+                    <% for _, theme in pairs(themes) do %>
+                        <% if theme.name == selected_theme then %>
+                            <option value="<%= theme.name %>" selected><%= theme.display_name %></option>
+                        <% else %>
+                            <option value="<%= theme.name %>"><%= theme.display_name %></option>
+                        <% end %>
                     <% end %>
+                </select>
+            </span>
+            <span>
+                <label for="disable_video_proxying">Disable proxying videos through the server (can speed up videos)</label>
+                <% if disable_video_proxying then %>
+                    <input type="checkbox" name="disable_video_proxying" checked>
+                <% else %>
+                    <input type="checkbox" name="disable_video_proxying">
                 <% end %>
-            </select>
-            <br>
-            <label for="disable_video_proxying">Disable proxying videos through the server (can speed up videos)</label>
-            <% if disable_video_proxying then %>
-                <input type="checkbox" name="disable_video_proxying" checked>
-            <% else %>
-                <input type="checkbox" name="disable_video_proxying">
-            <% end %>
-            <br>
+            </span>
             <button>Save settings</button>
-        </form>
-        <br>
-        <form method="POST" action="/settings/reset">
+        </form><form class="reset-form" method="POST" action="/settings/reset">
             <button>Reset settings</button>
         </form>
     </div>
