@@ -32,6 +32,7 @@ which can make running a public instance difficult.
 |------------------------------------|-----------------------------------------------------------------------------------|
 | <https://kittygr.am>               | An instance of kittygram operated by [FSKY](https://fsky.io).                     |
 | <https://kittygram.irelephant.net> | An instance of kittygram run by its creator.                                      |
+| <https://kittygram.kareem.one>     | An instance of kittygram operated by [Kareem](https://kareem.one) behind Cloudflare.                |
 | <https://kittygram.nexussfan.cz>   | An instance of kittygram operated by [NexusSfan](https://mrchicken.nexussfan.cz). |
 
 ## Installation

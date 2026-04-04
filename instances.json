@@ -19,5 +19,12 @@
         "i2p": null,
         "yggdrasil": null,
         "country": "CZ"
+    },
+    {
+        "url": "https://kittygram.kareem.one",
+        "tor": null,
+        "i2p": null,
+        "yggdrasil": null,
+        "country": "SG"
     }
 ]
