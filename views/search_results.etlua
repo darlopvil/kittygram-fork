@@ -6,7 +6,7 @@
 
 <main id="main">
     <h2 class="item-heading">Search results for <%= search_query %> </h2>
-    <% if #search_results.users > 0 then %>
+    <% if search_results.users and #search_results.users > 0 then %>
         <h3 class="item-heading">Users</h3>
         <% for _, user in ipairs(search_results.users) do %>
             <% user = user.user %>
@@ -16,7 +16,7 @@
             </div>
         <% end %>
     <% end %>
-    <% if #search_results.hashtags > 0 then %>
+    <% if search_results.hashtags and #search_results.hashtags > 0 then %>
         <h3 class="item-heading">Hashtags</h3>
         <% for _, hashtag in ipairs(search_results.hashtags) do %>
             <% hashtag = hashtag.hashtag %>
