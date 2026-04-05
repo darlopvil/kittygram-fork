@@ -98,11 +98,16 @@ local function get_post_web(shortcode)
     for _, element in pairs(script_elements) do
         local element_json = json.decode(element:getcontent())
 
+
         if helpers.check_nested_field(element_json, "require", 1, 4, 1,
                                       "__bbox", "require", 1, 4, 2, "__bbox",
                                       "result", "data",
                                       "xdt_api__v1__media__shortcode__web_info") then
             -- instagram's json structure is fucked.
+
+            if element_json.require[1][4][1].__bbox.require[1][4][2].__bbox.result.data.xdt_api__v1__media__shortcode__web_info == json.null then
+                return errors.null_content{message = "This post is unavailable. It could be age-gated or otherwise restricted.", blob = element_json.require[1][4][1].__bbox.require[1][4][2].__bbox.result.data }
+            end
             post_info = element_json.require[1][4][1].__bbox.require[1][4][2]
                             .__bbox.result.data
                             .xdt_api__v1__media__shortcode__web_info.items[1]

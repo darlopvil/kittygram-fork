@@ -11,7 +11,6 @@
                     <%= error.error_info.blob %>
                 </pre>
             </details>
-
         <% elseif error.error_type == "ratelimited" then %>
             <h2> This instance has been ratelimited. </h2>
             <p>Try again in a few minutes.</p>
@@ -33,8 +32,19 @@
             <p>This server has been blocked from accessing some data by instagram.</p>
             <p>Non-private users or users with posts may still be accessible</p>
             <details>
-                <summary>More Details</p>
-                <p><%= error.error_info_message %></p>
+                <summary>More Details</summary>
+                <p><%= error.error_info.message %></p>
+            </details>
+        <% elseif error.error_type == "null_content" then %>
+            <h2>Post unavailable.</h2>
+            <p>This post is unavailable on kittygram.</p>
+            <p><a href="<%= view_on_instagram_link %>">View on instagram</a></p>
+            <details>
+                <summary>More Details</summary>
+                <p><%= error.error_info.message %></p>
+                <pre>
+                    <%= error.error_info.blob %>
+                </pre>
             </details>
         <% else %>
             <h2> Error! </h2>

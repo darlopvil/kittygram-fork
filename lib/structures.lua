@@ -106,6 +106,16 @@ local errors = {
             }
         }
     end,
+    null_content = function(args)
+        return {
+            has_errors = true,
+            error_type = "null_content",
+            error_info = {
+                message = args.message or "This post is unavailable.",
+                blob = json.encode(args.blob)
+            }
+        }
+    end,
     unknown = function(args)
         return {
             has_errors = true,
