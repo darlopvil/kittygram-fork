@@ -56,6 +56,10 @@
                         <% end %>
                     </div>
                     <div class="post-info">
+                        <time class="post-time" datetime="<%= os.date('%Y-%m-%dT%H:%M:%S', post.timestamp) %>">Posted at: <%=  os.date('%Y-%m-%d %H:%M:%S', post.taken_at) %></time>
+                        <div class="post-likes">
+                            <p><%= post.like_count %> likes</p>
+                        </div>
                         <div class="caption">
                             <% if type(post.caption) == "table" then %>
                                 <p class="post-caption-text"><%= post.caption.text %></p>
