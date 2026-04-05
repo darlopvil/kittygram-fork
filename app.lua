@@ -72,9 +72,9 @@ local function show_post(self)
         elseif post.error_type == "ratelimited" then
             self.page_title = "Ratelimited | Kittygram"
             return { status = 503, render = "error"}
-        --elseif post.error_type == "null_content" then
-            --self.page_title = "Unavailable | Kittygram"
-            --return { status = }
+        elseif post.error_type == "null_content" then
+            self.page_title = "Unavailable | Kittygram"
+            return { status = 410, render = "error" }
         else
             self.page_title = "Error | Kittygram"
             return { status = 500, render = "error" }
