@@ -106,6 +106,16 @@ local errors = {
             }
         }
     end,
+    network_error = function(args)
+        return {
+            has_errors = true,
+            error_type = "network_error",
+            error_info = {
+                message = args.message or "A network error occurred when trying to fetch this item. This is likely temporary.",
+                blob = json.encode(args.blob)
+            }
+        }
+    end,
     null_content = function(args)
         return {
             has_errors = true,

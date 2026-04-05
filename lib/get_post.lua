@@ -71,46 +71,75 @@ local totally_human_headers = {
 
 -- fetch posts through a json blob embedded in a post's html.
 local function get_post_web(shortcode)
+    local redis = get_redis()
+
+    if redis then
+        local post_query = redis:get("ig:shortcode:" .. shortcode)
+        if post_query ~= ngx.null then
+            local post_info = json.decode(post_query)
+            -- if the post has errors, return them immediately.
+            if post_info.has_errors then
+                return post_info
+            end
+
+            local comments
+            local comments_query = redis:get("ig:comments:" .. post_info.id)
+
+            if comments_query ~= ngx.null then
+                comments = json.decode(comments_query)
+            end
+            return post_info, comments
+        end
+    end
+
     local httpc = http.new()
-
-
     local request_opts = {
         headers = totally_human_headers
     }
+
     if config.proxies["posts"] then
         request_opts.proxy_opts = {
             https_proxy = config.proxies["posts"]
         }
     end
+
     local post_request, err = httpc:request_uri(
                                   "https://www.instagram.com/p/" .. shortcode ..
                                       "/", request_opts)
-
     if not post_request then
         ngx.log(ngx.ERR, "Request failed: " .. err)
+
+        return errors.network_error{
+            message = "Request failed.",
+            blob = err
+        }
     end
+
     local html_root = html.parse(post_request.body)
     local script_elements = html_root:select("[type='application/json']")
 
-    local post_info = false
-    local post_comments = false
+    local post_info
+    local post_comments
 
     for _, element in pairs(script_elements) do
         local element_json = json.decode(element:getcontent())
 
-
-        if helpers.check_nested_field(element_json, "require", 1, 4, 1,
-                                      "__bbox", "require", 1, 4, 2, "__bbox",
-                                      "result", "data",
-                                      "xdt_api__v1__media__shortcode__web_info") then
+        if helpers.check_nested_field(element_json, "require", 1, 4, 1, "__bbox", "require", 1, 4, 2, "__bbox", "result", "data", "xdt_api__v1__media__shortcode__web_info") then
             -- instagram's json structure is fucked.
 
-            if element_json.require[1][4][1].__bbox.require[1][4][2].__bbox.result.data.xdt_api__v1__media__shortcode__web_info == json.null then
-                return errors.null_content{message = "This post is unavailable. It could be age-gated or otherwise restricted.", blob = element_json.require[1][4][1].__bbox.require[1][4][2].__bbox.result.data }
+            local post_data = element_json.require[1][4][1].__bbox.require[1][4][2].__bbox.result.data
+            -- if the shortcode_web_info field is null, it usually means the post exists, but is otherwise unavailable.
+            if post_data.xdt_api__v1__media__shortcode__web_info == json.null then
+                local post_error = errors.null_content{
+                    message = "This post is unavailable. It could be age-gated or otherwise restricted.",
+                    blob = post_data
+                }
+                if redis then
+                    redis:set("ig:shortcode:" .. shortcode, json.encode(post_error), "EX", NEGATIVE_EXPIRE_TIME)
+                end
+                return post_error
             end
-            post_info = element_json.require[1][4][1].__bbox.require[1][4][2]
-                            .__bbox.result.data
-                            .xdt_api__v1__media__shortcode__web_info.items[1]
+            post_info = post_data.xdt_api__v1__media__shortcode__web_info.items[1]
         end
 
         if helpers.check_nested_field(element_json, "require", 1, 4, 1,
@@ -130,6 +159,10 @@ local function get_post_web(shortcode)
             message = "No post info was found in the post's HTML. This means that the post either doesn't exist, or something broke.",
             blob = post_info
         }
+        if redis then
+            redis:set("ig:shortcode:" .. shortcode, json.encode(post_error),
+                      "EX", NEGATIVE_EXPIRE_TIME)
+        end
         return post_error
     end
 
@@ -142,7 +175,12 @@ local function get_post_web(shortcode)
     end
 
     local formatted_post = format_post.from_web(post_info)
+    if redis then
+        redis:set("ig:shortcode:" .. shortcode, json.encode(formatted_post), "EX", POSITIVE_EXPIRE_TIME)
+        redis:set("ig:comments:" .. formatted_post.id, json.encode(post_comments), "EX", POSITIVE_EXPIRE_TIME)
+    end
     return formatted_post, post_comments
 end
+
 
 return { web = get_post_web, graphql = get_post_graphql }

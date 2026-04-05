@@ -75,6 +75,9 @@ local function show_post(self)
         elseif post.error_type == "null_content" then
             self.page_title = "Unavailable | Kittygram"
             return { status = 410, render = "error" }
+        elseif post.error_type == "network_error" then
+            self.page_title = "Error | Kittygram"
+            return { status = 500, render = "error" }
         else
             self.page_title = "Error | Kittygram"
             return { status = 500, render = "error" }
