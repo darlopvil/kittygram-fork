@@ -1,4 +1,5 @@
 <% local proxy_url = require("lib.helpers").proxy_url %>
+<% local json = require("cjson") %>
 
 <main id="main">
     <div class="item-card user-info">
@@ -47,8 +48,14 @@
                             <% end %>
                         <% elseif type(post.carousel_media_count) ~= "userdata"  and post.carousel_media_count > 0 then %>
                             <div class="carousel">
-                                <% for _, image in ipairs(post.carousel_media) do %>
-                                    <img src="<%= proxy_url(image.image_versions2.candidates[1].url) %>" loading="lazy">
+                                <% for _, item in ipairs(post.carousel_media) do %>
+                                    <% if item.video_versions ~= json.null then %>
+                                        <video controls preload="none" poster="<%= proxy_url(item.image_versions2.candidates[1].url) %>">
+                                            <source src="<%= proxy_url(item.video_versions[1].url) %>">
+                                        </video>
+                                    <% else %>
+                                        <img src="<%= proxy_url(item.image_versions2.candidates[1].url) %>" loading="lazy">
+                                    <% end %>
                                 <% end %>
                             </div>
                         <% elseif type(post.image_versions2) == "table" then %>
