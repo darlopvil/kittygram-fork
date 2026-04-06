@@ -7,26 +7,68 @@ local config = require("lapis.config").get()
 local get_redis = require("lapis.redis").get_redis
 local get_user_id = require("lib.get_user_id_web")
 local user_id_db = require("models.user_ids")
+local format_post = require("lib.structures").format_post
 
 local USER_INFO_EXPIRE_TIME = config.cache.expire_times.user_info.positive
+local LATEST_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.latest
+local CURSORED_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.with_cursor
+local NEGATIVE_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.negative
 
 local function get_user_posts(username, cursor)
+    local redis = get_redis()
+    if redis then
+        if not cursor then
+            local timeline_query = redis:get("ig:timeline:" .. username .. ":latest")
+            if timeline_query ~= ngx.null then
+                return json.decode(timeline_query)
+            end
+        elseif cursor then
+            local timeline_query = redis:get("ig:timeline:" .. username .. ":" .. cursor)
+            if timeline_query ~= ngx.null then
+                return json.decode(timeline_query)
+            end
+        end
+    else
+        ngx.log(ngx.ERR, "Redis connection failed")
+    end
 
     local payload, doc_id = queries.user_posts(username, 20, cursor)
     local posts_request = instagram_graphql_request(payload, doc_id, "user_posts")
-
     -- Check if there is posts in the response.
     if not posts_request.errors and helpers.check_nested_field(posts_request, "data", "xdt_api__v1__feed__user_timeline_graphql_connection", "edges") then
         local posts = posts_request.data.xdt_api__v1__feed__user_timeline_graphql_connection.edges
         local end_cursor = posts_request.data.xdt_api__v1__feed__user_timeline_graphql_connection.page_info.end_cursor
-
+        if redis then
+            if not cursor then
+                redis:set("ig:timeline:" .. username .. ":latest", json.encode({
+                    posts = posts,
+                    end_cursor = end_cursor,
+                }), "EX", LATEST_USER_TIMELINE_EXPIRE_TIME)
+            elseif cursor then
+                redis:set("ig:timeline:" .. username .. ":" .. cursor, json.encode({
+                    posts = posts,
+                    end_cursor = end_cursor,
+                }), "EX", CURSORED_USER_TIMELINE_EXPIRE_TIME)
+            end
+        end
         return { posts = posts, end_cursor = end_cursor }
 
     elseif posts_request.errors and posts_request.errors[1].code == 4630001 then
-        return errors.not_found{
+        local timeline_error = errors.not_found{
             message = "User not found.",
             blob = posts_request
         }
+
+        if redis then
+            local key
+            if cursor then
+                key = "ig:timeline:" .. username .. ":" .. cursor
+            else
+               key = "ig:timeline:" .. username .. ":latest"
+            end
+            redis:set(key, json.encode(timeline_error), "EX", NEGATIVE_USER_TIMELINE_EXPIRE_TIME)
+        end
+        return timeline_error
     elseif posts_request.status == "fail" and posts_request.require_login == true then
         return errors.ratelimited{
             blob = posts_request
@@ -45,7 +87,7 @@ local function get_user_info(user_id)
     local user_query
 
     if not redis then
-        ngx.log(ngx.ERR, "Redis connection failed: ", err)
+        ngx.log(ngx.ERR, "Redis connection failed: ")
     else
         user_query = redis:get("ig:user:" .. user_id)
     end
@@ -76,7 +118,6 @@ end
 local function arrange_user_data(username, after_cursor)
     local user_posts = {}
     local user_id = false
-
     -- check if a cursor is present (for pagination)
     if after_cursor then
         user_posts = get_user_posts(username, after_cursor)
