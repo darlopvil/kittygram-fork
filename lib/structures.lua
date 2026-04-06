@@ -244,9 +244,9 @@ local format_post = {
 
         return formatted_post
     end,
-    -- this doesn't yet handle videos in an image carousel.
     -- not used _yet_
     from_timeline = function(item)
+        item = item.node
         local post = {
             shortcode = item.code,
             id = item.pk,
@@ -263,25 +263,25 @@ local format_post = {
         if item.accessibility_caption then
             post.alt_text = item.accessibility_caption
         end
-        if item.video_versions then
+        if item.video_versions ~= json.null then
             post.video_url = item.video_versions[1].url
-        elseif item.carousel_media then
+        elseif item.carousel_media ~= json.null then
             post.images = {}
-            for _, item in ipairs(item.carousel_media) do
-                if type(item.video_versions) == "table" and #item.video_versions > 0 then
+            for _, media_item in ipairs(item.carousel_media) do
+                if type(media_item.video_versions) == "table" and #media_item.video_versions > 0 then
                     table.insert(post.images, {
-                        video_url = item.video_versions[1].url,
-                        video_thumbnail = item.image_versions2.candidates[1].url,
-                        alt_text = item.accessibility_caption
+                        video_url = media_item.video_versions[1].url,
+                        video_thumbnail = media_item.image_versions2.candidates[1].url,
+                        alt_text = media_item.accessibility_caption
                     })
                 else
                     table.insert(post.images, {
-                        image_url = item.image_version2.candidates[1].url,
-                        alt_text = item.accessibility_caption
+                        image_url = media_item.image_versions2.candidates[1].url,
+                        alt_text = media_item.accessibility_caption
                     })
                 end
             end
-        elseif item.image_versions2 and not item.video_versions and not item.carousel_media then
+        elseif item.image_versions2 ~= json.null and item.video_versions == json.null and  item.carousel_media == json.null then
             post.image_url = item.image_versions2.candidates[1].url
         end
         return post
