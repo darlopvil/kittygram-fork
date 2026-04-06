@@ -90,6 +90,8 @@ local function get_post_web(shortcode)
             end
             return post_info, comments
         end
+    else
+        ngx.log(ngx.ERR, "Redis connection failed.")
     end
 
     local httpc = http.new()
