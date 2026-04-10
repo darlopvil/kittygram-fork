@@ -1,0 +1,106 @@
+local lapis = require("lapis")
+local app = lapis.Application()
+local config = require("lapis.config").get()
+local get_user = require("lib.user")
+local format_post = require("lib.structures").format_post
+local proxy_url = require("lib.helpers").proxy_url
+local date = require("date")
+
+local function xml_escape(string)
+    return tostring(string)
+        :gsub("&", "&amp;")
+        :gsub("\"", "&quot;")
+        :gsub("'", "&apos;")
+        :gsub("<", "&lt;")
+        :gsub(">", "&gt;")
+end
+
+local function create_html_content(post)
+    local html_string = ""
+    if post.images and #post.images >= 1 then
+
+        for _, media in ipairs(post.images) do
+            if media.image_url then
+                html_string = html_string ..  string.format([[<img src="%s" />]], proxy_url(media.image_url))
+            elseif media.video_url then
+                html_string = html_string .. string.format([[<video controls><source src="%s"></video>]], proxy_url(media.video_url))
+            end
+        end
+    else
+        if post.image_url then
+            html_string = html_string .. string.format([[<img src="%s"/>]], proxy_url(post.image_url))
+        elseif post.video_url then
+            html_string = html_string .. string.format([[<video controls><source src="%s"></video>]], proxy_url(post.video_url))
+        end
+    end
+    if post.caption then
+        html_string = html_string .. string.format([[<p>%s</p>]], xml_escape(post.caption):gsub("\n", "<br>"))
+    end
+    return html_string
+end
+
+local function create_feed_item(username, caption, link, timestamp, html_content)
+    local title = xml_escape("Post by " .. username .. ": " .. string.sub(caption or "", 1, 100) .. "...")
+    local iso_timestamp = date(timestamp):toutc():fmt("${iso}") .. "Z"
+    local entry_xml = string.format([[
+        <entry>
+            <title>%s</title>
+            <link rel="alternate" type="text/html" href="%s"/>
+            <id>%s</id>
+            <updated>%s</updated>
+            <content type="html">%s</content>
+        </entry>
+    ]], xml_escape(title), xml_escape(link), xml_escape(link), xml_escape(iso_timestamp), xml_escape(html_content))
+    return entry_xml
+end
+
+-- The base url path param is needed for generating urls.
+local function create_feed_xml(username, posts)
+    local base_url_path = config.base_atom_path
+    local user_link = base_url_path .. username
+
+    local self_link = user_link .. "/atom.xml"
+    local first_timestamp
+    if posts and #posts >= 1 then
+        first_timestamp = posts[1].node.taken_at
+    end
+    local updated_timestamp = date(first_timestamp):toutc():fmt("${iso}") .. "Z"
+
+    local feed_xml = string.format([[<?xml version="1.0" encoding="utf-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+            <title>Posts by @%s</title>
+            <link rel="alternate" type="text/html" href="%s" />
+            <link rel="self" type="application/atom+xml" href="%s" />
+            <id>%s</id>
+            <updated>%s</updated>
+            <author>
+                <name>%s</name>
+                <uri>%s</uri>
+            </author>
+    ]], username, user_link, self_link, user_link, updated_timestamp, username, "https://www.instagram.com/" .. username)
+
+    for _, post in ipairs(posts) do
+        local formatted_post = format_post.from_timeline(post)
+        local html_content = create_html_content(formatted_post)
+
+        local post_xml = create_feed_item(username, formatted_post.caption, base_url_path .. "p/" .. formatted_post.shortcode, formatted_post.timestamp, html_content)
+        feed_xml = feed_xml .. post_xml
+    end
+    feed_xml = feed_xml .. "</feed>"
+    return feed_xml
+end
+
+app:get("/:username/atom.xml(/)", function(self)
+    if config.enable_atom == false then
+        return { "Atom is not enabled on this instance.", layout = false, content_type = "text/plain" }
+    else
+        local user = get_user(self.params.username)
+        if user.has_errors then
+            return { "Error while fetching user.", layout = false, content_type = "text/plain" }
+        else
+            local feed_xml = create_feed_xml(self.params.username, user.posts)
+            return { feed_xml, layout = false, content_type="application/atom+xml" }
+        end
+    end
+end)
+return app

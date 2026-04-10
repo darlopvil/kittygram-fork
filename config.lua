@@ -16,6 +16,8 @@ config({"development", "production", "docker"}, {
   themes = themes, -- see: conf/themes.lua
   proxies = proxies, -- see: conf/proxies.lua
   cache = cache, -- see: conf/cache.lua
+  enable_atom = false, -- Whether to create Atom (better rss; supported by basically everything rss supports) feeds for users. Disabled by default due to the concerns mentioned here: https://cadence.moe/blog/2022-09-01-discontinuing-bibliogram
+  base_atom_path = "http://localhost:8081/", -- Base path to use for generating links in atom feeds. Requires the trailing slash.
   post_fetch_mode = "web", -- The method used to fetch posts. Can also be "graphql".
   sqlite = {
     database = "kittygram.sqlite"
@@ -47,6 +49,8 @@ config("docker", {
   code_cache = os.getenv("CODE_CACHE") or "on",
   num_workers = os.getenv("NUM_WORKERS") or "4",
   allow_json = os.getenv("ALLOW_JSON") == "true" or false,
+  enable_atom = os.getenv("ENABLE_ATOM") == "true" or false,
+  base_atom_path = os.getenv("BASE_ATOM_PATH") or "http://localhost/", -- The base path for generating links in atom feeds. Requires the trailing slash.
   resolver = os.getenv("RESOLVER") or "127.0.0.11",
   redis = {
     host = os.getenv("REDIS_HOST") or "redis",

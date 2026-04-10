@@ -8,8 +8,9 @@ local helpers = require("lib.helpers")
 app:enable("etlua")
 app.layout = require("views.layout")
 local media_proxy = require("lib.media_proxy")
+local atom = require("lib.atom")
 app:include(media_proxy)
-
+app:include(atom)
 
 local get_post = require("lib.get_post")
 local get_user = require("lib.user")
@@ -39,7 +40,6 @@ app:before_filter(function(self)
         end
     end
 end)
-
 
 -- set cookie attributes. This code sets cookies to last for 7300 days.
 app.cookie_attributes = function(self)
@@ -103,8 +103,6 @@ app:get("/:username/reel/:shortcode(/)", show_post)
 app:get("/reels/:shortcode(/)", show_post)
 app:get("/:username/reels/:shortcode(/)", show_post)
 
-
-
 app:get("/:username(/)", function(self)
     local user = get_user(self.params.username, self.params.after)
     if user.has_errors then
@@ -123,6 +121,9 @@ app:get("/:username(/)", function(self)
             return { status = 500, render = "error" }
         end
     else
+        if config.enable_atom then
+            self.atom_link = "/" .. self.params.username .. "/atom.xml"
+        end
         self.user = user.user_info
         self.posts = user.posts
         self.end_cursor = user.end_cursor
@@ -198,6 +199,5 @@ app:get("/*", function(self)
     }
     return { status = 404, render  = "error" }
 end)
-
 
 return app

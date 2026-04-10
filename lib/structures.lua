@@ -284,6 +284,10 @@ local format_post = {
         elseif item.image_versions2 ~= json.null and item.video_versions == json.null and  item.carousel_media == json.null then
             post.image_url = item.image_versions2.candidates[1].url
         end
+
+        if item.caption and item.caption ~= json.null and item.caption.text ~= json.null then
+            post.caption = item.caption.text
+        end
         return post
     end
 }

@@ -15,7 +15,6 @@ local function graphql_request(request_payload, doc_id, request_type)
     local httpc = http.new()
     local request_body = "variables=" .. util.escape(json.encode(request_payload)) .. "&doc_id=" .. doc_id
 
-
     local request_opts = {
         method = "POST",
         headers = instagram_headers,

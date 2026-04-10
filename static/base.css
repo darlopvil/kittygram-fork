@@ -218,3 +218,11 @@ pre {
     max-width: 100%;
   }
 }
+
+@media only screen and (max-width: 450px) {
+  .right-navbar-items {
+    padding-left: 0;
+  }
+}
+
+

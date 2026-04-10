@@ -3,12 +3,16 @@
     <head>
         <meta charset="UTF-8">
         <title> <%= page_title %> </title>
-         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <% if params.css ~= "false" then %>
             <link rel="stylesheet" href="<%= css_url %>">
             <% if uses_base_theme then %>
                 <link rel="stylesheet" href="/static/base.css">
             <% end %>
+        <% end %>
+
+        <% if atom_link then %>
+            <link rel="alternate" href="<%= atom_link %>" type="application/atom+xml">
         <% end %>
     </head>
     <body>

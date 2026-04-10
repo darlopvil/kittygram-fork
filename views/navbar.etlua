@@ -2,6 +2,9 @@
     <a href="/"><img src="/static/kittygram.png" title="Kittygram" alt="Kittygram Logo"></a>
     <ul class="right-navbar-items">
         <li><a href="<%= view_on_instagram_link %>" title="View on Instagram"><img src="/static/icons/instagram_logo.svg"></a></li>
+        <% if atom_link then %>
+            <li><a href="<%= atom_link %>" title="Atom feed"><img src="/static/icons/rss_icon.svg"></a></li>
+        <% end %>
         <li><a href="/search" title="Search"><img src="/static/icons/search_icon.svg"></a></li>
         <li><a href="/settings" title="Settings"><img src="/static/icons/settings_icon.svg"></a></li>
     </ul>
