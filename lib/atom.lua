@@ -91,7 +91,7 @@ local function create_feed_xml(username, posts)
 end
 
 app:get("/:username/atom.xml(/)", function(self)
-    if config.enable_atom == false then
+    if not config.enable_atom then
         return { "Atom is not enabled on this instance.", layout = false, content_type = "text/plain" }
     else
         local user = get_user(self.params.username)
