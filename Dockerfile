@@ -26,6 +26,9 @@ COPY --from=builder /usr/local/openresty/luajit/bin/lapis /usr/local/openresty/l
 
 COPY . .
 
+COPY config.example.lua config.lua
+COPY nginx.example.conf nginx.conf
+
 RUN /usr/local/openresty/luajit/bin/lapis migrate
 RUN chown -R nobody:nobody /app
 

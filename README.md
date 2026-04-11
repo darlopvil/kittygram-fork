@@ -69,14 +69,20 @@ git clone https://codeberg.org/irelephant/kittygram.git
 cd kittygram
 ```
 
-5. Run:
+5. Copy the example configuration files:  
+```
+cp nginx.example.conf nginx.conf
+cp config.example.lua config.lua
+```
+
+6. Run:
 
 ```bash
 luarocks init --lua-version=5.1 --lua-versions=5.1
 CC="gcc -std=gnu99" luarocks build
 ```
 
-6. Run `lapis migrate`, then `lapis serve production` to run the project.
+7. Run `lapis migrate`, then `lapis serve production` to run the project.
 
 ## Contact
 

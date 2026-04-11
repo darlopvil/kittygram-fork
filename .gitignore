@@ -6,6 +6,9 @@ logs/
 uwsgi_temp/
 client_body_temp/
 
+config.lua
+nginx.conf
+
 *.sqlite
 *.kate-swp
 

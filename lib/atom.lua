@@ -99,7 +99,7 @@ app:get("/:username/atom.xml(/)", function(self)
             return { "Error while fetching user.", layout = false, content_type = "text/plain" }
         else
             local feed_xml = create_feed_xml(self.params.username, user.posts)
-            return { feed_xml, layout = false, content_type="application/atom+xml" }
+            return { feed_xml, layout = false, content_type="application/atom+xml; charset=utf-8" }
         end
     end
 end)
