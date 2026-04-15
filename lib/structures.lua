@@ -1,13 +1,46 @@
 local json = require("cjson")
 local check_nested_field = require("lib.helpers").check_nested_field
 
+
 local doc_ids = {
-    shortcode = "8845758582119845",
-    user_info = "33257018913889225",
-    comments = "25060748103519434",
-    search = "24146980661639222",
-    user_posts = "23893796620241262",
+    shortcode = {
+        doc_id = "8845758582119845",
+        endpoint = "query",
+        method = "POST",
+    },
+    user_info = {
+        doc_id = "33257018913889225",
+        endpoint = "query",
+        method = "POST",
+    },
+    comments = {
+        doc_id = "25060748103519434",
+        endpoint = "query",
+        method = "POST"
+    },
+    search = {
+        doc_id = "24146980661639222",
+        endpoint = "query",
+        method = "POST",
+    },
+    user_posts = {
+        doc_id = "23893796620241262",
+        endpoint = "query",
+        method = "POST",
+    },
+    logged_out_user_posts = {
+        doc_id = "7950326061742207",
+        endpoint = "query",
+        method = "GET",
+    },
+    explore_search = {
+        doc_id = "33897670563213924",
+        endpoint = "api",
+        method = "POST"
+    }
 }
+
+
 
 local queries = {
     shortcode = function(shortcode)
@@ -61,6 +94,16 @@ local queries = {
             __relay_internal__pv__PolarisShareSheetV3relayprovider = true
         }, doc_ids.user_posts
     end,
+    logged_out_user_posts = function(user_id, count, after_cursor)
+        if not after_cursor then
+            after_cursor = json.null
+        end
+        return {
+            id = user_id,
+            after = after_cursor,
+            first = count
+        }, doc_ids.logged_out_user_posts
+    end,
     search = function(query)
         return {
             hasQuery = true,
@@ -68,6 +111,14 @@ local queries = {
                 query = query
             }
         }, doc_ids.search
+    end,
+    explore_search = function(query, after)
+        return {
+            after = after or json.null,
+            debug = json.null,
+            keyword = query,
+            media_count = 8
+        }, doc_ids.explore_search
     end,
 }
 
@@ -292,5 +343,54 @@ local format_post = {
     end
 }
 
+local format_user_info = {
+    from_graphql = function(info)
+        return {
+            follower_count = info.follower_count,
+            pronouns = info.pronouns,
+            display_name = info.full_name,
+            following_count = info.following_count,
+            media_count = info.media_count,
+            -- not exposed on web_profile_info.
+            is_cannes = info.is_cannes,
+            profile_pic_url = info.profile_pic_url,
+            bio_links = info.bio_links,
+            is_private = info.is_private,
+            id = info.id,
+            username = info.username,
+            biography = info.biography,
+            is_verified = info.is_verified,
+            is_business = info.is_business,
+            -- don't know what this is. Keeping it in case it's useful in future.
+            -- not exposed on the web_profile_info api though.
+            account_type = info.account_type
+        }
+    end,
+    from_web_api = function(info)
+        local info_formatted = {
+            username = info.username,
+            display_name = info.full_name,
+            biography = info.biography,
+            profile_pic_url = info.profile_pic_url,
+            id = info.id,
+            is_verified = info.is_verified,
+            is_private = info.is_private,
+            is_business = info.is_business_account,
+            bio_links = info.bio_links,
+            pronouns = info.pronouns
+        }
 
-return { queries = queries, doc_ids = doc_ids, format_post = format_post, errors = errors }
+        if info.edge_follow and info.edge_follow ~= json.null and info.edge_follow.count and info.edge_follow.count ~= json.null then
+            info_formatted.following_count = info.edge_follow.count
+        end
+        if info.edge_followed_by and info.edge_followed_by ~= json.null and info.edge_followed_by.count and info.edge_followed_by.count ~= json.null then
+            info_formatted.follower_count = info.edge_followed_by.count
+        end
+        if info.edge_owner_to_timeline_media and info.edge_owner_to_timeline_media ~= json.null and info.edge_owner_to_timeline_media.count and info.edge_owner_to_timeline_media.count ~= json.null then
+            info_formatted.media_count = info.edge_owner_to_timeline_media.count
+        end
+        return info_formatted
+    end,
+}
+
+return { queries = queries, doc_ids = doc_ids, format_post = format_post, format_user_info = format_user_info,  errors = errors }

@@ -9,6 +9,7 @@ local proxies = {
     search = false,
     user_posts = false,
     comments = false,
+    explore = false,
     -- A user's page (e.g., https://www.instagram.com/{username}). Requests are only sent to these pages if the user has no posts, and their ID hasn't been saved before.
     -- this page can be ratelimited heavily.
     user_page = false,

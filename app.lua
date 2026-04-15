@@ -128,7 +128,7 @@ app:get("/:username(/)", function(self)
         self.posts = user.posts
         self.end_cursor = user.end_cursor
         if self.params.json == "true" and config.allow_json then
-            return { json = user.posts }
+            return { json = user }
         end
         self.page_title = "@" .. user.user_info.username .. " | kittygram"
         return { render = "user" }
@@ -144,7 +144,7 @@ app:get("/search(/)", function(self)
             return { redirect_to = "/p/" .. tostring(url_match[1]) }
         end
 
-        local search_results = search(self.params.q)
+        local search_results = search.search(self.params.q)
         self.page_title = "Search for \"" .. self.params.q .. "\" | kittygram"
         self.search_query = self.params.q
         self.search_results = search_results
@@ -158,6 +158,12 @@ app:get("/search(/)", function(self)
 
 end)
 
+app:get("/popular/:query(/)", function(self)
+    local explore_results = search.explore(self.params.query, self.params.after)
+    self.results = explore_results
+    self.explore_query = self.params.query
+    return { render = "explore" }
+end)
 -- RIP to instagram user "settings".
 
 app:get("/settings(/)", function(self)
@@ -199,5 +205,6 @@ app:get("/*", function(self)
     }
     return { status = 404, render  = "error" }
 end)
+
 
 return app

@@ -1,5 +1,6 @@
 local http = require("resty.http")
 local util = require("lapis.util")
+local encoding = require("lapis.util.encoding")
 local json = require("cjson")
 local helpers = require("lib.helpers")
 local config = require("lapis.config").get()
@@ -11,15 +12,39 @@ local instagram_headers = {
     ["Accept"] =  "*/*"
 }
 
+local gql_endpoints = {
+    query = "https://www.instagram.com/graphql/query",
+    api = "https://www.instagram.com/api/graphql"
+}
+
 local function graphql_request(request_payload, doc_id, request_type)
     local httpc = http.new()
-    local request_body = "variables=" .. util.escape(json.encode(request_payload)) .. "&doc_id=" .. doc_id
 
+    local headers = instagram_headers
+    local request_body = ""
+    local request_url = gql_endpoints[doc_id.endpoint]
+
+    -- This endpoint requires extra information
+    if doc_id.endpoint == "api" then
+        local lsd = encoding.encode_base64(math.random()):gsub("+", "-"):gsub("/", "_"):gsub("=", "")
+        headers["X-Fb-Lsd"] = lsd
+        request_body = "av=0&__d=www&__user=0&__a=1&__comet_req=7&lsd=" .. lsd .. "&server_timestamps=true&"
+    end
+    -- some queries are sent through get requests.
+    if doc_id.method == "GET" then
+        request_body = "doc_id=" .. doc_id.doc_id .. "&variables=" .. util.escape(json.encode(request_payload))
+        request_url = request_url .. "?" .. request_body
+    else
+        request_body = request_body .. "variables=" .. util.escape(json.encode(request_payload)) .. "&doc_id=" .. doc_id.doc_id
+    end
     local request_opts = {
-        method = "POST",
+        method = doc_id.method,
         headers = instagram_headers,
-        body = request_body,
     }
+
+    if doc_id.method == "POST" then
+        request_opts.body = request_body
+    end
 
     -- check if there is a proxy url for the request type.
     if request_type and config.proxies[request_type] then
@@ -28,7 +53,7 @@ local function graphql_request(request_payload, doc_id, request_type)
         }
     end
 
-    local request, err = httpc:request_uri("https://www.instagram.com/graphql/query", request_opts)
+    local request, err = httpc:request_uri(request_url, request_opts)
 
     if not request then
         ngx.log(ngx.ERR, err)
