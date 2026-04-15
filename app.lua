@@ -102,6 +102,8 @@ app:get("/reel/:shortcode(/)", show_post)
 app:get("/:username/reel/:shortcode(/)", show_post)
 app:get("/reels/:shortcode(/)", show_post)
 app:get("/:username/reels/:shortcode(/)", show_post)
+app:get("/p/:shortcode/embed(/)", show_post)
+app:get("/reel/:shortcode/embed(/)", show_post)
 
 app:get("/:username(/)", function(self)
     local user = get_user(self.params.username, self.params.after)
@@ -162,6 +164,7 @@ app:get("/popular/:query(/)", function(self)
     local explore_results = search.explore(self.params.query, self.params.after)
     self.results = explore_results
     self.explore_query = self.params.query
+    self.page_title = "Explore " .. self.params.query .. " | Kittygram"
     return { render = "explore" }
 end)
 -- RIP to instagram user "settings".
