@@ -21,7 +21,7 @@
         <% for _, hashtag in ipairs(search_results.hashtags) do %>
             <% hashtag = hashtag.hashtag %>
             <div class="item-card search-result">
-                <p><%= hashtag.name %> -- <%= hashtag.search_result_subtitle %> </p>
+                <p><a href="/popular/<%= hashtag.name %>">#<%= hashtag.name %></a> -- <%= hashtag.search_result_subtitle %> </p>
             </div>
         <% end %>
         <!-- I'll add better support for hashtags later. -->
