@@ -184,6 +184,11 @@ input[type="text"] {
 .search-form {
   width: 20em;
 }
+
+.search-form form {
+  width: fit-content;
+  margin: 0 auto;
+}
 .settings-form, .reset-form  {
   display: inline;
 }

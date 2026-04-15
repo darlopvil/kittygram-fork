@@ -1,8 +1,9 @@
 <main id="main">
     <h2 class="item-heading">Search</h2>
-
-    <form method="GET" class="item-card search-form">
-        <input type="text" placeholder="Enter search..." name="q">
-        <button>Search</button>
-    </form>
+    <div class="item-card search-form">
+        <form method="GET">
+            <input type="text" placeholder="Enter search..." name="q">
+            <button>Search</button>
+        </form>
+    </div>
 </main
