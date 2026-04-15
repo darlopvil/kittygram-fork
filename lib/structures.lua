@@ -24,7 +24,7 @@ local doc_ids = {
         method = "POST",
     },
     user_posts = {
-        doc_id = "23893796620241262",
+        doc_id = "25570792892598075",
         endpoint = "query",
         method = "POST",
     },
