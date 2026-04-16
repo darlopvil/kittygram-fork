@@ -26,7 +26,7 @@ end
 local function explore(query, after)
     local redis = get_redis()
     if not redis then
-        ngx.log("Redis connection failed!")
+        ngx.log(ngx.ERR, "Redis connection failed!")
     else
         local key
         if after then
