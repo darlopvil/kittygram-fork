@@ -4,6 +4,8 @@
         <meta charset="UTF-8">
         <title> <%= page_title %> </title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
         <!-- made with https://manytools.org/http-html-text/apple-touch-icon-generator/go/ -->
         <link rel="apple-touch-icon" href="/static/apple-touch-icon-iphone-60x60.png">
         <link rel="apple-touch-icon" sizes="60x60" href="/static/apple-touch-icon-ipad-76x76.png">
