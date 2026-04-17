@@ -1,0 +1,27 @@
+# .gitattributes
+
+# Aliases
+[attr]lfs filter=lfs diff=lfs merge=lfs -text
+[attr]crlf eol=crlf
+
+# Normalize
+* text=auto eol=lf
+
+# Windows
+# *.bat crlf
+
+# LFS, binary files
+*.png lfs
+*.ico lfs
+
+# Codeberg syntax highlight
+*.conf     linguist-language=JAVASCRIPT
+*.etlua    linguist-language=HTML
+*.jsonc    linguist-language=JSON
+*.rockspec linguist-language=LUA
+*.types    linguist-language=LUA
+*.yml      linguist-language=YAML
+
+# Statistics
+*.json     linguist-detectable
+# *.md     linguist-detectable
