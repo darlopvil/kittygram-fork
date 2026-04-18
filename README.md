@@ -47,12 +47,12 @@ which can make running a public instance difficult.
 
 ## Instances
 
-| Link                               | Operated by:                                  | Notes                 |
-|------------------------------------|-----------------------------------------------|-----------------------|
-| <https://kittygram.irelephant.net> | [Irelephant](https://codeberg.org/irelephant) | Creator of Kittygram. |
-| <https://kittygr.am>               | [FSKY](https://fsky.io)                       |                       |
-| <https://kittygram.kareem.one>     | [Kareem](https://kareem.one)                  | Cloudflare.           |
-| <https://kittygram.nexussfan.cz>   | [NexusSfan](https://mrchicken.nexussfan.cz)   |                       |
+| Instance link:                                               | Operated by:                                  | Notes:                |
+|--------------------------------------------------------------|-----------------------------------------------|-----------------------|
+| [kittygram.irelephant.net](https://kittygram.irelephant.net) | [Irelephant](https://codeberg.org/irelephant) | Creator of Kittygram. |
+| [kittygr.am](https://kittygr.am)                             | [FSKY](https://fsky.io)                       |                       |
+| [kittygram.kareem.one](https://kittygram.kareem.one)         | [Kareem](https://kareem.one)                  | Cloudflare.           |
+| [kittygram.nexussfan.cz](https://kittygram.nexussfan.cz)     | [NexusSfan](https://mrchicken.nexussfan.cz)   |                       |
 
 <!-- Note: If you add a new instance, then edit the entire table to correct the length of the cells. -->
 
