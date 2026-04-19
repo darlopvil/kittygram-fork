@@ -53,6 +53,7 @@ which can make running a public instance difficult.
 | [kittygr.am](https://kittygr.am)                             | [FSKY](https://fsky.io)                       |                       |
 | [kittygram.kareem.one](https://kittygram.kareem.one)         | [Kareem](https://kareem.one)                  | Cloudflare.           |
 | [kittygram.nexussfan.cz](https://kittygram.nexussfan.cz)     | [NexusSfan](https://mrchicken.nexussfan.cz)   |                       |
+| [kg.lus.lu](https://kg.lus.lu)                               | [ffb0f3](https://lus.lu)                      |                       |
 
 <!-- Note: If you add a new instance, then edit the entire table to correct the length of the cells. -->
 
