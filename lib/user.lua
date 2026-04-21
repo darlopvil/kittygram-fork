@@ -1,4 +1,4 @@
-local instagram_graphql_request = require("lib.send_instagram_graphql_request")
+local instagram_graphql_request = require("lib.graphql").request
 local helpers = require("lib.helpers")
 local queries = require("lib.structures").queries
 local errors = require("lib.structures").errors

@@ -17,6 +17,7 @@ local gql_endpoints = {
     api = "https://www.instagram.com/api/graphql"
 }
 
+
 local function graphql_request(request_payload, doc_id, request_type)
     local httpc = http.new()
 
@@ -63,4 +64,4 @@ local function graphql_request(request_payload, doc_id, request_type)
     return json.decode(request.body)
 end
 
-return graphql_request
+return { request = graphql_request }
