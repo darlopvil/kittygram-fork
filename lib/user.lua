@@ -117,7 +117,7 @@ end
 
 local function arrange_user_data(username, after_cursor)
     local user_posts = {}
-    local user_id = false
+    local user_id
     -- check if a cursor is present (for pagination)
     if after_cursor then
         user_posts = get_user_posts(username, after_cursor)
@@ -142,12 +142,24 @@ local function arrange_user_data(username, after_cursor)
             end
         end
     else
-        if not helpers.check_nested_field(user_posts.posts[1], "node", "coauthor_producers", 1) then
-            user_id = user_posts.posts[1].node.owner.id
-            user_id_db.save_user_id(user_posts.posts[1].node.user.username, user_id)
-        elseif helpers.check_nested_field(user_posts.posts[1], "node", "coauthor_producers", 1) then
-            -- I'm not entirely sure if this is always accurate, so user ids found here aren't saved.
-            user_id = user_posts.posts[1].node.coauthor_producers[1].id
+        -- Check if a post has coauthors. Usually an indication they are a repost.
+        if helpers.check_nested_field(user_posts.posts[1], "node", "coauthor_producers") and user_posts.posts[1].node.coauthor_producers ~= json.null and #user_posts.posts[1].node.coauthor_producers >= 1 then
+            -- Iterate over the coauthors to see if one of them has a username which matches the provided username.
+            for _, coauthor in ipairs(user_posts.posts[1].node.coauthor_producers) do
+                if string.lower(coauthor.username) == string.lower(username) then
+                    user_id = coauthor.id
+                end
+            end
+            -- if a user id is not set, then use the id of the user who owns the post itself.
+            if not user_id then
+                user_id = user_posts.posts[1].node.user.id
+            end
+        else
+            user_id = user_posts.posts[1].node.user.id
+            -- check that the username instagram returns matches the provided username to avoid saving an incorrect id.
+            if string.lower(username) == string.lower(user_posts.posts[1].node.user.username) then
+                 user_id_db.save_user_id(user_posts.posts[1].node.user.username, user_id)
+            end
         end
     end
 
