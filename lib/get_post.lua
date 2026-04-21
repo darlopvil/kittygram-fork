@@ -1,6 +1,6 @@
 local json = require("cjson")
 local get_redis = require("lapis.redis").get_redis
-local errors = require("lib.structures").errors
+local errors = require("lib.helpers").create_error
 local queries = require("lib.graphql").queries
 local format_post = require("lib.structures").format_post
 local graphql_request = require("lib.graphql").request

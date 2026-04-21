@@ -3,7 +3,7 @@ local html = require("htmlparser")
 local json = require("cjson")
 local helpers = require("lib.helpers")
 local config = require("lapis.config").get()
-local errors = require("lib.structures").errors
+local errors = require("lib.helpers").create_error
 
 local totally_human_headers = {
     ["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",

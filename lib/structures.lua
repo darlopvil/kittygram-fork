@@ -1,69 +1,6 @@
 local json = require("cjson")
 local check_nested_field = require("lib.helpers").check_nested_field
 
-local errors = {
-    not_found = function(args)
-        return {
-            has_errors = true,
-            error_type = "not_found",
-            error_info = {
-                message = args.message or "The requested content was not found.",
-                blob = json.encode(args.blob)
-            }
-        }
-    end,
-    ratelimited = function(args)
-        return {
-            has_errors = true,
-            error_type = "ratelimited",
-            error_info = {
-                message = args.message or "This instance may be rate-limited. Try again in a minute.",
-                blob = json.encode(args.blob)
-            }
-        }
-    end,
-    blocked = function(args)
-        return {
-            has_errors = true,
-            error_type = "blocked",
-            error_info = {
-                message = args.message or "This instance has been blocked from accessing that content. This may be permanent",
-                blob = json.encode(args.blob)
-            }
-        }
-    end,
-    network_error = function(args)
-        return {
-            has_errors = true,
-            error_type = "network_error",
-            error_info = {
-                message = args.message or "A network error occurred when trying to fetch this item. This is likely temporary.",
-                blob = json.encode(args.blob)
-            }
-        }
-    end,
-    null_content = function(args)
-        return {
-            has_errors = true,
-            error_type = "null_content",
-            error_info = {
-                message = args.message or "This post is unavailable.",
-                blob = json.encode(args.blob)
-            }
-        }
-    end,
-    unknown = function(args)
-        return {
-            has_errors = true,
-            error_type = "unknown",
-            error_info = {
-                message = args.message or "An unknown error occurred.",
-                blob = json.encode(args.blob)
-            }
-        }
-    end
-}
-
 -- all of instagram's apis return posts in a different format.
 -- this takes  posts from different formats and turns them into a universal format
 local format_post = {
@@ -268,4 +205,4 @@ local format_user_info = {
     end,
 }
 
-return { format_post = format_post, format_user_info = format_user_info,  errors = errors }
+return { format_post = format_post, format_user_info = format_user_info }
