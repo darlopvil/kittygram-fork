@@ -1,6 +1,6 @@
 local instagram_graphql_request = require("lib.graphql").request
 local helpers = require("lib.helpers")
-local queries = require("lib.structures").queries
+local queries = require("lib.graphql").queries
 local errors = require("lib.structures").errors
 local json = require("cjson")
 local config = require("lapis.config").get()
