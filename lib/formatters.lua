@@ -1,5 +1,5 @@
 local json = require("cjson")
-local check_nested_field = require("lib.helpers").check_nested_field
+
 
 -- all of instagram's apis return posts in a different format.
 -- this takes  posts from different formats and turns them into a universal format

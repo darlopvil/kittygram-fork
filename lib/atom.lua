@@ -2,7 +2,7 @@ local lapis = require("lapis")
 local app = lapis.Application()
 local config = require("lapis.config").get()
 local get_user = require("lib.user")
-local format_post = require("lib.structures").format_post
+local format_post = require("lib.formatters").format_post
 local proxy_url = require("lib.helpers").proxy_url
 local date = require("date")
 

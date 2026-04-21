@@ -7,7 +7,7 @@ local config = require("lapis.config").get()
 local get_redis = require("lapis.redis").get_redis
 local get_user_id = require("lib.get_user_id_web")
 local user_id_db = require("models.user_ids")
-local format_post = require("lib.structures").format_post
+local format_post = require("lib.formatters").format_post
 
 local USER_INFO_EXPIRE_TIME = config.cache.expire_times.user_info.positive
 local LATEST_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.latest
