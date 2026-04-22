@@ -17,7 +17,6 @@ local get_user = require("lib.user")
 local search = require("lib.search")
 local get_comments = require("lib.get_comments")
 
--- welcome to the soup
 
 
 -- generate the "view on instagram" link and set the theme.
@@ -132,6 +131,7 @@ app:get("/:username(/)", function(self)
         if self.params.json == "true" and config.allow_json then
             return { json = user }
         end
+
         self.page_title = "@" .. user.user_info.username .. " | kittygram"
         return { render = "user" }
     end

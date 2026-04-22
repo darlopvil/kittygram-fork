@@ -1,5 +1,5 @@
 local json = require("cjson")
-local get_redis = require("lapis.redis").get_redis
+local cache = require("lib.cache")
 local errors = require("lib.helpers").create_error
 local queries = require("lib.graphql").queries
 local format_post = require("lib.formatters").format_post
@@ -13,53 +13,30 @@ local POSITIVE_EXPIRE_TIME = config.cache.expire_times.posts.positive
 local NEGATIVE_EXPIRE_TIME = config.cache.expire_times.posts.negative
 
 local function get_post_graphql(shortcode)
-    local redis = get_redis()
-    local post_query
-    if not redis then
-        ngx.log(ngx.ERR, "Redis connection failed: ", err)
-    else
-        post_query = redis:get("ig:shortcode:" .. shortcode)
+    local post_query = cache.query_item("ig:shortcode:" .. shortcode)
+    if post_query ~= ngx.null then
+        return post_query
     end
 
-    -- check if redis returned anything.
-    if redis and post_query ~= ngx.null then
-        local post = json.decode(post_query)
-        -- shortcodes that return no posts are cached.
-        if post.has_errors and post.error_type == "not_found" then
-            return errors.not_found {
-                message = "Post not found. (note: result was cached.)",
-                blob = json.decode(post.error_info.blob)
-            }
-        end
+    local payload, doc_id = queries.shortcode(shortcode)
+    local post = graphql_request(payload, doc_id, "posts")
 
-        return post
-    else
-        local payload, doc_id = queries.shortcode(shortcode)
-        local post = graphql_request(payload, doc_id, "posts")
+    if post.data and post.data.xdt_shortcode_media == json.null then
+        -- cache a post if its not found
+        local post_error = errors.not_found {
+            message = "Post not found. (Note: this result was cached.)",
+            blob = post
+        }
+        cache.cache_item("ig:shortcode:" .. shortcode, post_error, "negative_post")
+        return post_error
+    elseif post.status == "fail" and post.require_login == true then
+        return errors.ratelimited {blob = post}
+    end
 
-        if post.data and post.data.xdt_shortcode_media == json.null then
-            -- cache a post if its not found
-            local post_error = errors.not_found {
-                message = "Post not found. (Note: this result was cached.)",
-                blob = post
-            }
-            if redis then
-                redis:set("ig:shortcode:" .. shortcode, json.encode(post_error),
-                          "EX", NEGATIVE_EXPIRE_TIME)
-            end
-            return post_error
-        elseif post.status == "fail" and post.require_login == true then
-            return errors.ratelimited {blob = post}
-        end
-
-        local formatted_post = format_post.from_shortcode(post.data
+    local formatted_post = format_post.from_shortcode(post.data
                                                               .xdt_shortcode_media)
-        if redis then
-            redis:set("ig:shortcode:" .. shortcode, json.encode(formatted_post),
-                      "EX", POSITIVE_EXPIRE_TIME)
-        end
-        return formatted_post
-    end
+    cache.cache_item("ig:shortcode:" .. shortcode, post, "positive_post")
+    return formatted_post
 end
 
 
@@ -71,29 +48,21 @@ local totally_human_headers = {
 
 -- fetch posts through a json blob embedded in a post's html.
 local function get_post_web(shortcode)
-    local redis = get_redis()
-
-    if redis then
-        local post_query = redis:get("ig:shortcode:" .. shortcode)
-        if post_query ~= ngx.null then
-            local post_info = json.decode(post_query)
-            -- if the post has errors, return them immediately.
-            if post_info.has_errors then
-                return post_info
-            end
-
+    local post_query = cache.query_item("ig:shortcode:" .. shortcode)
+    if post_query and post_query ~= ngx.null then
+        if not post_query.has_errors then
+            local comments_query = cache.query_item("ig:comments:" .. post_query.id)
             local comments
-            local comments_query = redis:get("ig:comments:" .. post_info.id)
-
-            if comments_query ~= ngx.null then
-                comments = json.decode(comments_query)
+            if comments_query == ngx.null then
+                comments = {}
+            else
+                comments = comments_query
             end
-            return post_info, comments
+            return post_query, comments
+        else
+            return post_query
         end
-    else
-        ngx.log(ngx.ERR, "Redis connection failed.")
     end
-
     local httpc = http.new()
     local request_opts = {
         headers = totally_human_headers
@@ -108,6 +77,7 @@ local function get_post_web(shortcode)
     local post_request, err = httpc:request_uri(
                                   "https://www.instagram.com/p/" .. shortcode ..
                                       "/", request_opts)
+
     if not post_request then
         ngx.log(ngx.ERR, "Request failed: " .. err)
 
@@ -136,9 +106,7 @@ local function get_post_web(shortcode)
                     message = "This post is unavailable. It could be age-gated or otherwise restricted.",
                     blob = post_data
                 }
-                if redis then
-                    redis:set("ig:shortcode:" .. shortcode, json.encode(post_error), "EX", NEGATIVE_EXPIRE_TIME)
-                end
+                cache.cache_item("ig:shortcode:" .. shortcode, post_error, "negative_post")
                 return post_error
             end
             post_info = post_data.xdt_api__v1__media__shortcode__web_info.items[1]
@@ -161,10 +129,7 @@ local function get_post_web(shortcode)
             message = "No post info was found in the post's HTML. This means that the post either doesn't exist, or something broke.",
             blob = post_info
         }
-        if redis then
-            redis:set("ig:shortcode:" .. shortcode, json.encode(post_error),
-                      "EX", NEGATIVE_EXPIRE_TIME)
-        end
+        cache.cache_item("ig:shortcode:" .. shortcode, post_error, "negative_post")
         return post_error
     end
 
@@ -177,10 +142,10 @@ local function get_post_web(shortcode)
     end
 
     local formatted_post = format_post.from_web(post_info)
-    if redis then
-        redis:set("ig:shortcode:" .. shortcode, json.encode(formatted_post), "EX", POSITIVE_EXPIRE_TIME)
-        redis:set("ig:comments:" .. formatted_post.id, json.encode(post_comments), "EX", POSITIVE_EXPIRE_TIME)
-    end
+
+    cache.cache_item("ig:shortcode:" .. shortcode, formatted_post, "positive_post")
+    cache.cache_item("ig:comments:" .. formatted_post.id, post_comments, "comments")
+
     return formatted_post, post_comments
 end
 

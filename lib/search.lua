@@ -3,10 +3,9 @@ local queries = require("lib.graphql").queries
 local helpers = require("lib.helpers")
 local errors = require("lib.helpers").create_error
 local config = require("lapis.config").get()
+local cache = require("lib.cache")
 local json = require("cjson")
-local get_redis = require("lapis.redis").get_redis
 
-local EXPLORE_PAGE_EXPIRE_TIME =  config.cache.expire_times.explore
 
 local function search(query)
 
@@ -24,33 +23,28 @@ local function search(query)
 end
 
 local function explore(query, after)
-    local redis = get_redis()
-    if not redis then
-        ngx.log(ngx.ERR, "Redis connection failed!")
+    local key
+    if after then
+        key = "ig:explore:" .. query  .. ":" .. after
     else
+        key = "ig:explore:" .. query .. ":latest"
+    end
+    local explore_query = cache.query_item(key)
+    if explore_query ~= ngx.null then
+        return explore_query
+    end
+
+    local payload, doc_id = queries.explore_search(query, after)
+
+    local search_request = instagram_graphql_request(payload, doc_id, "explore")
+    if search_request.data ~= json.null then
         local key
         if after then
             key = "ig:explore:" .. query  .. ":" .. after
         else
             key = "ig:explore:" .. query .. ":latest"
         end
-        local explore_query = redis:get(key)
-        if explore_query ~= ngx.null then
-            return json.decode(explore_query)
-        end
-    end
-    local payload, doc_id = queries.explore_search(query, after)
-    local search_request = instagram_graphql_request(payload, doc_id, "explore")
-    if search_request.data ~= json.null then
-        if redis then
-            local key
-            if after then
-                key = "ig:explore:" .. query  .. ":" .. after
-            else
-                key = "ig:explore:" .. query .. ":latest"
-            end
-            redis:set(key, json.encode(search_request.data.xig_logged_out_popular_search_media_info), "EX", EXPLORE_PAGE_EXPIRE_TIME)
-        end
+        cache.cache_item(key, search_request.data.xig_logged_out_popular_search_media_info, "explore")
         return search_request.data.xig_logged_out_popular_search_media_info
     elseif search_request.status == "fail" and search_request.require_login == true then
         return errors.ratelimited{ blob = search_request }
