@@ -2,10 +2,11 @@
 
     --bg-color: #111215;
     --card-color: #1A1B1E;
+    --card-border: 1px solid #30363d;
     --main-text-color: #F4F4F6;
     --alt-text-color: #A0A0A5;
 
-
+    --nav-bg-color: rgba(17, 18, 21, 0.6);
     --main-shadow: 0px 4px 12px rgba(0, 0, 0, 0.32);
     --outline-shadow:
     rgba(255, 255, 255, 0.04) 0px 1px 3px 0px,

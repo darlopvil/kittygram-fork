@@ -90,7 +90,7 @@ local function show_post(self)
         self.comments = comments
         self.page_title = "A post by " .. post.user.username
         if self.params.json == "true" and config.allow_json then
-            return { json = post }
+            return { json = { post, comments} }
         end
         return { render = "post" }
     end
@@ -179,6 +179,9 @@ app:get("/settings(/)", function(self)
     if self.session.disable_video_proxying == "on" then
         self.disable_video_proxying = true
     end
+    if self.session.sticky_navbar ~= "off" then
+        self.sticky_navbar = true
+    end
     self.page_title = "Settings | Kittygram"
     return { render = "settings" }
 end)
@@ -186,6 +189,11 @@ end)
 app:post("/settings/save(/)", function(self)
     self.session.theme = self.params.theme
     self.session.disable_video_proxying = self.params.disable_video_proxying
+    if self.params.sticky_navbar == "on" then
+        self.session.sticky_navbar = "on"
+    else
+        self.session.sticky_navbar = "off"
+    end
 
 
     return { redirect_to = "/" }
@@ -194,6 +202,7 @@ end)
 app:post("/settings/reset(/)", function(self)
    self.session.theme = nil
    self.session.disable_video_proxying = nil
+   self.session.sticky_navbar = "on"
    return { redirect_to = "/" }
 end)
 

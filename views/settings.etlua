@@ -15,6 +15,14 @@
                 </select>
             </span>
             <span>
+                <label for="sticky_navbar">Keep navbar fixed</label>
+                <% if sticky_navbar then %>
+                    <input type="checkbox" name="sticky_navbar" checked>
+                <% else %>
+                    <input type="checkbox" name="sticky_navbar">
+                <% end %>
+            </span>
+            <span>
                 <label for="disable_video_proxying">Disable proxying videos through the server (can speed up videos)</label>
                 <% if disable_video_proxying then %>
                     <input type="checkbox" name="disable_video_proxying" checked>

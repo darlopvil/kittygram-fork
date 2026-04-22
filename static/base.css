@@ -27,8 +27,15 @@ nav {
   box-shadow: var(--outline-shadow);
   margin-bottom: 2em;
   max-height: 3em;
+  background-color: var(--nav-bg-color);
+  backdrop-filter: blur(4px);
 }
 
+.sticky {
+    position: sticky;
+    z-index: 1000;
+    top: 0;
+}
 nav img {
   max-height: 3em;
 }
@@ -59,11 +66,13 @@ nav img {
 
 .item-card {
   box-shadow: var(--main-shadow);
+  border: var(--card-border);
+  border-radius: 15px;
   background-color: var(--card-color);
   margin: 0 auto;
   width: 90%;
-  max-width: 45em;
-  padding: 3%;
+  max-width: 50rem;
+  padding: 15px;
   overflow: hidden;
   margin-bottom: 1em;
   object-fit: contain;
@@ -105,7 +114,7 @@ nav img {
 }
 
 .post-image {
-  margin-right: 4em;
+  margin-right: 2rem;
   float: left;
   white-space: nowrap;
   max-width: 60%;
@@ -125,6 +134,7 @@ nav img {
 }
 .post-info {
   max-height: 35em;
+  min-width: 40%;
   overflow-y: auto;
 }
 

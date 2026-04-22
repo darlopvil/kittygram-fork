@@ -1,4 +1,4 @@
-<nav>
+<nav <% if session.sticky_navbar ~= "off" then %>class="sticky"<% end %>>
     <a href="/"><img src="/static/kittygram.png" title="Kittygram" alt="Kittygram Logo"></a>
     <ul class="right-navbar-items">
         <li><a href="<%= view_on_instagram_link %>" title="View on Instagram"><img src="/static/icons/instagram_logo.svg"></a></li>
