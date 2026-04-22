@@ -111,18 +111,19 @@ nav img {
   max-height: 30em;
   max-width: 100%;
   object-fit: cover;
+  border-radius: 5px;
 }
 
 .post-image {
   margin-right: 2rem;
   float: left;
   white-space: nowrap;
-  max-width: 60%;
+  max-width: 50%;
   max-height: 35em;
 }
 
 .post-body {
-  margin-left: 4em;
+  margin-left: 2rem;
   display: inline;
   width: 30%;
 }
