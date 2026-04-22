@@ -53,6 +53,7 @@ which can make running a public instance difficult.
 | [kittygr.am](https://kittygr.am)                             | [FSKY](https://fsky.io)                       |                       |
 | [kittygram.kareem.one](https://kittygram.kareem.one)         | [Kareem](https://kareem.one)                  | Cloudflare.           |
 | [kittygram.nexussfan.cz](https://kittygram.nexussfan.cz)     | [NexusSfan](https://mrchicken.nexussfan.cz)   |                       |
+| [kg.lus.lu](https://kg.lus.lu)                               | [ffb0f3](https://lus.lu)                      |                       |
 
 <!-- Note: If you add a new instance, then edit the entire table to correct the length of the cells. -->
 
@@ -62,12 +63,13 @@ Also see `/instances.json` file.
 
 ### ✨ Method 1: Docker (Recommend!)
 
-1. Install [docker](https://docs.docker.com/engine/install).
-2. Clone and move to Kittygram folder.
+1. Install [git](https://git-scm.org), [git-lfs](https://git-lfs.com) and [docker](https://docs.docker.com/engine/install).
+2. Clone, move to Kittygram folder and setup LFS.
 
 ```bash
 git clone https://codeberg.org/irelephant/kittygram.git
 cd kittygram
+git lfs pull
 ```
 
 3. Start the container.
@@ -80,12 +82,13 @@ sudo docker compose up
 
 1. Install [openresty](https://openresty.org/en/installation.html),
 [redis](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis) or [valkey](https://valkey.io/topics/installation),
-[luarocks](https://luarocks.org) (likely in your distro's package manager).
-2. Clone and move to Kittygram folder.
+[luarocks](https://luarocks.org) (likely in your distro's package manager) and [git-lfs](https://git-lfs.com/).
+2. Clone, move to Kittygram folder and setup LFS.
 
 ```bash
 git clone https://codeberg.org/irelephant/kittygram.git
 cd kittygram
+git lfs pull
 ```
 
 3. Copy the example configuration files:
