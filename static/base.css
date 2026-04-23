@@ -28,9 +28,10 @@ nav {
   margin-bottom: 2em;
   max-height: 3em;
   background-color: var(--nav-bg-color);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
 }
 
+/* Applied to the navbar if the user has the fixed navbar enabled */
 .sticky {
     position: sticky;
     z-index: 1000;
@@ -58,6 +59,7 @@ nav img {
   border-radius: 0.3em;
   padding: 0.1em;
 }
+
 
 .right-navbar-items li img:hover {
   background-color: var(--nav-icon-hover-color);
@@ -96,6 +98,11 @@ nav img {
   text-decoration: none;
 }
 
+.verification-symbol {
+    height: 1em;
+    width: 1em;
+    vertical-align: middle;
+}
 .user-info .username {
   padding-bottom: 0.1em;
 }
@@ -104,6 +111,53 @@ nav img {
   text-decoration: underline;
   color: var(--alt-text-color);
 }
+
+.user-info-card .profile-picture img {
+    width: 10%;
+    border-radius: 0.5rem;
+    box-shadow: var(--outline-shadow);
+}
+
+.user-info-card .usernames {
+    width: fit-content;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.user-info-card .usernames p {
+    color: var(--alt-text-color)
+}
+.user-info-card p, .user-info-card h3 {
+    margin: 5px;
+    width: fit-content
+}
+.user-info-card .profile-picture {
+    display: inline;
+    vertical-align: middle;
+}
+
+
+.user-info-card .profile-stats ul {
+    list-style-type: none;
+    display: flex;
+    justify-content: space-evenly;
+    padding-left: 0;
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.user-info-card .user-bio {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+.user-info-card .profile-stats ul li b {
+    display: flex;
+    justify-content: center;
+}
+.user-info-card .profile-stats ul li p {
+    margin: 5px;
+}
+
 
 .post-image img,
 .post-image video,
@@ -136,6 +190,7 @@ nav img {
 .post-caption-text,
 .user-bio-text {
   white-space: pre-line;
+  margin: 0;
 }
 .post-info {
   max-height: 35em;
@@ -161,6 +216,12 @@ nav img {
 .post-likes {
   color: var(--alt-text-color);
   size: 0.5em;
+}
+
+.post-likes p {
+    margin: 0;
+    margin-bottom: 1rem;
+    margin-top: 0.3rem;
 }
 .user-info {
   display: block;
@@ -258,6 +319,7 @@ pre {
   .post-image {
     float: none;
     margin-bottom: 2em;
+    margin-right: 0;
   }
 
   .post-image img,

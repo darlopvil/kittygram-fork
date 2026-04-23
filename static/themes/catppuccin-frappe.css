@@ -28,7 +28,7 @@
     --link-visited-color: #babbf1;
 }
 
-nav img {
+nav img, .verification-symbol {
     filter: brightness(0) invert(1);
 }
 

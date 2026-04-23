@@ -64,7 +64,7 @@
     }
 
     /* inverts the colours of the icons in the navbar */
-    nav img {
+    nav img, .verification-symbol {
         filter: brightness(0) invert(1);
     }
 }

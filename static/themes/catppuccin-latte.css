@@ -28,7 +28,7 @@
     --link-visited-color: #7287fd;
 }
 
-nav img {
+nav img, .verification-symbol {
     filter: brightness(0) saturate(100%) invert(37%) sepia(18%) saturate(510%) hue-rotate(196deg) brightness(95%) contrast(90%);
 }
 

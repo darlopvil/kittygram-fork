@@ -2,16 +2,27 @@
 <% local json = require("cjson") %>
 
 <main id="main">
-    <div class="item-card user-info">
+    <div class="item-card user-info-card">
         <div class="profile-picture">
             <img src="<%= proxy_url(user.profile_pic_url) %>" loading="lazy">
         </div>
         <div class="usernames" >
-            <p> <%= user.full_name %> </p>
-            <p> <%= user.username %> </p>
+            <h3> <%= user.full_name %> </h3>
+            <p> @<%= user.username %>
+            <% if user.is_verified then %>
+                <img src="/static/icons/check_circle.svg" title="Verified" class="verification-symbol">
+            <% end %>
+            </p>
         </div>
         <div class="user-bio">
             <p class="user-bio-text"><%= user.biography %></p>
+        </div>
+        <div class="profile-stats">
+            <ul>
+                <li><b class="stat-number"><%= user.follower_count %></b> <p>Followers</p></li>
+                <li><b class="stat-number"><%= user.following_count %></b> <p>Following</p></li>
+                <li><b class="stat-number"><%= user.media_count %></b> <p>Posts</p></li>
+            </ul>
         </div>
     </div>
 
