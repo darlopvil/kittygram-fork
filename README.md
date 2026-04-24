@@ -54,6 +54,7 @@ which can make running a public instance difficult.
 | [kittygram.kareem.one](https://kittygram.kareem.one)         | [Kareem](https://kareem.one)                  | Cloudflare.           |
 | [kittygram.nexussfan.cz](https://kittygram.nexussfan.cz)     | [NexusSfan](https://mrchicken.nexussfan.cz)   |                       |
 | [kg.lus.lu](https://kg.lus.lu)                               | [ffb0f3](https://lus.lu)                      |                       |
+| [kg.meowing.de](https://kg.meowing.de)                       | [patrick](https://patriick.dev)               |                       |
 
 <!-- Note: If you add a new instance, then edit the entire table to correct the length of the cells. -->
 
