@@ -1,11 +1,11 @@
-local instagram_graphql_request = require("lib.graphql").request
+local instagram_graphql_request = require("lib.instagram.web.graphql").request
 local helpers = require("lib.helpers")
-local queries = require("lib.graphql").queries
+local queries = require("lib.instagram.web.graphql").queries
 local errors = require("lib.helpers").create_error
 local json = require("cjson")
 local config = require("lapis.config").get()
 local cache = require("lib.cache")
-local get_user_id = require("lib.get_user_id_web")
+local get_user_id = require("lib.instagram.web.get_user_id_web")
 local user_id_db = require("models.user_ids")
 local format_post = require("lib.formatters").format_post
 

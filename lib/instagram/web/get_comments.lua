@@ -1,5 +1,5 @@
-local instagram_graphql_request = require("lib.graphql").request
-local queries = require("lib.graphql").queries
+local instagram_graphql_request = require("lib.instagram.web.graphql").request
+local queries = require("lib.instagram.web.graphql").queries
 local helpers = require("lib.helpers")
 
 

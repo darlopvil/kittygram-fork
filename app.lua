@@ -12,12 +12,10 @@ local atom = require("lib.atom")
 app:include(media_proxy)
 app:include(atom)
 
-local get_post = require("lib.get_post")
-local get_user = require("lib.user")
-local search = require("lib.search")
-local get_comments = require("lib.get_comments")
 
 
+
+local instagram = require("lib.instagram")
 
 -- generate the "view on instagram" link and set the theme.
 app:before_filter(function(self)
@@ -54,12 +52,12 @@ end)
 local function show_post(self)
     local post, comments
     if config.post_fetch_mode == "web" then
-        post, comments = get_post.web(self.params.shortcode)
+        post, comments = instagram.get_post.web(self.params.shortcode)
     elseif config.post_fetch_mode == "graphql" then
-        post = get_post.graphql(self.params.shortcode)
+        post = instagram.get_post.graphql(self.params.shortcode)
     else
         ngx.log(ngx.ERR, "post_fetch_mode not set. Falling back to web.")
-        post, comments = get_post.web(self.params.shortcode)
+        post, comments = instagram.get_post.web(self.params.shortcode)
     end
 
     if post.has_errors then
@@ -105,7 +103,7 @@ app:get("/p/:shortcode/embed(/)", show_post)
 app:get("/reel/:shortcode/embed(/)", show_post)
 
 app:get("/:username(/)", function(self)
-    local user = get_user(self.params.username, self.params.after)
+    local user = instagram.get_user(self.params.username, self.params.after)
     if user.has_errors then
         self.error = user
         if user.error_type == "not_found" then
@@ -146,7 +144,7 @@ app:get("/search(/)", function(self)
             return { redirect_to = "/p/" .. tostring(url_match[1]) }
         end
 
-        local search_results = search.search(self.params.q)
+        local search_results = instagram.search.search(self.params.q)
         self.page_title = "Search for \"" .. self.params.q .. "\" | kittygram"
         self.search_query = self.params.q
         self.search_results = search_results
@@ -161,7 +159,7 @@ app:get("/search(/)", function(self)
 end)
 
 app:get("/popular/:query(/)", function(self)
-    local explore_results = search.explore(self.params.query, self.params.after)
+    local explore_results = instagram.search.explore(self.params.query, self.params.after)
     self.results = explore_results
     self.explore_query = self.params.query
     self.page_title = "Explore " .. self.params.query .. " | Kittygram"
