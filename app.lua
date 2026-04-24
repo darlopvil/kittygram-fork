@@ -12,9 +12,6 @@ local atom = require("lib.atom")
 app:include(media_proxy)
 app:include(atom)
 
-
-
-
 local instagram = require("lib.instagram")
 
 -- generate the "view on instagram" link and set the theme.
@@ -52,12 +49,12 @@ end)
 local function show_post(self)
     local post, comments
     if config.post_fetch_mode == "web" then
-        post, comments = instagram.get_post.web(self.params.shortcode)
+        post, comments = instagram.get_post(self.params.shortcode)
     elseif config.post_fetch_mode == "graphql" then
-        post = instagram.get_post.graphql(self.params.shortcode)
+        post = instagram.get_post(self.params.shortcode)
+    -- fall back to web mode if post_fetch_mode isn't set.
     else
-        ngx.log(ngx.ERR, "post_fetch_mode not set. Falling back to web.")
-        post, comments = instagram.get_post.web(self.params.shortcode)
+        post, comments = instagram.get_post(self.params.shortcode)
     end
 
     if post.has_errors then
@@ -82,7 +79,7 @@ local function show_post(self)
     else
         self.post = post
         if config.post_fetch_mode == "graphql" then
-            comments = get_comments(post.id)
+            comments = instagram.get_comments(post.id)
         end
         self.comments = comments
         self.page_title = "A post by " .. post.user.username

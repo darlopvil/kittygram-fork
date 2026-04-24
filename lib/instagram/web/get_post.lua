@@ -149,5 +149,12 @@ local function get_post_web(shortcode)
     return formatted_post, post_comments
 end
 
+if config.post_fetch_mode == "web" then
+    return get_post_web
+elseif config.post_fetch_mode == "graphql" then
+    return get_post_graphql
+else
+    ngx.log("post_fetch_mode not set! Falling back to web.")
+    return get_post_web
+end
 
-return { web = get_post_web, graphql = get_post_graphql }
