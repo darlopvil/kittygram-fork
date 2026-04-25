@@ -1,18 +1,22 @@
 local lapis = require("lapis")
 local app = lapis.Application()
 local config = require("lapis.config").get()
-local get_user = require("lib.instagram").user
+local get_user = require("lib.instagram").get_user
 local format_post = require("lib.formatters").format_post
 local proxy_url = require("lib.helpers").proxy_url
 local date = require("date")
+local utf8 = require 'utf8'
+local u8_gsub = utf8.gsub
 
 local function xml_escape(string)
-    return tostring(string)
-        :gsub("&", "&amp;")
-        :gsub("\"", "&quot;")
-        :gsub("'", "&apos;")
-        :gsub("<", "&lt;")
-        :gsub(">", "&gt;")
+    local xml_replacements = {
+        ["&"] = "&amp;",
+        ["\""] = "&quot;",
+        ["'"] = "&apos;",
+        ["<"] = "&lt;",
+        [">"] = "&gt;"
+    }
+    return u8_gsub(tostring(string), "[&\"'<>]", xml_replacements)
 end
 
 local function create_html_content(post)
@@ -34,13 +38,13 @@ local function create_html_content(post)
         end
     end
     if post.caption then
-        html_string = html_string .. string.format([[<p>%s</p>]], xml_escape(post.caption):gsub("\n", "<br>"))
+        html_string = html_string .. string.format([[<p>%s</p>]], u8_gsub(xml_escape(post.caption), "\n", "<br>"))
     end
     return html_string
 end
 
 local function create_feed_item(username, caption, link, timestamp, html_content)
-    local title = xml_escape("Post by " .. username .. ": " .. string.sub(caption or "", 1, 100) .. "...")
+    local title = xml_escape("Post by " .. username .. ": " .. utf8.sub(caption or "", 1, 100) .. "...")
     local iso_timestamp = date(timestamp):toutc():fmt("${iso}") .. "Z"
     local entry_xml = string.format([[
         <entry>

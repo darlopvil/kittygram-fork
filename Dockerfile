@@ -9,7 +9,8 @@ RUN /usr/local/openresty/luajit/bin/luarocks install lapis && \
     /usr/local/openresty/luajit/bin/luarocks install lua-resty-openssl && \
     /usr/local/openresty/luajit/bin/luarocks install lua-resty-redis && \
     /usr/local/openresty/luajit/bin/luarocks install lapis-redis && \
-    /usr/local/openresty/luajit/bin/luarocks install lsqlite3
+    /usr/local/openresty/luajit/bin/luarocks install lsqlite3 && \
+    /usr/local/openresty/luajit/bin/luarocks install utf8
 
 
 FROM docker.io/openresty/openresty:alpine
