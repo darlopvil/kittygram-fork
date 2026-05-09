@@ -4,6 +4,7 @@ local errors = require("lib.helpers").create_error
 local queries = require("lib.instagram.web.graphql").queries
 local format_post = require("lib.formatters").format_post
 local graphql_request = require("lib.instagram.web.graphql").request
+local get_comments = require("lib.instagram.web.get_comments")
 local http = require("resty.http")
 local html = require("htmlparser")
 local helpers = require("lib.helpers")
@@ -54,7 +55,7 @@ local function get_post_web(shortcode)
             local comments_query = cache.query_item("ig:comments:" .. post_query.id)
             local comments
             if comments_query == ngx.null then
-                comments = {}
+                comments = get_comments(post_query.id)
             else
                 comments = comments_query
             end

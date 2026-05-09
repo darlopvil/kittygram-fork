@@ -13,6 +13,9 @@ local function check_nested_field(tbl, ...)
 end
 
 local proxy_url = function(url)
+    if type(url) ~= "string" then
+        return url
+    end
     return "/mediaproxy?url=" .. util.escape(url)
 end
 

@@ -1,5 +1,6 @@
 local get_redis = require("lapis.redis").get_redis
 local json = require("cjson")
+local formatters = require("lib.formatters")
 local config = require("lapis.config").get()
 
 local POSITIVE_POST_EXPIRE_TIME = config.cache.expire_times.posts.positive
@@ -9,6 +10,7 @@ local LATEST_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timeline
 local CURSORED_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.with_cursor
 local NEGATIVE_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.negative
 local EXPLORE_PAGE_EXPIRE_TIME =  config.cache.expire_times.explore
+local COMMENTS_EXPIRE_TIME = config.cache.expire_times.comments
 
 local function cache_item(key, data, expire_type)
     local redis = get_redis()
@@ -29,6 +31,8 @@ local function cache_item(key, data, expire_type)
         ttl = NEGATIVE_POST_EXPIRE_TIME
     elseif expire_type == "user_info" then
         ttl = USER_INFO_EXPIRE_TIME
+    elseif expire_type == "comments" then
+        ttl = COMMENTS_EXPIRE_TIME
     elseif expire_type == "explore" then
         ttl = EXPLORE_PAGE_EXPIRE_TIME
     end
@@ -49,4 +53,12 @@ local function query_item(key)
     end
 end
 
-return { cache_item = cache_item, query_item = query_item }
+-- cache individual posts from a users timeline
+local function cache_timeline(posts)
+    for _, post in ipairs(posts) do
+        local post_formatted = formatters.format_post.from_timeline(post)
+        cache_item("ig:shortcode:" .. post_formatted.shortcode, post_formatted, "positive_post")
+    end
+end
+
+return { cache_item = cache_item, query_item = query_item, cache_timeline = cache_timeline }

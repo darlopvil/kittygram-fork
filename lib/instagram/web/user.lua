@@ -46,6 +46,7 @@ local function get_user_posts(username, cursor)
                 end_cursor = end_cursor,
             }, "cursored_timeline")
         end
+        cache.cache_timeline(posts)
         return { posts = posts, end_cursor = end_cursor }
 
     elseif posts_request.errors and posts_request.errors[1].code == 4630001 then
