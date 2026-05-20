@@ -24,7 +24,7 @@ local doc_ids = {
         method = "POST"
     },
     user_info = {
-        doc_id = "33257018913889225",
+        doc_id = "27937681195819736",
         endpoint = "query",
         method = "POST"
     },
@@ -80,7 +80,7 @@ local queries = {
             enable_integrity_filters = true,
             id = user_id,
             render_surface = "PROFILE",
-            __relay_internal__pv__PolarisProjectCannesLoggedInEnabledrelayprovider = true,
+            __relay_internal__pv__PolarisWebSchoolsEnabledrelayprovider = false,
             __relay_internal__pv__PolarisCannesGuardianExperienceEnabledrelayprovider = true,
             __relay_internal__pv__PolarisCASB976ProfileEnabledrelayprovider = false,
             __relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider = false
