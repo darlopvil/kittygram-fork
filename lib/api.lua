@@ -1,5 +1,6 @@
 local lapis = require("lapis")
 local app = lapis.Application()
+local respond_to = require("lapis.application").respond_to
 local test_redis = require("lib.cache").test_redis
 local config = require("lapis.config").get()
 local web_state = ngx.shared.web_state
@@ -37,6 +38,17 @@ local function get_request_counts()
     end
     return counts
 end
+
+app:before_filter(function(self)
+    self.res.headers["Access-Control-Allow-Origin"] = "*"
+    self.res.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, OPTIONS"
+    self.res.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+
+    -- Handle preflight here so it applies to all routes
+    if ngx.req.get_method() == "OPTIONS" then
+        return self:write({ status = 204 })
+    end
+end)
 
 app:get("/api/status(/)", function(self)
     return { json = {
