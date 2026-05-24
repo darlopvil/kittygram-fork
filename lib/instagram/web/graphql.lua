@@ -49,11 +49,12 @@ local doc_ids = {
         endpoint = "query",
         method = "POST"
     },
+    --[[
     logged_out_user_posts = {
         doc_id = "7950326061742207",
         endpoint = "query",
         method = "GET"
-    },
+    },]]
     explore_search = {
         doc_id = "33897670563213924",
         endpoint = "api",
@@ -159,7 +160,6 @@ local function graphql_request(request_payload, doc_id, request_type)
     -- some instances may have workarounds in place, so they can disable the cooldown in their config.
     -- Note that the 200 reqs / 11 minutes ratelimit does not apply to most server/datacenter ips, those are ratelimited much more aggressively, and in most cases entirely blocked.
     local request_count = web_state:incr("graphql:" .. doc_id.doc_id, 1, 0, WINDOW_LENGTH)
-
     if request_count > REQUEST_LIMIT and config.ratelimits.cooldown_on_ratelimit then
         return errors.ratelimited{
             message = "The server has blocked further requests to Instagram temporarily.",
@@ -252,4 +252,4 @@ local function graphql_request(request_payload, doc_id, request_type)
     end
 end
 
-return { request = graphql_request, queries = queries }
+return { request = graphql_request, queries = queries, doc_ids = doc_ids }

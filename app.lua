@@ -9,8 +9,11 @@ app:enable("etlua")
 app.layout = require("views.layout")
 local media_proxy = require("lib.media_proxy")
 local atom = require("lib.atom")
+local api = require("lib.api")
+
 app:include(media_proxy)
 app:include(atom)
+app:include(api)
 
 local instagram = require("lib.instagram")
 

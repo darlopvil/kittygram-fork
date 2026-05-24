@@ -12,6 +12,12 @@ local NEGATIVE_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timeli
 local EXPLORE_PAGE_EXPIRE_TIME =  config.cache.expire_times.explore
 local COMMENTS_EXPIRE_TIME = config.cache.expire_times.comments
 
+-- function to test that redis is operational
+local function test_redis()
+    local redis = get_redis()
+    return not not redis
+end
+
 local function cache_item(key, data, expire_type)
     local redis = get_redis()
     if not redis then
@@ -61,4 +67,4 @@ local function cache_timeline(posts)
     end
 end
 
-return { cache_item = cache_item, query_item = query_item, cache_timeline = cache_timeline }
+return { test_redis = test_redis, cache_item = cache_item, query_item = query_item, cache_timeline = cache_timeline }
