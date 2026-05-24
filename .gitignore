@@ -12,6 +12,7 @@ nginx.conf
 *.sqlite
 *.kate-swp
 
+sessions.jsonl
 
 /luarocks
 /lua
