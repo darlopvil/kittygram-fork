@@ -30,6 +30,19 @@ local function get_user_posts(username, cursor)
 
     local payload, doc_id = queries.user_posts(username, 20, cursor)
     local posts_request = instagram_graphql_request(payload, doc_id, "user_posts")
+
+    if posts_request.has_errors then
+        if posts_request.error_type == "not_found" then
+            local key
+            if cursor then
+                key = "ig:timeline:" .. username .. ":" .. cursor
+            else
+                key = "ig:timeline:" .. username .. ":latest"
+            end
+            cache.cache_item(key, posts_request, "negative_timeline")
+        end
+        return posts_request
+    end
     -- Check if there is posts in the response.
     if not posts_request.errors and helpers.check_nested_field(posts_request, "data", "xdt_api__v1__feed__user_timeline_graphql_connection", "edges") then
         local posts = posts_request.data.xdt_api__v1__feed__user_timeline_graphql_connection.edges
@@ -48,24 +61,6 @@ local function get_user_posts(username, cursor)
         end
         cache.cache_timeline(posts)
         return { posts = posts, end_cursor = end_cursor }
-
-    elseif posts_request.errors and posts_request.errors[1].code == 4630001 then
-        local timeline_error = errors.not_found{
-            message = "User not found.",
-            blob = posts_request
-        }
-        local key
-        if cursor then
-            key = "ig:timeline:" .. username .. ":" .. cursor
-        else
-            key = "ig:timeline:" .. username .. ":latest"
-        end
-        cache.cache_item(key, timeline_error, "negative_timeline")
-        return timeline_error
-    elseif posts_request.status == "fail" and posts_request.require_login == true then
-        return errors.ratelimited{
-            blob = posts_request
-        }
     end
 
     return errors.unknown{
@@ -77,18 +72,22 @@ end
 -- Since kittygram checks for posts first, that usually handles most errors
 local function get_user_info(user_id)
     local user_query = cache.query_item("ig:user:" .. user_id)
+
     if user_query ~= ngx.null then
         return user_query
     end
+
     local payload, doc_id = queries.user_info(user_id)
     local user_info = instagram_graphql_request(payload, doc_id, "user_info")
+
+    if user_info.has_errors then
+        return user_info
+    end
+
     cache.cache_item("ig:user:" .. user_id, user_info.data.user, "user_info")
 
     return user_info.data.user
 end
-
-
-
 
 
 -- Instagram fetches user info based on ids,

@@ -3,7 +3,13 @@ local util = require("lapis.util")
 local encoding = require("lapis.util.encoding")
 local json = require("cjson")
 local helpers = require("lib.helpers")
+local errors = helpers.create_error
 local config = require("lapis.config").get()
+local web_state = ngx.shared.web_state
+
+
+local WINDOW_LENGTH = config.ratelimits.window_length
+local REQUEST_LIMIT = config.ratelimits.request_limit
 
 local instagram_headers = {
     ["X-IG-App-ID"] = "936619743392459",
@@ -135,8 +141,30 @@ local queries = {
     end
 }
 
+local function cooldown(doc_id)
+    if config.ratelimits.cooldown_on_ratelimit then
+        -- Get the remaining ttl on the key
+        local key_ttl = web_state:ttl("graphql:" .. doc_id)
+        if key_ttl and key_ttl > 0 then
+            web_state:replace("graphql:" .. doc_id, REQUEST_LIMIT + 999, key_ttl)
+        else
+            web_state:replace("graphql:" .. doc_id, REQUEST_LIMIT + 999, WINDOW_LENGTH)
+        end
+    end
+end
+
 local function graphql_request(request_payload, doc_id, request_type)
-    local httpc = http.new()
+    -- count the total number of requests sent using that doc_id, in an 11 minute window.
+    -- Instagram ratelimits each server to 200 requests/11 minute window for most doc_ids.
+    -- some instances may have workarounds in place, so they can disable the cooldown in their config.
+    -- Note that the 200 reqs / 11 minutes ratelimit does not apply to most server/datacenter ips, those are ratelimited much more aggressively, and in most cases entirely blocked.
+    local request_count = web_state:incr("graphql:" .. doc_id.doc_id, 1, 0, WINDOW_LENGTH)
+
+    if request_count > REQUEST_LIMIT and config.ratelimits.cooldown_on_ratelimit then
+        return errors.ratelimited{
+            message = "The server has blocked further requests to Instagram temporarily.",
+        }
+    end
 
     local headers = instagram_headers
     local request_body = ""
@@ -172,14 +200,56 @@ local function graphql_request(request_payload, doc_id, request_type)
     if request_type and config.proxies[request_type] then
         request_opts.proxy_opts = { https_proxy = config.proxies[request_type] }
     end
-
+    local httpc = http.new()
     local request, err = httpc:request_uri(request_url, request_opts)
 
     if not request then
-        ngx.log(ngx.ERR, err)
+        ngx.log(ngx.ERR, "Network error: " .. err)
+        return errors.network_error{
+            blob = err
+        }
+    elseif request.status == 302 then
+        -- Since a 302 usually indicates a ratelimit or block of some sort,
+        cooldown(doc_id.doc_id)
+        return errors.ratelimited{
+            message = "Instagram returned 302 with location: " .. tostring(request.headers.location)
+        }
     end
 
-    return json.decode(request.body)
+    local decode_status, decoded_body = helpers.safe_json_decode(request.body)
+
+    if not decode_status then
+        return errors.unknown{
+            message = "Instagram returned invalid json. Status code: " .. request.status,
+            blob = request.body
+        }
+    end
+
+    if decoded_body.status == "fail" and decoded_body.require_login then
+        cooldown(doc_id.doc_id)
+        return errors.ratelimited{
+            blob = decoded_body
+        }
+    elseif (decoded_body.data == json.null or not decoded_body.data) and decoded_body.errors then
+        for _, gql_error in ipairs(decoded_body.errors) do
+            if gql_error.code == 4630001 then
+                return errors.not_found{
+                    message = "Item (likely a user) not found.",
+                    blob = decoded_body
+                }
+            end
+        end
+        return errors.unknown{
+            blob = decoded_body
+        }
+    elseif not decoded_body.data or decoded_body.data == json.null then
+        return errors.unknown{
+            message = "`data` field not present in response.",
+            blob = decoded_body
+        }
+    else
+        return decoded_body
+    end
 end
 
 return { request = graphql_request, queries = queries }

@@ -19,6 +19,11 @@ local proxy_url = function(url)
     return "/mediaproxy?url=" .. util.escape(url)
 end
 
+local function safe_json_decode(data)
+    local status, result = pcall(json.decode, data)
+    return status, result
+end
+
 local create_error = {
     not_found = function(args)
         return {
@@ -85,5 +90,6 @@ local create_error = {
 return {
     check_nested_field = check_nested_field,
     proxy_url = proxy_url,
-    create_error = create_error
+    create_error = create_error,
+    safe_json_decode = safe_json_decode
 }

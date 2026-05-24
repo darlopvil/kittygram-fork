@@ -52,21 +52,25 @@
                 </div>
                 <h2> Comments </h2>
                 <div class="comments">
-                    <% for _, comment in ipairs(comments) do %>
-                        <% comment = comment.node %>
-                        <article>
-                            <header class="user-info">
-                                <img src="<%= proxy_url(comment.user.profile_pic_url) %>" loading="lazy">
-                                <a class="username" href="<%= "/" .. comment.user.username %>"> <%= comment.user.username %> </a>
-                            </header>
-                            <p class="comment-text"><%= comment.text %></p>
-                            <% if type(comment.giphy_media_info) == "table" then %>
-                                <img src="<%= proxy_url(comment.giphy_media_info.first_party_cdn_proxied_images.fixed_height.url) %>" loading="lazy">
-                            <% end %>
-                        </article>
+                    <% if comments and comments.has_errors then %>
+                        <p>Error loading comments: <%= (comments.error_info or {}).message %></p>
+                    <% else %>
+                        <% for _, comment in ipairs(comments) do %>
+                            <% comment = comment.node %>
+                            <article>
+                                <header class="user-info">
+                                    <img src="<%= proxy_url(comment.user.profile_pic_url) %>" loading="lazy">
+                                    <a class="username" href="<%= "/" .. comment.user.username %>"> <%= comment.user.username %> </a>
+                                </header>
+                                <p class="comment-text"><%= comment.text %></p>
+                                <% if type(comment.giphy_media_info) == "table" then %>
+                                    <img src="<%= proxy_url(comment.giphy_media_info.first_party_cdn_proxied_images.fixed_height.url) %>" loading="lazy">
+                                <% end %>
+                            </article>
+                        <% end %>
+                        <hr>
+                        <p><i>Fetching more comments is currently not possible.</i></p>
                     <% end %>
-                    <hr>
-                    <p><i>Fetching more comments is currently not possible.</i></p>
                 </div>
             </div>
         </div>

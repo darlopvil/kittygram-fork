@@ -19,6 +19,11 @@ config({"development", "production", "docker"}, {
   enable_atom = false, -- Whether to create Atom (better rss; supported by basically everything rss supports) feeds for users. Disabled by default due to the concerns mentioned here: https://cadence.moe/blog/2022-09-01-discontinuing-bibliogram
   base_atom_path = "http://localhost:8081/", -- Base path to use for generating links in atom feeds. Requires the trailing slash.
   post_fetch_mode = "web", -- The method used to fetch posts. Can also be "graphql".
+  ratelimits = {
+    cooldown_on_ratelimit = true, -- If set to true, your instance will block requests until a ratelimit is over.
+    window_length = 11 * 60, -- Instagram ratelimits based on an 11 minute sliding window. Here, you can set a custom window length.
+    request_limit = 194, -- The number of requests to allow per-window.
+  },
   sqlite = {
     database = "kittygram.sqlite"
   },

@@ -9,9 +9,10 @@ local http = require("resty.http")
 local html = require("htmlparser")
 local helpers = require("lib.helpers")
 local config = require("lapis.config").get()
+local web_state = ngx.shared.web_state
 
-local POSITIVE_EXPIRE_TIME = config.cache.expire_times.posts.positive
-local NEGATIVE_EXPIRE_TIME = config.cache.expire_times.posts.negative
+local WINDOW_LENGTH = config.ratelimits.window_length
+local REQUEST_LIMIT = config.ratelimits.request_limit
 
 local function get_post_graphql(shortcode)
     local post_query = cache.query_item("ig:shortcode:" .. shortcode)
@@ -21,7 +22,10 @@ local function get_post_graphql(shortcode)
 
     local payload, doc_id = queries.shortcode(shortcode)
     local post = graphql_request(payload, doc_id, "posts")
-
+    -- Check if an error was caught in the graphql function, if so, return that.
+    if post.has_errors then
+        return post
+    end
     if post.data and post.data.xdt_shortcode_media == json.null then
         -- cache a post if its not found
         local post_error = errors.not_found {
@@ -30,8 +34,6 @@ local function get_post_graphql(shortcode)
         }
         cache.cache_item("ig:shortcode:" .. shortcode, post_error, "negative_post")
         return post_error
-    elseif post.status == "fail" and post.require_login == true then
-        return errors.ratelimited {blob = post}
     end
 
     local formatted_post = format_post.from_shortcode(post.data
@@ -46,6 +48,19 @@ local totally_human_headers = {
     ["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     ["Sec-Fetch-Mode"] = "navigate"
 }
+
+
+local function cooldown()
+    if config.ratelimits.cooldown_on_ratelimit then
+        -- Get the remaining ttl on the key
+        local key_ttl = web_state:ttl("post_html")
+        if key_ttl and key_ttl > 0 then
+            web_state:replace("post_html", REQUEST_LIMIT + 999, key_ttl)
+        else
+            web_state:replace("post_html", REQUEST_LIMIT + 999, WINDOW_LENGTH)
+        end
+    end
+end
 
 -- fetch posts through a json blob embedded in a post's html.
 local function get_post_web(shortcode)
@@ -64,6 +79,14 @@ local function get_post_web(shortcode)
             return post_query
         end
     end
+    -- I'm not sure if ratelimits are the same for post pages.
+    local request_count = web_state:incr("post_html", 1, 0, WINDOW_LENGTH)
+    if request_count > REQUEST_LIMIT and config.ratelimits.cooldown_on_ratelimit then
+        return errors.ratelimited{
+            message = "The server has blocked further requests to Instagram temporarily.",
+        }
+    end
+
     local httpc = http.new()
     local request_opts = {
         headers = totally_human_headers
@@ -85,6 +108,12 @@ local function get_post_web(shortcode)
         return errors.network_error{
             message = "Request failed.",
             blob = err
+        }
+    elseif post_request.status == 302 or post_request.status == 429 then
+        cooldown()
+        return errors.ratelimited{
+            message = "Instagram returned " .. post_request.status .. " on post page.",
+            blob = post_request.body
         }
     end
 
