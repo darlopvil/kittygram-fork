@@ -46,4 +46,11 @@ app:get("/api/status(/)", function(self)
     }}
 end)
 
+app:get("/api/info(/)", function(self)
+    return { json = {
+        about = config.about_message,
+        atom_enabled = config.enable_atom
+    }}
+end)
+
 return app

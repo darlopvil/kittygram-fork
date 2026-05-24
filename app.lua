@@ -45,6 +45,7 @@ app.cookie_attributes = function(self)
 end
 
 app:get("/", function(self)
+    self.about_message = config.about_message
     self.page_title = "kittygram"
     return { render = "index" }
 end)

@@ -1,1 +1,1 @@
-<p>The operator of this instance has not written an about message yet</p>
+<%- about_message or "<p> The operator of this instance has not written an about message </p>" %>
