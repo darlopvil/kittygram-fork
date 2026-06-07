@@ -25,13 +25,15 @@ config({"development", "production", "docker"}, {
     window_length = 11 * 60, -- Instagram ratelimits based on an 11 minute sliding window. Here, you can set a custom window length.
     request_limit = 194, -- The number of requests to allow per-window.
   },
+  require_api_token = true, -- Whether to require a token to use the api. Does not apply to the status or info endpoints.
+  api_token_expire_length = 365 * 86400, -- How long an api token should last for before expiring, in seconds.
   sqlite = {
     database = "kittygram.sqlite"
   },
   redis = {
     host = "127.0.0.1",
     port = 6379
-  }
+  },
 })
 
 config("development", {

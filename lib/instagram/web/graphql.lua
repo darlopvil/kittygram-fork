@@ -35,7 +35,7 @@ local doc_ids = {
         method = "POST"
     },
     comments = {
-        doc_id = "25060748103519434",
+        doc_id = "26864966453197043",
         endpoint = "query",
         method = "POST"
     },
@@ -49,12 +49,6 @@ local doc_ids = {
         endpoint = "query",
         method = "POST"
     },
-    --[[
-    logged_out_user_posts = {
-        doc_id = "7950326061742207",
-        endpoint = "query",
-        method = "GET"
-    },]]
     explore_search = {
         doc_id = "33897670563213924",
         endpoint = "api",
@@ -114,16 +108,6 @@ local queries = {
             __relay_internal__pv__PolarisShareSheetV3relayprovider = true
         }, doc_ids.user_posts
     end,
-    logged_out_user_posts = function(user_id, count, after_cursor)
-        if not after_cursor then
-            after_cursor = json.null
-        end
-        return {
-            id = user_id,
-            after = after_cursor,
-            first = count
-        }, doc_ids.logged_out_user_posts
-    end,
     search = function(query)
         return {
             hasQuery = true,
@@ -141,6 +125,7 @@ local queries = {
         }, doc_ids.explore_search
     end
 }
+
 
 local function cooldown(doc_id)
     if config.ratelimits.cooldown_on_ratelimit then
@@ -200,6 +185,7 @@ local function graphql_request(request_payload, doc_id, request_type)
     if request_type and config.proxies[request_type] then
         request_opts.proxy_opts = { https_proxy = config.proxies[request_type] }
     end
+
     local httpc = http.new()
     local request, err = httpc:request_uri(request_url, request_opts)
 

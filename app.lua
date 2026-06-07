@@ -85,6 +85,7 @@ local function show_post(self)
         if config.post_fetch_mode == "graphql" then
             comments = instagram.get_comments(post.id)
         end
+
         self.comments = comments
         self.page_title = "A post by " .. post.user.username
         if self.params.json == "true" and config.allow_json then
@@ -216,6 +217,5 @@ app:get("/*", function(self)
     }
     return { status = 404, render  = "error" }
 end)
-
 
 return app

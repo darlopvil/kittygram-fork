@@ -172,6 +172,10 @@ nav img {
   max-width: 100%;
   height: auto;
 }
+
+.comments article {
+    margin-bottom: 0.8rem;
+}
 .post-image {
   margin-right: 2rem;
   float: left;

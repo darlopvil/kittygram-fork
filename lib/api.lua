@@ -1,11 +1,15 @@
 local lapis = require("lapis")
 local app = lapis.Application()
-local respond_to = require("lapis.application").respond_to
+local json_params = require("lapis.application").json_params
+local api_codes = require("models.api_codes")
 local test_redis = require("lib.cache").test_redis
 local config = require("lapis.config").get()
 local web_state = ngx.shared.web_state
+local encoding = require("lapis.util.encoding")
 local json = require("cjson")
 local gql_documents = require("lib.instagram.web.graphql").doc_ids
+local instagram = require("lib.instagram")
+local formatters = require("lib.formatters")
 
 local function get_ratelimits()
     local ratelimits = {}
@@ -40,6 +44,13 @@ local function get_request_counts()
 end
 
 app:before_filter(function(self)
+    local decoded_token = encoding.decode_with_secret((self.req.headers["Authorization"] or ""):gsub("Bearer ", "", 1), config.secret)
+    if decoded_token and decoded_token.expires then
+        if not (decoded_token.expires < os.time()) then
+            self.token_is_valid = true
+        end
+    end
+
     self.res.headers["Access-Control-Allow-Origin"] = "*"
     self.res.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, OPTIONS"
     self.res.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
@@ -65,4 +76,90 @@ app:get("/api/info(/)", function(self)
     }}
 end)
 
+app:post("/api/register_token", json_params(function(self)
+    local timestamp = os.time()
+
+    if not self.params.code then
+        return {json = {
+            status = "fail",
+            message = "A code is required."
+        }, status = 400}
+    end
+
+    if not api_codes.validate_code(self.params.code) then
+        return {json = {
+            status = "fail",
+            message = "Code is invalid."
+        }, status = 400}
+    end
+    api_codes.mark_code_as_used(self.params.code)
+
+    local token = encoding.encode_with_secret({ timestamp = timestamp, expires = timestamp + config.api_token_expire_length, code = self.params.code}, config.secret)
+    return { json = {
+        status = "ok",
+        token = token,
+    }}
+end))
+
+app:get("/api/post/:shortcode(/)", function(self)
+    if config.require_api_token ~= false and not self.token_is_valid then
+        return { json = {
+            status = "fail",
+            message = "An API token is required."
+        }, status = 401}
+    end
+
+    local post = instagram.get_post(self.params.shortcode)
+    local status_code
+    if post.has_errors then
+        if post.error_type == "not_found" then
+            status_code = 404
+        elseif post.error_type == "ratelimited" then
+            status_code = 502
+        elseif post.error_type == "null_content" then
+            status_code = 410
+        else
+            status_code = 500
+        end
+    else
+        status_code = 200
+    end
+
+    return { json = post, status = status_code }
+end)
+
+app:get("/api/user/:username(/)", function(self)
+    if config.require_api_token ~= false and not self.token_is_valid then
+        return { json = {
+            status = "fail",
+            message = "An API token is required."
+        }, status = 401}
+    end
+
+    local user = instagram.get_user(self.params.username, self.params.cursor)
+
+
+    if not user.has_errors then
+        local formatted_posts = {}
+        for _, post in ipairs(user.posts) do
+            local post_formatted = formatters.format_post.from_timeline(post)
+            table.insert(formatted_posts, post_formatted)
+        end
+        user.posts = formatted_posts
+    end
+    local status_code
+    if user.has_errors then
+        if user.error_type == "not_found" then
+            status_code = 404
+        elseif user.error_type == "ratelimited" then
+            status_code = 502
+        else
+            status_code = 500
+        end
+    else
+        status_code = 200
+    end
+
+    return { json = user, status = status_code }
+end)
 return app
