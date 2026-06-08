@@ -40,12 +40,12 @@ local function explore(query, after)
     local payload, doc_id = queries.explore_search(query, after)
 
     local search_request = instagram_graphql_request(payload, doc_id, "explore")
-
     -- Check if an error was caught in the graphql function, if so, return that.
     if search_request.has_errors then
         return search_request
     end
 
+    cache.bulk_save_ids.from_explore(search_request.data.xig_logged_out_popular_search_media_info)
     local key
     if after then
         key = "ig:explore:" .. query  .. ":" .. after

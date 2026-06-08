@@ -16,6 +16,7 @@ local function get_comments(post_id)
 
     if request.data and request.data.xdt_api__v1__media__media_id__comments__connection then
         cache.cache_item("ig:comments:" .. post_id,  request.data.xdt_api__v1__media__media_id__comments__connection.edges, "comments")
+        cache.bulk_save_ids.from_comments(request.data.xdt_api__v1__media__media_id__comments__connection)
         return request.data.xdt_api__v1__media__media_id__comments__connection.edges
     end
     -- TODO: proper error handling.
