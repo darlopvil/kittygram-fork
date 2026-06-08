@@ -31,7 +31,7 @@ local function cache_item(key, data, expire_type)
         ttl = LATEST_USER_TIMELINE_EXPIRE_TIME
     elseif expire_type == "negative_timeline" then
         ttl = NEGATIVE_USER_TIMELINE_EXPIRE_TIME
-    elseif expire_type == "positive_post" or expire_type == "comments" then
+    elseif expire_type == "positive_post" then
         ttl = POSITIVE_POST_EXPIRE_TIME
     elseif expire_type == "negative_post" then
         ttl = NEGATIVE_POST_EXPIRE_TIME

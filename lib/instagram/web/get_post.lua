@@ -184,7 +184,7 @@ if config.post_fetch_mode == "web" then
 elseif config.post_fetch_mode == "graphql" then
     return get_post_graphql
 else
-    ngx.log("post_fetch_mode not set! Falling back to web.")
+    ngx.log(ngx.WARN, "post_fetch_mode not set! Falling back to web.")
     return get_post_web
 end
 

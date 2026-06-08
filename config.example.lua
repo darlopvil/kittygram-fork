@@ -19,12 +19,13 @@ config({"development", "production", "docker"}, {
   enable_atom = false, -- Whether to create Atom (better rss; supported by basically everything rss supports) feeds for users. Disabled by default due to the concerns mentioned here: https://cadence.moe/blog/2022-09-01-discontinuing-bibliogram
   base_atom_path = "http://localhost:8081/", -- Base path to use for generating links in atom feeds. Requires the trailing slash.
   post_fetch_mode = "web", -- The method used to fetch posts. Can also be "graphql".
-  about_message = "<p>The operator of this instance has not written a message yet.</p>",
+  about_message = "<p>The operator of this instance has not written a message yet.</p>", -- The about message to display on the homepage of your instance. Can contain any HTML.
   ratelimits = {
     cooldown_on_ratelimit = true, -- If set to true, your instance will block requests until a ratelimit is over.
     window_length = 11 * 60, -- Instagram ratelimits based on an 11 minute sliding window. Here, you can set a custom window length.
     request_limit = 194, -- The number of requests to allow per-window.
   },
+  secret = "CHANGE_THIS!", -- The secret used to sign tokens. Change this.
   require_api_token = true, -- Whether to require a token to use the api. Does not apply to the status or info endpoints.
   api_token_expire_length = 365 * 86400, -- How long an api token should last for before expiring, in seconds.
   sqlite = {
@@ -54,6 +55,7 @@ config("production", {
 -- this environment also checks for environment variables.
 config("docker", {
   port = os.getenv("PORT") or "80",
+  secret = os.getenv("SECRET") or "CHANGE_THIS!!",
   code_cache = os.getenv("CODE_CACHE") or "on",
   num_workers = os.getenv("NUM_WORKERS") or "4",
   allow_json = os.getenv("ALLOW_JSON") == "true" or false,
@@ -62,12 +64,12 @@ config("docker", {
   resolver = os.getenv("RESOLVER") or "127.0.0.11",
   ratelimits = {
       cooldown_on_ratelimit = os.getenv("COOLDOWN_ON_RATELIMIT") == "true" or true,
-      window_length = os.getenv("RATELIMIT_WINDOW_SIZE") or 11 * 60,
-      request_limit = os.getenv("RATELIMIT_REQUEST_LIMIT") or 194
+      window_length = tonumber(os.getenv("RATELIMIT_WINDOW_SIZE")) or 11 * 60,
+      request_limit = tonumber(os.getenv("RATELIMIT_REQUEST_LIMIT")) or 194
   },
   about_message = os.getenv("ABOUT_MESSAGE") or "<p>The operator of this message has not written an about message yet.",
-  require_api_token = os.getenv("REQUIRE_API_TOKEN") == "true" or false,
-  api_token_expire_length = os.getenv("API_TOKEN_EXPIRE_LENGTH") or 365 * 86400,
+  require_api_token = os.getenv("REQUIRE_API_TOKEN") ~= "false",
+  api_token_expire_length = tonumber(os.getenv("API_TOKEN_EXPIRE_LENGTH")) or 365 * 86400,
   redis = {
     host = os.getenv("REDIS_HOST") or "redis",
     port = tonumber(os.getenv("REDIS_PORT")) or 6379,
