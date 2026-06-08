@@ -301,6 +301,11 @@ pre {
   background-color: var(--card-color);
   break-inside: avoid;
   margin-bottom: 1rem;
+  border-radius: 10px;
+}
+
+.grid-item:hover {
+    border: var(--card-border);
 }
 
 .grid-item .user-info {
@@ -313,12 +318,43 @@ pre {
 .grid-item .username {
   position: static;
 }
-.grid-item-media video {
+.grid-item-media video, .grid-item-media img {
   width: 100%;
   height: auto;
   display: block;
 }
 
+.selector-group  {
+    display: flex;
+    justify-content: space-evenly;
+    gap: 1rem;
+    width: 12rem;
+    margin: 0 auto;
+    margin-bottom: 1rem;
+}
+.selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    border: var(--card-border);
+    border-radius: 15px;
+    background-color: var(--card-bg-color);
+    width: 6rem;
+    padding: 0;
+}
+
+.selector a.selected {
+    background-color: var(--card-color);
+    border-right: var(--card-border);
+    border-left: var(--card-border);
+}
+
+.selector a {
+    display: inline;
+    text-decoration: none;
+    padding: 6px 10px 6px 10px;
+    border-radius: 15px;
+}
 @media only screen and (max-width: 850px) {
   .post-image {
     float: none;

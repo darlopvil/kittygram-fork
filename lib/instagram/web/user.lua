@@ -146,6 +146,14 @@ local function arrange_user_data(username, after_cursor)
 
 
     local user_info = get_user_info(user_id)
+
+    local formatted_posts = {}
+    for _, post in ipairs(user_posts.posts) do
+        table.insert(formatted_posts, format_post.from_timeline(post))
+    end
+
+    user_posts.posts = formatted_posts
+
     return {
         posts = user_posts.posts,
         user_info = user_info,

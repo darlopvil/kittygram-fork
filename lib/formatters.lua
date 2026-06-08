@@ -107,13 +107,14 @@ local format_post = {
 
         return formatted_post
     end,
-    -- not used _yet_
     from_timeline = function(item)
         item = item.node
         local post = {
             shortcode = item.code,
             id = item.pk,
-            timestamp = item.taken_at
+            timestamp = item.taken_at,
+            likes = item.like_count,
+            comment_count = item.comment_count,
         }
 
         post.user = {
@@ -128,6 +129,11 @@ local format_post = {
         end
         if item.video_versions ~= json.null then
             post.video_url = item.video_versions[1].url
+            if item.image_versions2 ~= json.null then
+                post.video_thumbnail = item.image_versions2.candidates[1].url
+            else
+                post.video_thumbnail = item.display_uri
+            end
         elseif item.carousel_media ~= json.null then
             post.images = {}
             for _, media_item in ipairs(item.carousel_media) do

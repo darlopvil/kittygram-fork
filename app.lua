@@ -87,10 +87,10 @@ local function show_post(self)
         end
 
         self.comments = comments
-        self.page_title = "A post by " .. post.user.username
         if self.params.json == "true" and config.allow_json then
             return { json = { post, comments} }
         end
+        self.page_title = "A post by " .. post.user.username
         return { render = "post" }
     end
 end
@@ -131,8 +131,12 @@ app:get("/:username(/)", function(self)
         if self.params.json == "true" and config.allow_json then
             return { json = user }
         end
-
-        self.page_title = "@" .. user.user_info.username .. " | kittygram"
+        if not user.user_info.has_errors then
+            self.page_title = "@" .. user.user_info.username .. " | kittygram"
+        else
+            -- fall back to the param if the username isn't available
+            self.page_title = "@" .. self.params.username .. " | kittygram"
+        end
         return { render = "user" }
     end
 end)

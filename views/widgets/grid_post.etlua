@@ -1,0 +1,39 @@
+<% local proxy_url = require("lib.helpers").proxy_url %>
+<% if post.alt_text == ngx.null then
+      post.alt_text = nil
+   end
+%>
+
+<div class="grid-item">
+    <div class="user-info">
+        <img src="<%= proxy_url(post.user.profile_picture) %>" loading="lazy">
+        <a class="username" href="<%= "/" .. post.user.username %>"> <%= post.user.username %> </a>
+    </div>
+    <div class="grid-item-media">
+        <a href="/p/<%= post.shortcode %>">
+            <% if post.video_url then%>
+                <video controls preload="none" poster="<%= proxy_url(post.video_thumbnail) %>">
+                    <% if session.disable_video_proxying then %>
+                        <source crossorigin="anonymous" src="<%= post.video_url %>">
+                    <% else %>
+                        <source src="<%= proxy_url(post.video_url) %>">
+                    <% end %>
+                </video>
+            <% elseif post.images and post.images[1] then %>
+                <% if post.images[1].video_url then %>
+                    <video controls preload="none" poster="<%= proxy_url(post.images[1].video_url) %>">
+                        <% if session.disable_video_proxying then %>
+                            <source crossorigin="anonymous" src="<%= post.images[1].video_url %>">
+                        <% else %>
+                            <source src="<%= proxy_url(post.images[1].video_url) %>">
+                        <% end %>
+                    </video>
+                <% elseif post.images[1].image_url then %>
+                    <img src="<%= proxy_url(post.images[1].image_url) %>">
+                <% end %>
+            <% else %>
+                <img src="<%= proxy_url(post.image_url) %>">
+            <% end %>
+        </a>
+    </div>
+</div>

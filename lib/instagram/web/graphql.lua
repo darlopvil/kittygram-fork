@@ -188,7 +188,6 @@ local function graphql_request(request_payload, doc_id, request_type)
 
     local httpc = http.new()
     local request, err = httpc:request_uri(request_url, request_opts)
-
     if not request then
         ngx.log(ngx.ERR, "Network error: " .. err)
         return errors.network_error{

@@ -2,29 +2,15 @@
 <% local json = require("cjson") %>
 
 <main id="main">
-    <div class="item-card user-info-card">
-        <div class="profile-picture">
-            <img src="<%= proxy_url(user.profile_pic_url) %>" loading="lazy">
-        </div>
-        <div class="usernames" >
-            <h3> <%= user.full_name %> </h3>
-            <p> @<%= user.username %>
-            <% if user.is_verified then %>
-                <img src="/static/icons/check_circle.svg" title="Verified" class="verification-symbol">
-            <% end %>
-            </p>
-        </div>
-        <div class="user-bio">
-            <p class="user-bio-text"><%= user.biography %></p>
-        </div>
-        <div class="profile-stats">
-            <ul>
-                <li><b class="stat-number"><%= user.follower_count %></b> <p>Followers</p></li>
-                <li><b class="stat-number"><%= user.following_count %></b> <p>Following</p></li>
-                <li><b class="stat-number"><%= user.media_count %></b> <p>Posts</p></li>
-            </ul>
-        </div>
-    </div>
+    <% if user.has_errors then %>
+        <p>Couldn't load user info due to error.</p>
+        <details>
+            <summary>More info</summary>
+            <p><%= user.error_info.message %></p>
+        </details>
+    <% else %>
+        <% render("views.widgets.user_info_card", { user = user }) %>
+    <% end %>
 
     <% if user.is_private then %>
         <div class="item-card">
@@ -36,59 +22,45 @@
             <h3>This user has no posts.</h3>
         </div>
     <% else %>
-        <div class="user-posts">
-            <h2 class="item-heading"> Posts </h2>
-            <% for _, post in ipairs(posts) do %>
-                <% post = post.node %>
-            
-                <div class="item-card post">
-                    <div class="user-info">
-                        <img src="<%= proxy_url(post.user.profile_pic_url) %>" loading="lazy">
-                        <a class="username" href="<%= "/" .. post.user.username %>"> <%= post.user.username %> </a>
-                    </div>
-                    <div class="post-image">
-                        <% if type(post.video_versions) == "table" then %>
-                            <% if session.disable_video_proxying then %>
-                                <video controls preload="none" poster="<%= proxy_url(post.image_versions2.candidates[1].url) %>">
-                                    <source crossorigin="anonymous" src="<%= post.video_versions[1].url %>">
-                                </video>
-                            <% else %>
-                                <video controls preload="none" poster="<%= proxy_url(post.image_versions2.candidates[1].url) %>">
-                                    <source src="<%= proxy_url(post.video_versions[1].url) %>">
-                                </video>
-                            <% end %>
-                        <% elseif type(post.carousel_media_count) ~= "userdata"  and post.carousel_media_count > 0 then %>
-                            <div class="carousel">
-                                <% for _, item in ipairs(post.carousel_media) do %>
-                                    <% if item.video_versions ~= json.null then %>
-                                        <video controls preload="none" poster="<%= proxy_url(item.image_versions2.candidates[1].url) %>">
-                                            <source src="<%= proxy_url(item.video_versions[1].url) %>">
-                                        </video>
-                                    <% else %>
-                                        <img src="<%= proxy_url(item.image_versions2.candidates[1].url) %>" loading="lazy">
-                                    <% end %>
-                                <% end %>
-                            </div>
-                        <% elseif type(post.image_versions2) == "table" then %>
-                            <img src="<%= proxy_url(post.image_versions2.candidates[1].url) %>" loading="lazy">
-                        <% end %>
-                    </div>
-                    <div class="post-info">
-                        <time class="post-time" datetime="<%= os.date('%Y-%m-%dT%H:%M:%S', post.timestamp) %>">Posted at: <%=  os.date('%Y-%m-%d %H:%M:%S', post.taken_at) %></time>
-                        <div class="post-likes">
-                            <p><%= post.like_count %> likes</p>
-                        </div>
-                        <div class="caption">
-                            <% if type(post.caption) == "table" then %>
-                                <p class="post-caption-text"><%= post.caption.text %></p>
-                            <% end %>
-                        </div>
-            
-                    </div>
-                    <a href="<%= "/p/" .. post.code %>"> <%= post.comment_count %> Comments</a>
-                </div>
-        <% end %>
+        <div class="selector-group">
+            <div class="selector">
+                <a class="selected" href="/<%= user.username %>">All</a>
+                <a href="/<%= user.username %>/reels">Reels</a>
+            </div>
+            <div class="selector">
+                <% if params.after then %>
+                    <% if params.view == "grid" then %>
+                        <a href="<%= "/" .. user.username  .. "?after=" .. params.after %>">List</a>
+                        <a class="selected" href="?view=grid&after=<%= params.after %>">Grid</a>
+                    <% else %>
+                        <a class="selected" href="<%= "/" .. user.username  .. "?after=" .. params.after %>">List</a>
+                        <a href="?view=grid&after=<%= params.after %>">Grid</a>
+                   <% end %>
+                <% else %>
+                    <% if params.view == "grid" then %>
+                        <a href="<%= "/" .. user.username %>">List</a>
+                        <a class="selected" href="?view=grid">Grid</a>
+                    <% else %>
+                        <a class="selected" href="<%= "/" .. user.username %>">List</a>
+                        <a href="?view=grid">Grid</a>
+                   <% end %>
+                <% end %>
+            </div>
         </div>
-        <a href="<%= "?after=" .. end_cursor %>" class="next-button">Next Page</a>
+        <% if params.view == "grid" then %>
+            <div class="grid">
+                <% for _, post in ipairs(posts) do %>
+                    <% render("views.widgets.grid_post", { post = post} ) %>
+                <% end %>
+            </div>
+            <a href="<%= "?after=" .. end_cursor %>&view=grid" class="next-button">Next Page</a>
+        <% else %>
+            <div class="user-posts">
+                <% for _, post in ipairs(posts) do %>
+                    <% render("views.widgets.post_card", { post = post, include_comments_link = true}) %>
+                <% end %>
+                <a href="<%= "?after=" .. end_cursor %>" class="next-button">Next Page</a>
+            </div>
+        <% end %>
     <% end %>
 </main>

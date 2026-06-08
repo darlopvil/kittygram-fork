@@ -22,6 +22,7 @@ local function get_post_graphql(shortcode)
 
     local payload, doc_id = queries.shortcode(shortcode)
     local post = graphql_request(payload, doc_id, "posts")
+
     -- Check if an error was caught in the graphql function, if so, return that.
     if post.has_errors then
         return post
@@ -38,7 +39,7 @@ local function get_post_graphql(shortcode)
 
     local formatted_post = format_post.from_shortcode(post.data
                                                               .xdt_shortcode_media)
-    cache.cache_item("ig:shortcode:" .. shortcode, post, "positive_post")
+    cache.cache_item("ig:shortcode:" .. shortcode, formatted_post, "positive_post")
     return formatted_post
 end
 
