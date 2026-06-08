@@ -66,6 +66,8 @@ config("docker", {
       request_limit = os.getenv("RATELIMIT_REQUEST_LIMIT") or 194
   },
   about_message = os.getenv("ABOUT_MESSAGE") or "<p>The operator of this message has not written an about message yet.",
+  require_api_token = os.getenv("REQUIRE_API_TOKEN") == "true" or false,
+  api_token_expire_length = os.getenv("API_TOKEN_EXPIRE_LENGTH") or 365 * 86400,
   redis = {
     host = os.getenv("REDIS_HOST") or "redis",
     port = tonumber(os.getenv("REDIS_PORT")) or 6379,

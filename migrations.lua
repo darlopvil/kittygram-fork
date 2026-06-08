@@ -13,7 +13,7 @@ return {
     [1779735501] = function()
     schema.create_table("api_codes", {
         { "id", types.id },
-        { "code", types.varchar{ unique = true} },
+        { "code", types.varchar },
         { "is_used", types.integer{ default = 0 } },
         { "created_at", types.integer },
     })
