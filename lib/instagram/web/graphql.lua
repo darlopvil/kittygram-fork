@@ -10,12 +10,14 @@ local web_state = ngx.shared.web_state
 local WINDOW_LENGTH = config.ratelimits.window_length
 local REQUEST_LIMIT = config.ratelimits.request_limit
 
-local instagram_headers = {
-    ["X-IG-App-ID"] = "936619743392459",
-    ["X-CSRFToken"] = "exampletexthere", -- this can be anything. I could get valid CSRF tokens, but this works for now.
-    ["Content-Type"] = "application/x-www-form-urlencoded",
-    ["Accept"] = "*/*"
-}
+local function create_headers()
+    return {
+        ["X-IG-App-ID"] = "936619743392459",
+        ["X-CSRFToken"] = "exampletexthere", -- this can be anything. I could get valid CSRF tokens, but this works for now.
+        ["Content-Type"] = "application/x-www-form-urlencoded",
+        ["Accept"] = "*/*",
+    }
+end
 
 local gql_endpoints = {
     query = "https://www.instagram.com/graphql/query",
@@ -26,37 +28,51 @@ local doc_ids = {
     shortcode = {
         doc_id = "8845758582119845",
         endpoint = "query",
-        method = "POST"
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = false,
     },
     user_info = {
         doc_id = "27937681195819736",
         endpoint = "query",
-        method = "POST"
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = false
     },
     comments = {
         doc_id = "26864966453197043",
         endpoint = "query",
-        method = "POST"
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = false,
     },
     search = {
         doc_id = "24146980661639222",
         endpoint = "query",
-        method = "POST"
+        method = "POST",
+        requires_auth = true,
+        requires_anonymous_session = false
     },
     user_posts = {
         doc_id = "25570792892598075",
         endpoint = "query",
-        method = "POST"
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = false
     },
     user_reels = {
         doc_id = "26909206778772295",
         endpoint = "query",
         method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = false,
     },
     explore_search = {
         doc_id = "33897670563213924",
         endpoint = "api",
-        method = "POST"
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = true
     }
 }
 
@@ -171,7 +187,17 @@ local function graphql_request(request_payload, doc_id, request_type)
         }
     end
 
-    local headers = instagram_headers
+    local headers = create_headers()
+
+    -- Add cookies to request if the request supports it.
+    if config.web_session and config.web_session.cookies then
+        if config.web_session.use_for and config.web_session.use_for[request_type] then
+            if not doc_id.requires_anonymous_session then
+                headers["Cookie"] = config.web_session.cookies
+            end
+        end
+    end
+
     local request_body = ""
     local request_url = gql_endpoints[doc_id.endpoint]
 
@@ -194,7 +220,7 @@ local function graphql_request(request_payload, doc_id, request_type)
     end
     local request_opts = {
         method = doc_id.method,
-        headers = instagram_headers
+        headers = headers
     }
 
     if doc_id.method == "POST" then

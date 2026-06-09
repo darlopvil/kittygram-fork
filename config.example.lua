@@ -20,6 +20,17 @@ config({"development", "production", "docker"}, {
   base_atom_path = "http://localhost:8081/", -- Base path to use for generating links in atom feeds. Requires the trailing slash.
   post_fetch_mode = "web", -- The method used to fetch posts. Can also be "graphql".
   about_message = "<p>The operator of this instance has not written a message yet.</p>", -- The about message to display on the homepage of your instance. Can contain any HTML.
+  web_session = { -- **Really** basic session/auth support. Do not expect an account used here to survive.
+    cookies = false, -- Replace with session cookies.
+    -- Specify which endpoints to use auth for.
+    use_for = {
+        search = true,
+        posts = true, -- ONLY works is `post_fetch_mode` if not set to web.
+        comments = true,
+        user_posts = true,
+        user_info = true,
+    }
+  },
   ratelimits = {
     cooldown_on_ratelimit = true, -- If set to true, your instance will block requests until a ratelimit is over.
     window_length = 11 * 60, -- Instagram ratelimits based on an 11 minute sliding window. Here, you can set a custom window length.

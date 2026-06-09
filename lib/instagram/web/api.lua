@@ -73,7 +73,7 @@ local function request(endpoint, params, purpose)
 
     local request_uri = BASE_PATH .. endpoint.path
     local encoded_body = util.encode_query_string(params)
-    ngx.say(encoded_body)
+
     if endpoint.method == "POST" then
         request_opts.method = "POST"
         request_opts.body = encoded_body

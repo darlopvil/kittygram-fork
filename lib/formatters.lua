@@ -164,7 +164,6 @@ local format_post = {
         reel = reel.media
         local reel_formatted = {
             id = reel.id,
-            caption = reel.caption.text,
             comment_count = reel.comment_count,
             shortcode = reel.code,
             timestamp = reel.taken_at,
