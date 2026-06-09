@@ -104,8 +104,16 @@ app:get("/:username/reels/:shortcode(/)", show_post)
 app:get("/p/:shortcode/embed(/)", show_post)
 app:get("/reel/:shortcode/embed(/)", show_post)
 
-app:get("/:username(/)", function(self)
-    local user = instagram.get_user(self.params.username, self.params.after)
+app:get("/:username(/:path)(/)", function(self)
+
+    local feed_type
+    if self.params.path == "reels" then
+        feed_type = "reel"
+    else
+        feed_type = "all"
+    end
+
+    local user = instagram.get_user(self.params.username, self.params.after, feed_type)
     if user.has_errors then
         self.error = user
         if user.error_type == "not_found" then

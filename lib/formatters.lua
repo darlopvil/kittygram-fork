@@ -158,7 +158,38 @@ local format_post = {
             post.caption = item.caption.text
         end
         return post
-    end
+    end,
+    -- This doesn't handle carousels.
+    from_reel_timeline = function(reel)
+        reel = reel.media
+        local reel_formatted = {
+            id = reel.id,
+            caption = reel.caption.text,
+            comment_count = reel.comment_count,
+            shortcode = reel.code,
+            timestamp = reel.taken_at,
+            likes = reel.like_count,
+        }
+
+        reel_formatted.user = {
+            id = reel.user.id,
+            username = reel.user.username,
+            profile_picture = reel.user.profile_pic_url,
+            is_verified = reel.is_verified,
+        }
+        if reel.caption and reel.caption ~= json.null and reel.caption.text ~= json.null then
+            reel_formatted.caption = reel.caption.text
+        end
+        if reel.video_versions and reel.video_versions ~= json.null then
+            reel_formatted.video_url = reel.video_versions[1].url
+            if reel.image_versions2 then
+                reel_formatted.video_thumbnail = reel.image_versions2.candidates[1].url
+            else
+                reel_formatted.video_thumbnail = reel.display_uri
+            end
+        end
+        return reel_formatted
+    end,
 }
 
 local format_user_info = {

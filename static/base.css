@@ -347,9 +347,11 @@ pre {
     background-color: var(--card-color);
     border-right: var(--card-border);
     border-left: var(--card-border);
+    border-radius: 15px;
 }
 
 .selector a {
+    color: var(--link-text-color);
     display: inline;
     text-decoration: none;
     padding: 6px 10px 6px 10px;

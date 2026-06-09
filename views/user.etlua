@@ -11,7 +11,36 @@
     <% else %>
         <% render("views.widgets.user_info_card", { user = user }) %>
     <% end %>
-
+    <div class="selector-group">
+        <div class="selector">
+            <% if params.path == "reels" then %>
+                <a href="/<%= user.username %>">All</a>
+                <a class="selected" href="/<%= user.username %>/reels">Reels</a>
+            <% else %>
+                <a class="selected" href="/<%= user.username %>">All</a>
+                <a href="/<%= user.username %>/reels">Reels</a>
+            <% end %>
+        </div>
+        <div class="selector">
+            <% if params.after then %>
+                <% if params.view == "grid" then %>
+                    <a href="<%= "/" .. user.username  .. "?after=" .. params.after %>">List</a>
+                    <a class="selected" href="?view=grid&after=<%= params.after %>">Grid</a>
+                <% else %>
+                    <a class="selected" href="<%= "/" .. user.username  .. "?after=" .. params.after %>">List</a>
+                    <a href="?view=grid&after=<%= params.after %>">Grid</a>
+                <% end %>
+            <% else %>
+                <% if params.view == "grid" then %>
+                    <a href="<%= "/" .. user.username %>">List</a>
+                    <a class="selected" href="?view=grid">Grid</a>
+                <% else %>
+                    <a class="selected" href="<%= "/" .. user.username %>">List</a>
+                    <a href="?view=grid">Grid</a>
+                <% end %>
+            <% end %>
+        </div>
+    </div>
     <% if user.is_private then %>
         <div class="item-card">
             <h3>This user is private.</h3>
@@ -22,44 +51,23 @@
             <h3>This user has no posts.</h3>
         </div>
     <% else %>
-        <div class="selector-group">
-            <div class="selector">
-                <a class="selected" href="/<%= user.username %>">All</a>
-                <a href="/<%= user.username %>/reels">Reels</a>
-            </div>
-            <div class="selector">
-                <% if params.after then %>
-                    <% if params.view == "grid" then %>
-                        <a href="<%= "/" .. user.username  .. "?after=" .. params.after %>">List</a>
-                        <a class="selected" href="?view=grid&after=<%= params.after %>">Grid</a>
-                    <% else %>
-                        <a class="selected" href="<%= "/" .. user.username  .. "?after=" .. params.after %>">List</a>
-                        <a href="?view=grid&after=<%= params.after %>">Grid</a>
-                   <% end %>
-                <% else %>
-                    <% if params.view == "grid" then %>
-                        <a href="<%= "/" .. user.username %>">List</a>
-                        <a class="selected" href="?view=grid">Grid</a>
-                    <% else %>
-                        <a class="selected" href="<%= "/" .. user.username %>">List</a>
-                        <a href="?view=grid">Grid</a>
-                   <% end %>
-                <% end %>
-            </div>
-        </div>
         <% if params.view == "grid" then %>
             <div class="grid">
                 <% for _, post in ipairs(posts) do %>
                     <% render("views.widgets.grid_post", { post = post} ) %>
                 <% end %>
             </div>
-            <a href="<%= "?after=" .. end_cursor %>&view=grid" class="next-button">Next Page</a>
+            <% if end_cursor then %>
+                <a href="<%= "?after=" .. end_cursor %>&view=grid" class="next-button">Next Page</a>
+            <% end %>
         <% else %>
             <div class="user-posts">
                 <% for _, post in ipairs(posts) do %>
                     <% render("views.widgets.post_card", { post = post, include_comments_link = true}) %>
                 <% end %>
-                <a href="<%= "?after=" .. end_cursor %>" class="next-button">Next Page</a>
+                <% if end_cursor then %>
+                    <a href="<%= "?after=" .. end_cursor %>" class="next-button">Next Page</a>
+                <% end %>
             </div>
         <% end %>
     <% end %>

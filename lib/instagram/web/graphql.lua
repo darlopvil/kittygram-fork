@@ -7,7 +7,6 @@ local errors = helpers.create_error
 local config = require("lapis.config").get()
 local web_state = ngx.shared.web_state
 
-
 local WINDOW_LENGTH = config.ratelimits.window_length
 local REQUEST_LIMIT = config.ratelimits.request_limit
 
@@ -48,6 +47,11 @@ local doc_ids = {
         doc_id = "25570792892598075",
         endpoint = "query",
         method = "POST"
+    },
+    user_reels = {
+        doc_id = "26909206778772295",
+        endpoint = "query",
+        method = "POST",
     },
     explore_search = {
         doc_id = "33897670563213924",
@@ -107,6 +111,22 @@ local queries = {
             __relay_internal__pv__PolarisIsLoggedInrelayprovider = true, -- no idea what this does either
             __relay_internal__pv__PolarisShareSheetV3relayprovider = true
         }, doc_ids.user_posts
+    end,
+    user_reels = function(user_id, after_cursor)
+        local before
+        if after_cursor then
+            before = json.null
+        end
+
+        return {
+            data = {
+                include_feed_video = true,
+                page_size = 12,
+                target_user_id = user_id,
+            },
+            after = after_cursor,
+            before = before
+        }, doc_ids.user_reels
     end,
     search = function(query)
         return {

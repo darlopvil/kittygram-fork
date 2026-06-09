@@ -1,6 +1,7 @@
 local instagram_graphql_request = require("lib.instagram.web.graphql").request
 local helpers = require("lib.helpers")
 local queries = require("lib.instagram.web.graphql").queries
+local ig_api = require("lib.instagram.web.api")
 local errors = require("lib.helpers").create_error
 local json = require("cjson")
 local config = require("lapis.config").get()
@@ -68,6 +69,38 @@ local function get_user_posts(username, cursor)
     }
 end
 
+local function get_user_reels(user_id, cursor)
+    local key = "ig:reel_timeline:" .. user_id .. ":" .. (cursor or "latest")
+
+    local query = cache.query_item(key)
+    if query ~= ngx.null then
+        return query.posts, query.end_cursor
+    end
+
+    local endpoint, params = ig_api.endpoints.user_reels, ig_api.construct_params.user_reels(user_id, cursor)
+    local request = ig_api.request(endpoint, params, "user_posts")
+    if request.has_errors then
+        return request
+    else
+        local reels_formatted = {}
+        for _, reel in ipairs(request.items) do
+            local formatted_reel = format_post.from_reel_timeline(reel)
+            table.insert(reels_formatted, formatted_reel)
+        end
+        local posts_with_cursor = {
+            posts = reels_formatted,
+            end_cursor = request.paging_info.max_id
+        }
+        local cache_time_type
+        if cursor then
+            cache_time_type = "cursored_timeline"
+        else
+            cache_time_type = "latest_timeline"
+        end
+        cache.cache_item(key, posts_with_cursor, cache_time_type)
+        return reels_formatted, request.paging_info.max_id
+    end
+end
 -- this could probably do with more error handling.
 -- Since kittygram checks for posts first, that usually handles most errors
 local function get_user_info(user_id)
@@ -96,7 +129,29 @@ end
 -- If a user has no posts (or is private), then their userid is retrieved from their user page.
 -- All user ids are stored for later use, as profile pages are ratelimited heavily.
 
-local function arrange_user_data(username, after_cursor)
+local function arrange_user_data(username, after_cursor, timeline_type)
+    if timeline_type == "reel" then
+        local user_id = user_id_db.get_user_id(username)
+        if not user_id then
+            user_id = get_user_id(username)
+        end
+
+        if type(user_id) == "table" and user_id.has_errors then
+            return user_id
+        elseif not user_id then
+            return errors.not_found{
+                message = "User's id couldn't be found from page.",
+                blob = user_id
+            }
+        end
+        local user_info = get_user_info(user_id)
+        local user_posts, cursor = get_user_reels(user_id, after_cursor)
+        if user_posts.has_errors then
+            return user_posts
+        end
+        return { user_info = user_info, posts = user_posts, end_cursor = cursor}
+    end
+
     local user_posts = {}
     local user_id
     -- check if a cursor is present (for pagination)
