@@ -8,6 +8,7 @@ local web_state = ngx.shared.web_state
 local encoding = require("lapis.util.encoding")
 local json = require("cjson")
 local gql_documents = require("lib.instagram.web.graphql").doc_ids
+local api_endpoints = require("lib.instagram.web.api").endpoints
 local instagram = require("lib.instagram")
 local formatters = require("lib.formatters")
 
@@ -15,6 +16,14 @@ local function get_ratelimits()
     local ratelimits = {}
     for key, document in pairs(gql_documents) do
         local req_count = web_state:get("graphql:" .. document.doc_id)
+        if req_count and req_count > config.ratelimits.request_limit then
+            ratelimits[key] = "blocked"
+        else
+            ratelimits[key] = "ok"
+        end
+    end
+    for key, endpoint in pairs(api_endpoints) do
+        local req_count = web_state:get("api:" .. endpoint.path)
         if req_count and req_count > config.ratelimits.request_limit then
             ratelimits[key] = "blocked"
         else

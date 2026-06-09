@@ -25,12 +25,12 @@ local endpoints = {
         method = "POST",
         requires_auth = false
     },
-    -- currently unused, fairly sure it's blocked when kittygram tries to use it because of tls fingerprinting.
+    --[[ currently unused, fairly sure it's blocked when kittygram tries to use it because of tls fingerprinting.
     web_profile_info = {
         path = "users/web_profile_info/",
         method = "GET",
         requires_auth = false,
-    }
+    }]]
 }
 
 local construct_params = {
