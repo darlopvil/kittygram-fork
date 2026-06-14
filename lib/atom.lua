@@ -2,10 +2,9 @@ local lapis = require("lapis")
 local app = lapis.Application()
 local config = require("lapis.config").get()
 local get_user = require("lib.instagram").get_user
-local format_post = require("lib.formatters").format_post
 local proxy_url = require("lib.helpers").proxy_url
 local date = require("date")
-local utf8 = require 'utf8'
+local utf8 = require("utf8")
 local u8_gsub = utf8.gsub
 
 local function xml_escape(string)
@@ -66,7 +65,7 @@ local function create_feed_xml(username, posts)
     local self_link = user_link .. "/atom.xml"
     local first_timestamp
     if posts and #posts >= 1 then
-        first_timestamp = posts[1].node.taken_at
+        first_timestamp = posts[1].timestamp
     end
     local updated_timestamp = date(first_timestamp):toutc():fmt("${iso}") .. "Z"
 
@@ -84,10 +83,8 @@ local function create_feed_xml(username, posts)
     ]], username, user_link, self_link, user_link, updated_timestamp, username, "https://www.instagram.com/" .. username)
 
     for _, post in ipairs(posts) do
-        local formatted_post = format_post.from_timeline(post)
-        local html_content = create_html_content(formatted_post)
-
-        local post_xml = create_feed_item(username, formatted_post.caption, base_url_path .. "p/" .. formatted_post.shortcode, formatted_post.timestamp, html_content)
+        local html_content = create_html_content(post)
+        local post_xml = create_feed_item(username, post.caption, base_url_path .. "p/" .. post.shortcode, post.timestamp, html_content)
         feed_xml = feed_xml .. post_xml
     end
     feed_xml = feed_xml .. "</feed>"

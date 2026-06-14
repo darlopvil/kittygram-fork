@@ -10,7 +10,6 @@ local json = require("cjson")
 local gql_documents = require("lib.instagram.web.graphql").doc_ids
 local api_endpoints = require("lib.instagram.web.api").endpoints
 local instagram = require("lib.instagram")
-local formatters = require("lib.formatters")
 
 local function get_ratelimits()
     local ratelimits = {}
@@ -148,14 +147,6 @@ app:get("/api/user/:username(/)", function(self)
     local user = instagram.get_user(self.params.username, self.params.cursor)
 
 
-    if not user.has_errors then
-        local formatted_posts = {}
-        for _, post in ipairs(user.posts) do
-            local post_formatted = formatters.format_post.from_timeline(post)
-            table.insert(formatted_posts, post_formatted)
-        end
-        user.posts = formatted_posts
-    end
     local status_code
     if user.has_errors then
         if user.error_type == "not_found" then
