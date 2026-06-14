@@ -18,7 +18,7 @@ config({"development", "production", "docker"}, {
   cache = cache, -- see: conf/cache.lua
   enable_atom = false, -- Whether to create Atom (better rss; supported by basically everything rss supports) feeds for users. Disabled by default due to the concerns mentioned here: https://cadence.moe/blog/2022-09-01-discontinuing-bibliogram
   base_atom_path = "http://localhost:8081/", -- Base path to use for generating links in atom feeds. Requires the trailing slash.
-  post_fetch_mode = "web", -- The method used to fetch posts. Can also be "graphql".
+  post_fetch_mode = "graphql", -- The method used to fetch posts. Can also be "graphql".
   about_message = "<p>The operator of this instance has not written a message yet.</p>", -- The about message to display on the homepage of your instance. Can contain any HTML.
   web_session = { -- **Really** basic session/auth support. Do not expect an account used here to survive.
     cookies = false, -- Replace with session cookies.
