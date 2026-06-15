@@ -2,7 +2,13 @@
 
 <div class="item-card user-info-card">
     <div class="profile-picture">
-        <img src="<%= proxy_url(user.profile_pic_url) %>" loading="lazy">
+        <% if user.hd_profile_pic_url_info then %>
+            <a href="<%= user.hd_profile_pic_url_info.url %>">
+                <img src="<%= proxy_url(user.profile_pic_url) %>" loading="lazy">
+            </a>
+        <% else %>
+            <img src="<%= proxy_url(user.profile_pic_url) %>" loading="lazy">
+        <% end %>
     </div>
     <div class="usernames" >
         <h3> <%= user.full_name %> </h3>
