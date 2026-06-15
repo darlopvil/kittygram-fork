@@ -54,7 +54,7 @@ local function show_post(self)
     local post, comments
     if config.post_fetch_mode == "web" then
         post, comments = instagram.get_post(self.params.shortcode)
-    elseif config.post_fetch_mode == "graphql" then
+    elseif config.post_fetch_mode == "graphql" or "graphql_root" then
         post = instagram.get_post(self.params.shortcode)
     -- fall back to web mode if post_fetch_mode isn't set.
     else
@@ -82,7 +82,7 @@ local function show_post(self)
         end
     else
         self.post = post
-        if config.post_fetch_mode == "graphql" then
+        if config.post_fetch_mode == "graphql" or "graphql_root" then
             comments = instagram.get_comments(post.id)
         end
 

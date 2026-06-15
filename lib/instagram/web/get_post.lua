@@ -21,6 +21,7 @@ local function get_post_graphql(shortcode)
         return post_query
     end
 
+
     local payload, doc_id = queries.shortcode(shortcode)
     local post = graphql_request(payload, doc_id, "posts")
 
@@ -38,6 +39,7 @@ local function get_post_graphql(shortcode)
         return post_error
     end
 
+
     local formatted_post = format_post.from_shortcode(post.data
                                                               .xdt_shortcode_media)
     cache.cache_item("ig:shortcode:" .. shortcode, formatted_post, "positive_post")
@@ -46,7 +48,27 @@ local function get_post_graphql(shortcode)
     return formatted_post
 end
 
+-- this uses an alternate query.
+-- TODO: It's hard to detect if a post wasn't made, vs if an actual error occurred, so a post being missing will trigger a 500
+local function get_post_graphql_root(shortcode)
+    local post_query = cache.query_item("ig:shortcode:" .. shortcode)
+    if post_query ~= ngx.null then
+        return post_query
+    end
 
+    local payload, doc_id = queries.shortcode_root(shortcode)
+    local post = graphql_request(payload, doc_id, "posts")
+
+    if post.has_errors then
+        return post
+    end
+
+    local formatted_post = format_post.from_web(post.data.xdt_api__v1__media__shortcode__web_info.items[1])
+    cache.cache_item("ig:shortcode:" .. shortcode, formatted_post, "positive_post")
+    save_user_id(formatted_post.user.username, formatted_post.user.id)
+
+    return formatted_post
+end
 
 local totally_human_headers = {
     ["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -183,12 +205,17 @@ local function get_post_web(shortcode)
     return formatted_post, post_comments
 end
 
-if config.post_fetch_mode == "web" then
-    return get_post_web
-elseif config.post_fetch_mode == "graphql" then
-    return get_post_graphql
-else
-    ngx.log(ngx.WARN, "post_fetch_mode not set! Falling back to web.")
-    return get_post_web
+local function fetch_post(shortcode)
+    if config.post_fetch_mode == "web" then
+        return get_post_web(shortcode)
+    elseif config.post_fetch_mode == "graphql" then
+        return get_post_graphql(shortcode)
+    elseif config.post_fetch_mode == "graphql_root" then
+        return get_post_graphql_root(shortcode)
+    else
+        ngx.log(ngx.WARN, "post_fetch_mode not set! Falling back to graphql.")
+        return get_post_graphql(shortcode, "shortcode")
+    end
 end
 
+return fetch_post
