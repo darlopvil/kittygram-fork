@@ -5,6 +5,10 @@ local cache = require("lib.cache")
 
 -- this could probably do with some error handling.
 local function get_comments(post_id)
+    local query = cache.query_item("ig:comments:" .. post_id)
+    if query ~= ngx.null then
+        return query
+    end
 
     local payload, doc_id = queries.comments(post_id, "popular")
     local request = instagram_graphql_request(payload, doc_id, "comments")

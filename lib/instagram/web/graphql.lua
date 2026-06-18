@@ -72,7 +72,17 @@ local doc_ids = {
         endpoint = "api",
         method = "POST",
         requires_auth = false,
-        requires_anonymous_session = true
+        requires_anonymous_session = true,
+    },
+    -- friendly_name: PolarisPostRootQuery
+    -- Not too sure where this is used, found the query in a post page's source code.
+    -- The same as `shortcode`, but newer and has a different structure.
+    shortcode_root = {
+        doc_id = "26713194205046842",
+        endpoint = "query",
+        method = "GET",
+        requires_auth = false,
+        requires_anonymous_session = false,
     }
 }
 
@@ -159,7 +169,13 @@ local queries = {
             keyword = query,
             media_count = 8
         }, doc_ids.explore_search
-    end
+    end,
+    shortcode_root = function(shortcode)
+        return {
+            shortcode = shortcode,
+            __relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider = false
+        }, doc_ids.shortcode_root
+    end,
 }
 
 
@@ -234,6 +250,7 @@ local function graphql_request(request_payload, doc_id, request_type)
 
     local httpc = http.new()
     local request, err = httpc:request_uri(request_url, request_opts)
+
     if not request then
         ngx.log(ngx.ERR, "Network error: " .. err)
         return errors.network_error{
