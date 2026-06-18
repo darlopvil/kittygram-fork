@@ -19,21 +19,22 @@ local function xml_escape(string)
 end
 
 local function create_html_content(post)
+    local base_url_path = config.base_atom_path
     local html_string = ""
     if post.images and #post.images >= 1 then
 
         for _, media in ipairs(post.images) do
             if media.image_url then
-                html_string = html_string ..  string.format([[<img src="%s" />]], proxy_url(media.image_url))
+                html_string = html_string ..  string.format([[<img src="%s" />]], base_url_path .. proxy_url(media.image_url))
             elseif media.video_url then
-                html_string = html_string .. string.format([[<video controls><source src="%s"></video>]], proxy_url(media.video_url))
+                html_string = html_string .. string.format([[<video controls><source src="%s"></video>]], base_url_path .. proxy_url(media.video_url))
             end
         end
     else
         if post.image_url then
-            html_string = html_string .. string.format([[<img src="%s"/>]], proxy_url(post.image_url))
+            html_string = html_string .. string.format([[<img src="%s"/>]], base_url_path .. proxy_url(post.image_url))
         elseif post.video_url then
-            html_string = html_string .. string.format([[<video controls><source src="%s"></video>]], proxy_url(post.video_url))
+            html_string = html_string .. string.format([[<video controls><source src="%s"></video>]], base_url_path .. proxy_url(post.video_url))
         end
     end
     if post.caption then
