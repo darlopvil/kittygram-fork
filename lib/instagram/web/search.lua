@@ -2,6 +2,7 @@ local instagram_graphql_request = require("lib.instagram.web.graphql").request
 local queries = require("lib.instagram.web.graphql").queries
 local helpers = require("lib.helpers")
 local errors = require("lib.helpers").create_error
+local util = require("lapis.util")
 local config = require("lapis.config").get()
 local cache = require("lib.cache")
 local json = require("cjson")
@@ -25,6 +26,24 @@ local function search(query)
     return errors.unknown{ blob = search_results }
 end
 
+local function get_popular_page()
+    local cache_query = cache.query_item("ig:popular")
+    if cache_query ~= ngx.null then
+        return cache_query
+    end
+
+    local payload, doc_id = queries.popular_page()
+    local request = instagram_graphql_request(payload, doc_id, "popular_page")
+    ngx.say("R")
+    if request.has_errors then
+        return request
+    end
+    if request.data and request.data.popular_search_home_sections then
+        cache.cache_item("ig:popular", request.data.popular_search_home_sections, "popular_index")
+    end
+    return request.data.popular_search_home_sections
+end
+
 local function explore(query, after)
     local key
     if after then
@@ -37,9 +56,11 @@ local function explore(query, after)
         return explore_query
     end
 
-    local payload, doc_id = queries.explore_search(query, after)
+    local decoded_query = util.unescape(tostring(query))
 
+    local payload, doc_id = queries.explore_search(decoded_query, after)
     local search_request = instagram_graphql_request(payload, doc_id, "explore")
+
     -- Check if an error was caught in the graphql function, if so, return that.
     if search_request.has_errors then
         return search_request
@@ -55,4 +76,4 @@ local function explore(query, after)
     cache.cache_item(key, search_request.data.xig_logged_out_popular_search_media_info, "explore")
     return search_request.data.xig_logged_out_popular_search_media_info
 end
-return { search = search, explore = explore }
+return { search = search, explore = explore, popular_page = get_popular_page }

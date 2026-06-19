@@ -16,8 +16,9 @@ local cache = {
             with_cursor = 3600, -- how long a batch of posts with a cursor (timeline continuation) are cached for.
             negative = 3600, -- if a user isn't found/doesn't exist
         },
-        explore = 3600,
-        comments = 3600
+        explore = 3600 * 3,
+        comments = 3600,
+        popular_index = 3600 * 6 -- This doesn't really include much dynamic content, so it can be cached for a long time.
     }
 }
 

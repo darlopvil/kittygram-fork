@@ -77,7 +77,7 @@ local function get_user_reels(user_id, cursor)
         return query.posts, query.end_cursor
     end
 
-    local endpoint, params = ig_api.endpoints.user_reels, ig_api.construct_params.user_reels(user_id, cursor)
+    local endpoint, params = ig_api.endpoints.user_reels(), ig_api.construct_params.user_reels(user_id, cursor)
     local request = ig_api.request(endpoint, params, "user_posts")
     if request.has_errors then
         return request

@@ -1,0 +1,21 @@
+<% local proxy_url = require("lib.helpers").proxy_url %>
+
+<main id="main">
+    <h2 class="item-heading">Popular</h2>
+    <% for _, section in ipairs(popular) do %>
+        <div class="popular-section item-card">
+            <h3> <%= section.display_title %> </h3>
+            <div class="popular-row">
+                <% for _, item in ipairs(section.entries) do %>
+                    <% if item.keyword then %>
+                        <div class="popular-row-item">
+                            <a href="/popular/<%= item.keyword.keyword_text %>">
+                                <img src="<%= proxy_url(item.keyword.thumbnail_url) %>" loading="lazy">
+                                <%= item.keyword.keyword_text %>
+                            </a>
+                        </div>
+                    <% end %>
+                <% end %>
+            </div>
+        </div>
+    <% end %>

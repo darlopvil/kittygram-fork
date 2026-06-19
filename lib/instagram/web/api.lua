@@ -20,17 +20,21 @@ local function create_headers()
 end
 
 local endpoints = {
-    user_reels = {
-        path = "clips/user/",
-        method = "POST",
-        requires_auth = false
-    },
-    --[[ currently unused, fairly sure it's blocked when kittygram tries to use it because of tls fingerprinting.
-    web_profile_info = {
-        path = "users/web_profile_info/",
-        method = "GET",
-        requires_auth = false,
-    }]]
+    user_reels = function()
+        return {
+            path = "clips/user/",
+            method = "POST",
+            requires_auth = false
+        }
+    end,
+    -- found this endpoint embedded in a profile page. Seems to be forgotten about or unused.
+    user_posts = function(username)
+        return {
+            path = string.format("feed/user/%s/username/", username),
+            method = "GET",
+            requires_auth = false
+        }
+    end
 }
 
 local construct_params = {
@@ -42,11 +46,11 @@ local construct_params = {
             max_id = cursor
         }
     end,
-    web_profile_info = function(username)
+    user_posts = function(count)
         return {
-            username = username
+            count = count
         }
-    end
+    end,
 }
 
 -- This assumes the same ratelimits as graphql.

@@ -68,7 +68,7 @@ local doc_ids = {
         requires_anonymous_session = false,
     },
     explore_search = {
-        doc_id = "33897670563213924",
+        doc_id = "27319959457629526",
         endpoint = "api",
         method = "POST",
         requires_auth = false,
@@ -83,6 +83,15 @@ local doc_ids = {
         method = "GET",
         requires_auth = false,
         requires_anonymous_session = false,
+    },
+    -- Equivalent of https://instagram.com/popular.
+    popular_page = {
+        doc_id = "36780798938170941",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = false,
+        -- unsure of this
+        requires_anonymous_session = false
     }
 }
 
@@ -176,6 +185,9 @@ local queries = {
             __relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider = false
         }, doc_ids.shortcode_root
     end,
+    popular_page = function()
+        return {}, doc_ids.popular_page
+    end
 }
 
 

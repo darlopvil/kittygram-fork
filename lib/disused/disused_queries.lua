@@ -4,6 +4,7 @@ local doc_ids = {
         endpoint = "query",
         method = "GET"
     },
+
 }
 -- queries that aren't used currently.
 local unused_queries = {

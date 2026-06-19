@@ -44,6 +44,29 @@ app.cookie_attributes = function(self)
     return "Expires=" .. expires .. "; Path=/; HttpOnly"
 end
 
+local function render_error(self, error)
+    self.error = error
+    if error.error_type == "not_found" then
+        self.page_title = "Not Found | Kittygram"
+        return { status = 404, render = "error" }
+    elseif error.error_type == "ratelimited" then
+        self.page_title = "Ratelimited | Kittygram"
+        return { status = 503, render = "error"}
+    elseif error.error_type == "null_content" then
+        self.page_title = "Unavailable | Kittygram"
+        return { status = 410, render = "error" }
+    elseif error.error_type == "network_error" then
+        self.page_title = "Error | Kittygram"
+        return { status = 500, render = "error" }
+    elseif error.error_type == "blocked" then
+        self.page_title = "Blocked | Kittygram"
+        return { status = 502, render = "error" }
+    else
+        self.page_title = "Error | Kittygram"
+        return { status = 500, render = "error" }
+    end
+end
+
 app:get("/", function(self)
     self.about_message = config.about_message
     self.page_title = "kittygram"
@@ -54,7 +77,7 @@ local function show_post(self)
     local post, comments
     if config.post_fetch_mode == "web" then
         post, comments = instagram.get_post(self.params.shortcode)
-    elseif config.post_fetch_mode == "graphql" or "graphql_root" then
+    elseif config.post_fetch_mode == "graphql" or config.post_fetch_mode == "graphql_root" then
         post = instagram.get_post(self.params.shortcode)
     -- fall back to web mode if post_fetch_mode isn't set.
     else
@@ -62,27 +85,10 @@ local function show_post(self)
     end
 
     if post.has_errors then
-        self.error = post
-
-        if post.error_type == "not_found" then
-            self.page_title = "Not Found | Kittygram"
-            return { status = 404, render = "error" }
-        elseif post.error_type == "ratelimited" then
-            self.page_title = "Ratelimited | Kittygram"
-            return { status = 503, render = "error"}
-        elseif post.error_type == "null_content" then
-            self.page_title = "Unavailable | Kittygram"
-            return { status = 410, render = "error" }
-        elseif post.error_type == "network_error" then
-            self.page_title = "Error | Kittygram"
-            return { status = 500, render = "error" }
-        else
-            self.page_title = "Error | Kittygram"
-            return { status = 500, render = "error" }
-        end
+        return render_error(self, post)
     else
         self.post = post
-        if config.post_fetch_mode == "graphql" or "graphql_root" then
+        if config.post_fetch_mode == "graphql" or config.post_fetch_mode == "graphql_root" then
             comments = instagram.get_comments(post.id)
         end
 
@@ -115,20 +121,7 @@ app:get("/:username(/:path)(/)", function(self)
 
     local user = instagram.get_user(self.params.username, self.params.after, feed_type)
     if user.has_errors then
-        self.error = user
-        if user.error_type == "not_found" then
-            self.page_title = "Not found | Kittygram"
-            return { status = 404, render = "error" }
-        elseif user.error_type == "ratelimited" then
-            self.page_title = "Ratelimited | Kittygram"
-            return { status = 503, render = "error" }
-        elseif user.error_type == "blocked" then
-            self.page_title = "Blocked | Kittygram"
-            return { status = 502, render = "error" }
-        else
-            self.page_title = "Error | Kittygram"
-            return { status = 500, render = "error" }
-        end
+        return render_error(self, user)
     else
         if config.enable_atom then
             self.atom_link = "/" .. self.params.username .. "/atom.xml"
@@ -159,6 +152,9 @@ app:get("/search(/)", function(self)
         end
 
         local search_results = instagram.search.search(self.params.q)
+        if search_results.has_errors then
+            return render_error(self, search_results)
+        end
         self.page_title = "Search for \"" .. self.params.q .. "\" | kittygram"
         self.search_query = self.params.q
         self.search_results = search_results
@@ -172,15 +168,29 @@ app:get("/search(/)", function(self)
 
 end)
 
+app:get("/popular(/)", function(self)
+    local popular_page = instagram.search.popular_page()
+    if popular_page.has_errors then
+        return render_error(self, popular_page)
+    end
+    self.popular = popular_page
+    self.page_title = "Popular | Kittygram"
+    return { render = "popular" }
+end)
+
 app:get("/popular/:query(/)", function(self)
     local explore_results = instagram.search.explore(self.params.query, self.params.after)
+    if explore_results.has_errors then
+        return render_error(self, explore_results)
+    end
     self.results = explore_results
     self.explore_query = self.params.query
     self.page_title = "Explore " .. self.params.query .. " | Kittygram"
     return { render = "explore" }
 end)
--- RIP to instagram user "settings".
 
+
+-- RIP to instagram user "settings".
 app:get("/settings(/)", function(self)
     self.themes = config.themes
     if self.session.theme then
@@ -218,6 +228,8 @@ app:post("/settings/reset(/)", function(self)
    return { redirect_to = "/" }
 end)
 
+
+
 app:get("/*", function(self)
     self.error = {
         has_error = true,
@@ -229,5 +241,6 @@ app:get("/*", function(self)
     }
     return { status = 404, render  = "error" }
 end)
+
 
 return app

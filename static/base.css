@@ -350,6 +350,42 @@ pre {
     border-radius: 15px;
 }
 
+.popular-section {
+    margin-bottom: 2rem;
+}
+
+.popular-row {
+    white-space: nowrap;
+    overflow-x: auto;
+
+}
+
+.popular-row-item {
+    display: inline-block;
+    width: fit-content;
+}
+
+.popular-row-item img {
+    width: 10rem;
+    height: 16rem;
+    display: block;
+    border-radius: 5px;
+    background-color: black;
+    object-fit: cover;
+}
+
+.popular-section h3 {
+    margin-top: 0;
+}
+
+.popular-row-item a {
+    margin: 5px 0 5px 0;
+    display: block;
+    width: max-content;
+    text-align: center;
+}
+
+
 .selector a {
     color: var(--link-text-color);
     display: inline;
