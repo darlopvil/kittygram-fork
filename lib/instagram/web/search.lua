@@ -34,7 +34,7 @@ local function get_popular_page()
 
     local payload, doc_id = queries.popular_page()
     local request = instagram_graphql_request(payload, doc_id, "popular_page")
-    ngx.say("R")
+
     if request.has_errors then
         return request
     end
