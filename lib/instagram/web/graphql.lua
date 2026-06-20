@@ -99,7 +99,7 @@ local doc_ids = {
         endpoint = "api",
         method = "POST",
         requires_auth = false,
-        requires_anonymous_session = false
+        requires_anonymous_session = true
     }
 }
 
