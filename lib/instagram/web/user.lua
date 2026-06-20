@@ -101,8 +101,34 @@ local function get_user_reels(user_id, cursor)
         return reels_formatted, request.paging_info.max_id
     end
 end
--- this could probably do with more error handling.
--- Since kittygram checks for posts first, that usually handles most errors
+
+local function get_user_hover_info(user_id)
+    local key = "ig:user_hover_info:" .. user_id
+    local cache_query = cache.query_item(key)
+    if cache_query ~= ngx.null then
+        return cache_query
+    end
+
+    local payload, doc_id = queries.user_hover_info(user_id)
+    local info_request = instagram_graphql_request(payload, doc_id, "user_info")
+
+    if info_request.has_errors then
+        return info_request
+    end
+
+    if info_request.data and info_request.data.xig_user_by_igid_v2 then
+        if info_request.data.xig_user_by_igid_v2 == json.null then
+            return errors.not_found{ message = "Hover card info is null.", blob = info_request }
+        else
+            cache.cache_item(key, info_request.data.xig_user_by_igid_v2.user_dict, "user_info")
+            return info_request.data.xig_user_by_igid_v2.user_dict
+        end
+    end
+
+    return errors.unknown{ message = "Unknown error occured."}
+end
+
+-- Function to get user info from an id.
 local function get_user_info(user_id)
     local user_query = cache.query_item("ig:user:" .. user_id)
 
@@ -114,7 +140,12 @@ local function get_user_info(user_id)
     local user_info = instagram_graphql_request(payload, doc_id, "user_info")
 
     if user_info.has_errors then
-        return user_info
+        -- try getting info from hover cards, they contain less information, so they're used as a fallback.
+        if user_info.error_type == "ratelimited" then
+            return get_user_hover_info(user_id)
+        else
+            return user_info
+        end
     end
 
     cache.cache_item("ig:user:" .. user_id, user_info.data.user, "user_info")
@@ -125,7 +156,6 @@ end
 
 -- Instagram fetches user info based on ids,
 -- fetching posts also returns the user's id. I can then fetch the user info based on that.
--- this method is pretty naive. Like the rest of this project :P
 -- If a user has no posts (or is private), then their userid is retrieved from their user page.
 -- All user ids are stored for later use, as profile pages are ratelimited heavily.
 

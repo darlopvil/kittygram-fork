@@ -19,7 +19,7 @@
         </p>
     </div>
     <div class="user-bio">
-        <p class="user-bio-text"><%= user.biography %></p>
+        <p class="user-bio-text"><%= user.biography or "" %></p>
     </div>
     <div class="profile-stats">
         <ul>

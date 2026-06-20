@@ -92,6 +92,14 @@ local doc_ids = {
         requires_auth = false,
         -- unsure of this
         requires_anonymous_session = false
+    },
+    -- Query used to get user info from hover cards. Doesn't include a bio/links, has almost everything else.
+    user_hover_info = {
+        doc_id = "26785645987802781",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = false
     }
 }
 
@@ -187,6 +195,12 @@ local queries = {
     end,
     popular_page = function()
         return {}, doc_ids.popular_page
+    end,
+    user_hover_info = function(target_id)
+        return {
+            userID = target_id,
+            __relay_internal__pv__PolarisAIGMAccountLabelEnabledrelayprovider = false
+        }, doc_ids.user_hover_info
     end
 }
 
