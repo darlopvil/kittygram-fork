@@ -67,6 +67,7 @@ config("production", {
 config("docker", {
   port = os.getenv("PORT") or "80",
   secret = os.getenv("SECRET") or "CHANGE_THIS!!",
+  default_theme = os.getenv("DEFAULT_THEME") or "auto",
   code_cache = os.getenv("CODE_CACHE") or "on",
   num_workers = os.getenv("NUM_WORKERS") or "4",
   allow_json = os.getenv("ALLOW_JSON") == "true" or false,

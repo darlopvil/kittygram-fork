@@ -20,35 +20,41 @@ local function create_headers()
 end
 
 local endpoints = {
-    user_reels = function()
-        return {
-            path = "clips/user/",
-            method = "POST",
-            requires_auth = false
-        }
-    end,
+    user_reels = {
+        path = "clips/user/",
+        method = "POST",
+        requires_auth = false
+    },
     -- found this endpoint embedded in a profile page. Seems to be forgotten about or unused.
-    user_posts = function(username)
-        return {
-            path = string.format("feed/user/%s/username/", username),
-            method = "GET",
-            requires_auth = false
-        }
-    end
+    user_posts = {
+        path = "feed/user/%s/username/",
+        method = "GET",
+        requires_auth = false
+    }
 }
 
 local construct_params = {
     user_reels = function(user_id, cursor)
         return {
-            include_feed_video = "true",
-            page_size = "12",
-            target_user_id = user_id,
-            max_id = cursor
+            body = {
+                include_feed_video = "true",
+                page_size = "12",
+                target_user_id = user_id,
+                max_id = cursor
+            },
+            path = {},
+            query = {}
         }
     end,
-    user_posts = function(count)
+    user_posts = function(username, count)
         return {
-            count = count
+            body = {},
+            path = {
+                username
+            },
+            query = {
+                count = count
+            },
         }
     end,
 }
@@ -75,16 +81,21 @@ local function request(endpoint, params, purpose)
         request_opts.proxy_opts = { https_proxy = config.proxies[purpose] }
     end
 
-    local request_uri = BASE_PATH .. endpoint.path
-    local encoded_body = util.encode_query_string(params)
+    local request_uri = BASE_PATH .. string.format(endpoint.path, table.unpack(params.path))
+
+    local encoded_query_string = util.encode_query_string(params.query)
+    if encoded_query_string ~= "" then
+        request_uri = request_uri .. "?" .. encoded_query_string
+    end
 
     if endpoint.method == "POST" then
         request_opts.method = "POST"
+        local encoded_body = util.encode_query_string(params.body)
         request_opts.body = encoded_body
     elseif endpoint.method == "GET" then
         request_opts.method = "GET"
-        request_uri = request_uri .. "?" .. encoded_body
     end
+
     local request = httpc:request_uri(request_uri, request_opts)
 
     local decode_status, decoded_body = helpers.safe_json_decode(request.body)
