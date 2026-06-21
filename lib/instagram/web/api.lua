@@ -59,13 +59,24 @@ local construct_params = {
     end,
 }
 
+
+local function cooldown(endpoint)
+    local key = "api:" .. endpoint.path
+    if config.ratelimits.cooldown_on_ratelimit then
+        -- Get the remaining ttl on the key
+        local key_ttl = web_state:ttl(key)
+        if key_ttl and key_ttl > 0 then
+            web_state:replace(key, REQUEST_LIMIT + 999, key_ttl)
+        else
+            web_state:replace(key, REQUEST_LIMIT + 999, WINDOW_LENGTH)
+        end
+    end
+end
 -- This assumes the same ratelimits as graphql.
--- GET requests aren't tested yet.
--- I haven't seen what a ratelimit looks like yet, so there's probably something I'm missing.
 local function request(endpoint, params, purpose)
     local httpc = http:new()
     --See comments at graphql.lua on ratelimits.
-    local request_count = web_state:incr("api:" .. endpoint.path .. ":", 1, 0, WINDOW_LENGTH)
+    local request_count = web_state:incr("api:" .. endpoint.path, 1, 0, WINDOW_LENGTH)
     if request_count > REQUEST_LIMIT and config.ratelimits.cooldown_on_ratelimit then
         return errors.ratelimited{
             message = "The server has blocked further requests to Instagram temporarily.",
@@ -101,11 +112,13 @@ local function request(endpoint, params, purpose)
     local decode_status, decoded_body = helpers.safe_json_decode(request.body)
 
     if request.status == 429 then
+        cooldown(endpoint)
         return errors.ratelimited{
             blob = request.body,
             message = "Instagram returned 429."
         }
     elseif request.status == 302 then
+        cooldown(endpoint)
         return errors.ratelimited{
             blob = request.body,
             message = "Instagram returned 302 with location " .. tostring(request.headers.location)
@@ -119,6 +132,7 @@ local function request(endpoint, params, purpose)
     else
         if decoded_body.status == "fail" then
             if decoded_body.require_login then
+                cooldown(endpoint)
                 return errors.ratelimited{
                     message = "Instagram is temporarily blocking requests sent by the server.",
                     blob = decoded_body
