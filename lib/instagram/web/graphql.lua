@@ -4,6 +4,7 @@ local encoding = require("lapis.util.encoding")
 local json = require("cjson")
 local helpers = require("lib.helpers")
 local errors = helpers.create_error
+local ngx_resp = require("ngx.resp")
 local config = require("lapis.config").get()
 local web_state = ngx.shared.web_state
 
@@ -33,7 +34,7 @@ local doc_ids = {
         requires_anonymous_session = false,
     },
     user_info = {
-        doc_id = "27937681195819736",
+        doc_id = "26672929172408668",
         endpoint = "query",
         method = "POST",
         requires_auth = false,
@@ -276,6 +277,10 @@ local function graphql_request(request_payload, doc_id, request_type)
 
     local httpc = http.new()
     local request, err = httpc:request_uri(request_url, request_opts)
+
+    if config.include_debug_headers then
+        ngx_resp.add_header("X-Kg-Debug-Endpoints", doc_id.doc_id)
+    end
 
     if not request then
         ngx.log(ngx.ERR, "Network error: " .. err)

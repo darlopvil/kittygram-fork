@@ -3,6 +3,7 @@ local json = require("cjson")
 local save_user_id = require("models.user_ids").save_user_id
 local formatters = require("lib.formatters")
 local config = require("lapis.config").get()
+local ngx_resp = require("ngx.resp")
 
 local POSITIVE_POST_EXPIRE_TIME = config.cache.expire_times.posts.positive
 local NEGATIVE_POST_EXPIRE_TIME = config.cache.expire_times.posts.negative
@@ -60,6 +61,7 @@ local function query_item(key)
     end
     local query = redis:get(key)
     if query ~= ngx.null then
+        ngx_resp.add_header("X-KG-Debug-Cache", key)
         return json.decode(query)
     else
         return query

@@ -1,6 +1,7 @@
 local json = require("cjson")
 local http = require("resty.http")
 local web_state = ngx.shared.web_state
+local ngx_resp = require("ngx.resp")
 local config = require("lapis.config").get()
 local util = require("lapis.util")
 local helpers = require("lib.helpers")
@@ -108,6 +109,10 @@ local function request(endpoint, params, purpose)
     end
 
     local request = httpc:request_uri(request_uri, request_opts)
+
+    if config.include_debug_headers then
+        ngx_resp.add_header("X-Kg-Debug-Endpoints", endpoint.path)
+    end
 
     local decode_status, decoded_body = helpers.safe_json_decode(request.body)
 

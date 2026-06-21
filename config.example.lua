@@ -31,6 +31,7 @@ config({"development", "production", "docker"}, {
         user_info = true,
     }
   },
+  include_debug_headers = false, -- Whether to include debug headers (mentions whether cache was hit; which endpoints were accessed.)
   ratelimits = {
     cooldown_on_ratelimit = true, -- If set to true, your instance will block requests until a ratelimit is over.
     window_length = 11 * 60, -- Instagram ratelimits based on an 11 minute sliding window. Here, you can set a custom window length.
