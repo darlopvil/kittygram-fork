@@ -5,6 +5,8 @@ local app = lapis.Application()
 local date = require("date")
 local helpers = require("lib.helpers")
 
+local locales = require("i18n.languages")
+
 app:enable("etlua")
 app.layout = require("views.layout")
 local media_proxy = require("lib.media_proxy")
@@ -36,6 +38,16 @@ app:before_filter(function(self)
             self.uses_base_theme = true
         end
     end
+end)
+
+-- Set the language.
+-- TODO: Accept-Language header support (currently only reads preferences)
+app:before_filter(function(self)
+    local language_code = self.session.language or "en"
+    if not locales[language_code] then
+        language_code = "en"
+    end
+    self.strings = locales[language_code].strings
 end)
 
 -- set cookie attributes. This code sets cookies to last for 7300 days.
@@ -192,7 +204,11 @@ end)
 
 -- RIP to instagram user "settings".
 app:get("/settings(/)", function(self)
+    self.languages = locales
     self.themes = config.themes
+    if self.session.language then
+        self.selected_language = self.session.language
+    end
     if self.session.theme then
         self.selected_theme = self.session.theme
     else
@@ -209,6 +225,7 @@ app:get("/settings(/)", function(self)
 end)
 
 app:post("/settings/save(/)", function(self)
+    self.session.language = self.params.language
     self.session.theme = self.params.theme
     self.session.disable_video_proxying = self.params.disable_video_proxying
     if self.params.sticky_navbar == "on" then
@@ -222,10 +239,11 @@ app:post("/settings/save(/)", function(self)
 end)
 
 app:post("/settings/reset(/)", function(self)
-   self.session.theme = nil
-   self.session.disable_video_proxying = nil
-   self.session.sticky_navbar = "on"
-   return { redirect_to = "/" }
+    self.session.language = nil
+    self.session.theme = nil
+    self.session.disable_video_proxying = nil
+    self.session.sticky_navbar = "on"
+    return { redirect_to = "/" }
 end)
 
 

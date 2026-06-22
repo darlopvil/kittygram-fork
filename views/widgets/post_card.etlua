@@ -37,9 +37,9 @@
         <% end %>
     </div>
     <div class="post-info">
-        <time class="post-time" datetime="<%= os.date('%Y-%m-%dT%H:%M:%S', post.timestamp) %>">Posted at: <%=  os.date('%Y-%m-%d %H:%M:%S', post.timestamp) %></time>
+        <time class="post-time" datetime="<%= os.date('%Y-%m-%dT%H:%M:%S', post.timestamp) %>"><%= strings.post.posted_at .. os.date('%Y-%m-%d %H:%M:%S', post.timestamp) %></time>
         <div class="post-likes">
-            <p><%= post.likes %> likes</p>
+            <p><%= post.likes .. strings.post.likes %></p>
         </div>
         <div class="post-body">
             <div class="caption">
@@ -49,10 +49,10 @@
             </div>
 
             <% if comments then %>
-                <h2> Comments </h2>
+                <h2><%= strings.post.comments %></h2>
                 <div class="comments">
                     <% if comments.has_errors then %>
-                        <p>Error loading comments: <%= (comments.error_info or {}).message %></p>
+                        <p><%= strings.post.error_loading_comments ..  (comments.error_info or {}).message or "Unknown error" %></p>
                     <% else %>
                         <% for _, comment in ipairs(comments) do %>
                             <% comment = comment.node %>
@@ -68,13 +68,13 @@
                             </article>
                         <% end %>
                         <hr>
-                        <p><i>Fetching more comments is currently not possible.</i></p>
+                        <p><i><%= strings.post.fetching_comments_impossible %></i></p>
                     <% end %>
                 </div>
             <% end %>
         </div>
     </div>
     <% if include_comments_link then %>
-        <a href="<%= "/p/" .. post.shortcode %>"> <%= post.comment_count %> Comments</a>
+        <a href="<%= "/p/" .. post.shortcode %>"> <%= post.comment_count %> <%= string.lower(strings.post.comments) %></a>
     <% end %>
 </div>

@@ -1,11 +1,11 @@
 <main id="main">
     <div class="item-card search-form">
         <form method="GET" action="/search">
-            <input type="text" placeholder="Enter search..." name="q">
-            <button>Search</button>
+            <input type="text" placeholder="<%= strings.explore.enter_search %>" name="q">
+            <button><%= strings.explore.search %></button>
         </form>
     </div>
-    <h2 class="item-heading">About</h2>
+    <h2 class="item-heading"><%= strings.about %></h2>
     <div class="item-card">
         <p>Kittygram is an anonymous, privacy-friendly, lightweight, and open-source Instagram frontend inspired by <a href="https://github.com/zedeus/nitter">nitter</a>. It offers a clean, fast way to browse Instagram without the usual clutter or tracking.</p>
 
@@ -15,7 +15,7 @@
         <p>The source code of this software is available on <a href="https://codeberg.org/irelephant/kittygram">Codeberg</a> under the AGPL-3.0 license.</p>
     </div>
 
-    <h2 class="item-heading">About this instance</h2>
+    <h2 class="item-heading"><%= strings.about_this_instance %></h2>
 
     <div class="item-card">
         <% render("views.about_instance") %>

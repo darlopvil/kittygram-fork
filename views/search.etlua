@@ -1,9 +1,9 @@
 <main id="main">
-    <h2 class="item-heading">Search</h2>
+    <h2 class="item-heading"><%= strings.explore.search %></h2>
     <div class="item-card search-form">
         <form method="GET">
-            <input type="text" placeholder="Enter search..." name="q">
-            <button>Search</button>
+            <input type="text" placeholder="<%= strings.explore.enter_search %>" name="q">
+            <button><%= strings.explore.search %></button>
         </form>
     </div>
-</main
+</main>

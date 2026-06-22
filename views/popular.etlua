@@ -1,7 +1,7 @@
 <% local proxy_url = require("lib.helpers").proxy_url %>
 
 <main id="main">
-    <h2 class="item-heading">Popular</h2>
+    <h2 class="item-heading"><%= strings.explore.popular %></h2>
     <% for _, section in ipairs(popular) do %>
         <div class="popular-section item-card">
             <h3> <%= section.display_title %> </h3>

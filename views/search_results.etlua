@@ -5,9 +5,9 @@
 %>
 
 <main id="main">
-    <h2 class="item-heading">Search results for <%= search_query %> </h2>
+    <h2 class="item-heading"><%= strings.explore.results_for .. search_query %></h2>
     <% if search_results.users and #search_results.users > 0 then %>
-        <h3 class="item-heading">Users</h3>
+        <h3 class="item-heading"><%= strings.explore.users %></h3>
         <% for _, user in ipairs(search_results.users) do %>
             <% user = user.user %>
             <div class="user-info item-card search-result">
@@ -17,14 +17,13 @@
         <% end %>
     <% end %>
     <% if search_results.hashtags and #search_results.hashtags > 0 then %>
-        <h3 class="item-heading">Hashtags</h3>
+        <h3 class="item-heading"><%= strings.explore.hashtags %></h3>
         <% for _, hashtag in ipairs(search_results.hashtags) do %>
             <% hashtag = hashtag.hashtag %>
             <div class="item-card search-result">
                 <p><a href="/popular/<%= hashtag.name %>">#<%= hashtag.name %></a> -- <%= hashtag.search_result_subtitle %> </p>
             </div>
         <% end %>
-        <!-- I'll add better support for hashtags later. -->
     <% end %>
 </main>
 

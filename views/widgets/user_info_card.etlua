@@ -14,7 +14,7 @@
         <h3> <%= user.full_name %> </h3>
         <p> @<%= user.username %>
         <% if user.is_verified then %>
-            <img src="/static/icons/check_circle.svg" title="Verified" class="verification-symbol">
+            <img src="/static/icons/check_circle.svg" title="<%= strings.user.verified %>" class="verification-symbol">
         <% end %>
         </p>
     </div>
@@ -23,9 +23,9 @@
     </div>
     <div class="profile-stats">
         <ul>
-            <li><b class="stat-number"><%= user.follower_count %></b> <p>Followers</p></li>
-            <li><b class="stat-number"><%= user.following_count %></b> <p>Following</p></li>
-            <li><b class="stat-number"><%= user.media_count %></b> <p>Posts</p></li>
+            <li><b class="stat-number"><%= user.follower_count %></b> <p><%= strings.user.followers %></p></li>
+            <li><b class="stat-number"><%= user.following_count %></b> <p><%= strings.user.following %></p></li>
+            <li><b class="stat-number"><%= user.media_count %></b> <p><%= strings.user.posts %></p></li>
         </ul>
     </div>
 </div>

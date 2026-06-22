@@ -2,7 +2,7 @@
 <% local json = require("cjson") %>
 
 <main id="main">
-    <h2 class="item-heading"> Posts matching: <%= explore_query %> </h2>
+    <h2 class="item-heading"><%= strings.explore.posts_matching .. explore_query %></h2>
     <div class="grid">
         <% for _, item in ipairs(results.edges) do %>
             <% item = item.node %>
@@ -26,7 +26,7 @@
         <% end %>
     </div>
     <% if results.page_info and results.page_info.has_next_page then %>
-        <a href="<%= "/popular/" .. explore_query .. "/?after=" .. results.page_info.end_cursor %>" class="next-button">Next Page</a>
+        <a href="<%= "/popular/" .. explore_query .. "/?after=" .. results.page_info.end_cursor %>" class="next-button"><%= strings.next_page %></a>
     <% end %>
 </main>
 
