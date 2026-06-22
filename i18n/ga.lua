@@ -2,9 +2,9 @@
 
 return {
     next_page = "Leathanach eile",
-    view_on_instagram = "Féach ár Instagram.",
+    view_on_instagram = "Féach ar Instagram.",
     about = "Faoi",
-    about_this_instance = "Faoi an ásc seo",
+    about_this_instance = "Faoin ásc seo",
     navbar = {
         kittygram_logo = "Lógó Kittygram",
         atom_feed = "Fotha Atom",
