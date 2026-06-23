@@ -145,11 +145,12 @@ app:get("/:username(/:path)(/)", function(self)
             return { json = user }
         end
         if not user.user_info.has_errors then
-            self.page_title = "@" .. user.user_info.username .. " | kittygram"
+            self.username = user.user_info.username
         else
             -- fall back to the param if the username isn't available
-            self.page_title = "@" .. self.params.username .. " | kittygram"
+            self.username = self.params.username
         end
+        self.page_title = "@" .. self.username .. " | kittygram"
         return { render = "user" }
     end
 end)

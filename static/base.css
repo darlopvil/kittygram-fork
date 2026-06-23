@@ -342,7 +342,7 @@ pre {
     border: var(--card-border);
     border-radius: 15px;
     background-color: var(--card-bg-color);
-    width: 6rem;
+    width: fit-content;
     padding: 0;
 }
 

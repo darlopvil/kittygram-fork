@@ -3,39 +3,41 @@
 
 <main id="main">
     <% if user.has_errors then %>
-        <p>Couldn't load user info due to error.</p>
-        <details>
+        <div class="item-card">
+            <p>Couldn't load user info due to error.</p>
+            <details>
             <summary>More info</summary>
-            <p><%= user.error_info.message %></p>
-        </details>
+                <p><%= user.error_info.message %></p>
+            </details>
+        </div>
     <% else %>
         <% render("views.widgets.user_info_card", { user = user }) %>
     <% end %>
     <div class="selector-group">
         <div class="selector">
             <% if params.path == "reels" then %>
-                <a href="/<%= user.username %>"><%= strings.user.all %></a>
-                <a class="selected" href="/<%= user.username %>/reels"><%= strings.user.reels %></a>
+                <a href="/<%= username %>"><%= strings.user.all %></a>
+                <a class="selected" href="/<%= username %>/reels"><%= strings.user.reels %></a>
             <% else %>
-                <a class="selected" href="/<%= user.username %>"><%= strings.user.all %></a>
-                <a href="/<%= user.username %>/reels"><%= strings.user.reels %></a>
+                <a class="selected" href="/<%= username %>"><%= strings.user.all %></a>
+                <a href="/<%= username %>/reels"><%= strings.user.reels %></a>
             <% end %>
         </div>
         <div class="selector">
             <% if params.after then %>
                 <% if params.view == "grid" then %>
-                    <a href="<%= "/" .. user.username  .. "?after=" .. params.after %>"><%= strings.user.list %></a>
+                    <a href="<%= "/" .. username  .. "?after=" .. params.after %>"><%= strings.user.list %></a>
                     <a class="selected" href="?view=grid&after=<%= params.after %>"><%= strings.user.grid %></a>
                 <% else %>
-                    <a class="selected" href="<%= "/" .. user.username  .. "?after=" .. params.after %>"><%= strings.user.list %></a>
+                    <a class="selected" href="<%= "/" .. username  .. "?after=" .. params.after %>"><%= strings.user.list %></a>
                     <a href="?view=grid&after=<%= params.after %>"><%= strings.user.grid %></a>
                 <% end %>
             <% else %>
                 <% if params.view == "grid" then %>
-                    <a href="<%= "/" .. user.username %>"><%= strings.user.list %></a>
+                    <a href="<%= "/" .. username %>"><%= strings.user.list %></a>
                     <a class="selected" href="?view=grid"><%= strings.user.grid %></a>
                 <% else %>
-                    <a class="selected" href="<%= "/" .. user.username %>"><%= strings.user.list %></a>
+                    <a class="selected" href="<%= "/" .. username %>"><%= strings.user.list %></a>
                     <a href="?view=grid"><%= strings.user.grid %></a>
                 <% end %>
             <% end %>

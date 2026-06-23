@@ -9,7 +9,7 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 
 [{*.json*,*.lua,*.sh,*.{yaml,yml}}]
-indent_size = 2
+indent_size = 4
 
 [*.types]
 trim_trailing_whitespace = false

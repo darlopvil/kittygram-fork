@@ -16,18 +16,12 @@ local CURSORED_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timeli
 local NEGATIVE_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.negative
 
 local function get_user_posts(username, cursor)
-    if not cursor then
-        local timeline_query = cache.query_item("ig:timeline:" .. username .. ":latest")
-        if timeline_query ~= ngx.null then
-            return timeline_query
-        end
-    elseif cursor then
-        local timeline_query = cache.query_item("ig:timeline:" .. username .. ":" .. cursor)
-        if timeline_query ~= ngx.null then
-            return timeline_query
-        end
-    end
+    local key = "ig:timeline:" .. username .. ":" .. (cursor or "latest")
 
+    local timeline_query = cache.query_item(key)
+    if timeline_query ~= ngx.null then
+        return timeline_query.posts, timeline_query.end_cursor
+    end
 
     local payload, doc_id = queries.user_posts(username, 20, cursor)
     local posts_request = instagram_graphql_request(payload, doc_id, "user_posts")
@@ -170,7 +164,6 @@ local function arrange_user_data(username, after_cursor, timeline_type)
 
     if timeline_type == "all" then
         posts, end_cursor = get_user_posts(username, after_cursor)
-
         -- return posts immediately if there's errors present.
         if posts.has_errors then
             return posts
@@ -193,7 +186,7 @@ local function arrange_user_data(username, after_cursor, timeline_type)
                     end
                     -- if a user id is not set, then use the id of the user who owns the post itself.
                     if not user_id then
-                        user_id = first_post.id
+                        user_id = first_post.user.id
                     end
                 else
                     user_id = first_post.user.id

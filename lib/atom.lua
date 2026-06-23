@@ -96,7 +96,7 @@ app:get("/:username/atom.xml(/)", function(self)
     if not config.enable_atom then
         return { "Atom is not enabled on this instance.", layout = false, content_type = "text/plain" }
     else
-        local user = get_user(self.params.username)
+        local user = get_user(self.params.username, nil,  "all")
         if user.has_errors then
             return { "Error while fetching user.", layout = false, content_type = "text/plain" }
         else
