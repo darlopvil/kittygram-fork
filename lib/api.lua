@@ -136,7 +136,7 @@ app:get("/api/post/:shortcode(/)", function(self)
     return { json = post, status = status_code }
 end)
 
-app:get("/api/user/:username(/)", function(self)
+app:get("/api/user/:username(/:path)(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
         return { json = {
             status = "fail",
@@ -144,8 +144,14 @@ app:get("/api/user/:username(/)", function(self)
         }, status = 401}
     end
 
-    local user = instagram.get_user(self.params.username, self.params.cursor)
+    local feed_type
+    if self.params.path and self.params.path == "reels" then
+        feed_type = "reel"
+    else
+        feed_type = "all"
+    end
 
+    local user = instagram.get_user(self.params.username, self.params.cursor, feed_type)
 
     local status_code
     if user.has_errors then
@@ -161,5 +167,38 @@ app:get("/api/user/:username(/)", function(self)
     end
 
     return { json = user, status = status_code }
+end)
+
+app:get("/api/search", function(self)
+    if config.require_api_token ~= false and not self.token_is_valid then
+        return { json = {
+            status = "fail",
+            message = "An API token is required."
+        }, status = 401}
+    end
+
+    if not self.params.query then
+        return { json = {
+            status = "fail",
+            message = "Missing parameter `query`"
+        }, status = 400 }
+    elseif type(self.params.query) ~= "string" then
+        return {
+            json = {
+                status = "fail",
+                message = "Invalid data type for parameter `query`",
+            }, status = 400
+        }
+    end
+
+    local query = instagram.search.search(self.params.query)
+
+    if query.has_errors then
+        return { json = query }
+    end
+
+    query.status = "ok"
+
+    return { json = query }
 end)
 return app
