@@ -173,6 +173,9 @@ local function arrange_user_data(username, after_cursor, timeline_type)
         if not user_id then
             if not posts[1] then
                 user_id = get_user_id(username)
+                if type(user_id) == "table" and user_id.has_errors then
+                    return user_id
+                end
             else
                 local first_post = posts[1].node
                 -- Check if a post has coauthors. Usually an indication they are a repost.
