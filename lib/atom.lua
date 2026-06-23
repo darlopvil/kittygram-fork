@@ -4,7 +4,7 @@ local config = require("lapis.config").get()
 local get_user = require("lib.instagram").get_user
 local proxy_url = require("lib.helpers").proxy_url
 local date = require("date")
-local utf8 = require("utf8")
+local utf8 = require('lua-utf8')
 local u8_gsub = utf8.gsub
 
 local function xml_escape(string)

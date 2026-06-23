@@ -1,0 +1,14 @@
+services:
+  kittygram:
+    image: kittygram:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kittygram
+    ports:
+      - 8080:80
+    restart: unless-stopped
+  redis:
+    image: valkey/valkey:latest
+    container_name: valkey
+    restart: unless-stopped
