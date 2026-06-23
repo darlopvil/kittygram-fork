@@ -17,7 +17,7 @@ dependencies = {
    "htmlparser",
    "lua-cjson",
    "lsqlite3",
-   "utf8"
+   "luautf8"
 }
 build = {
    type = "none"

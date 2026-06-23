@@ -12,7 +12,6 @@ RUN /usr/local/openresty/luajit/bin/luarocks install lapis && \
     /usr/local/openresty/luajit/bin/luarocks install lsqlite3 && \
     /usr/local/openresty/luajit/bin/luarocks install luautf8
 
-RUN echo 'return require("lua-utf8")' > /usr/local/openresty/luajit/share/lua/5.1/utf8.lua
 
 FROM docker.io/openresty/openresty:alpine
 

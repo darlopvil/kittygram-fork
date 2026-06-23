@@ -7,8 +7,6 @@ services:
     container_name: kittygram
     ports:
       - 8080:80
-    environment:
-      - RESOLVER=10.89.2.1
     restart: unless-stopped
   redis:
     image: valkey/valkey:latest

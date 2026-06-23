@@ -5,7 +5,7 @@ local get_user = require("lib.instagram").get_user
 local format_post = require("lib.formatters").format_post
 local proxy_url = require("lib.helpers").proxy_url
 local date = require("date")
-local utf8 = require 'utf8'
+local utf8 = require('lua-utf8')
 local u8_gsub = utf8.gsub
 
 local function xml_escape(string)
