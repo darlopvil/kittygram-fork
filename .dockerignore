@@ -22,3 +22,5 @@ LICENSE
 readme.md
 instances.json
 lib/disused/
+
+*.sqlite
