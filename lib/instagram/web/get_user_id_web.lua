@@ -12,6 +12,8 @@ local totally_human_headers = {
 
 
 
+-- function to get an id from a user's profile page.
+-- heavily ratelimited.
 local function get_user_id(username)
     local httpc = http.new()
 

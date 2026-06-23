@@ -34,6 +34,7 @@ return {
         results_for = "Search results for ",
         users = "Users",
         hashtags = "Hashtags",
+        missing_info_warning = "Search is limited on this instance. Users will only be found if they were previously seen by this instance"
     },
     settings = {
         settings = "Settings",

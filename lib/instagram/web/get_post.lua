@@ -9,7 +9,7 @@ local http = require("resty.http")
 local html = require("htmlparser")
 local helpers = require("lib.helpers")
 local config = require("lapis.config").get()
-local save_user_id = require("models.user_ids").save_user_id
+local users_db = require("models.users")
 local web_state = ngx.shared.web_state
 
 local WINDOW_LENGTH = config.ratelimits.window_length
@@ -42,9 +42,9 @@ local function get_post_graphql(shortcode)
 
     local formatted_post = format_post.from_shortcode(post.data
                                                               .xdt_shortcode_media)
+    users_db.save_user(post.data.xdt_shortcode_media.owner)
     cache.cache_item("ig:shortcode:" .. shortcode, formatted_post, "positive_post")
 
-    save_user_id(formatted_post.user.username, formatted_post.user.id)
     return formatted_post
 end
 
@@ -65,7 +65,12 @@ local function get_post_graphql_root(shortcode)
 
     local formatted_post = format_post.from_web(post.data.xdt_api__v1__media__shortcode__web_info.items[1])
     cache.cache_item("ig:shortcode:" .. shortcode, formatted_post, "positive_post")
-    save_user_id(formatted_post.user.username, formatted_post.user.id)
+    users_db.save_user({
+        id = formatted_post.user.id,
+        username = formatted_post.user.username,
+        profile_pic_url = formatted_post.user.profile_picture,
+        is_verified = formatted_post.user.is_verified
+    })
 
     return formatted_post
 end
@@ -202,6 +207,12 @@ local function get_post_web(shortcode)
     cache.cache_item("ig:shortcode:" .. shortcode, formatted_post, "positive_post")
     cache.cache_item("ig:comments:" .. formatted_post.id, post_comments, "comments")
 
+    users_db.save_user({
+        id = formatted_post.user.id,
+        username = formatted_post.user.username,
+        profile_pic_url = formatted_post.user.profile_picture,
+        is_verified = formatted_post.user.is_verified
+    })
     return formatted_post, post_comments
 end
 

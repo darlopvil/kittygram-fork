@@ -241,4 +241,44 @@ local format_user_info = {
     end,
 }
 
-return { format_post = format_post, format_user_info = format_user_info }
+local format_search = {
+    from_web_topsearch = function(results)
+        local formatted_results = {
+            search_source = "instagram_topsearch",
+            users = {},
+            hashtags = {},
+        }
+        for _, user in ipairs(results.users) do
+            user = user.user
+            table.insert(formatted_results.users, {
+                username = user.username,
+                profile_picture = user.profile_pic_url,
+                id = user.id,
+                is_verified = user.is_verified
+            })
+        end
+
+        for _, hashtag in ipairs(results.hashtags) do
+            hashtag = hashtag.hashtag
+            table.insert(formatted_results.hashtags, {
+                name = hashtag.name,
+                search_result_subtitle = hashtag.search_result_subtitle
+            })
+        end
+        return formatted_results
+    end,
+    from_database = function(results)
+        local formatted_results = {
+            search_source = "database",
+            users = {},
+            hashtags = {}
+        }
+        -- database backed search only finds users
+        for _, user in ipairs(results) do
+            table.insert(formatted_results.users, user)
+        end
+
+        return formatted_results
+    end
+}
+return { format_post = format_post, format_user_info = format_user_info, format_search = format_search }

@@ -1,6 +1,6 @@
 local get_redis = require("lapis.redis").get_redis
 local json = require("cjson")
-local save_user_id = require("models.user_ids").save_user_id
+local save_user = require("models.users").save_user
 local formatters = require("lib.formatters")
 local config = require("lapis.config").get()
 local ngx_resp = require("ngx.resp")
@@ -77,13 +77,13 @@ local function cache_timeline(posts)
 end
 
 -- functions to cache all the user Ids from different objects.
-local bulk_save_ids = {
+local bulk_save_users = {
     from_comments = function(comments)
         for _, comment in ipairs(comments.edges or {}) do
             comment = comment.node
 
             if comment.user and comment.user ~= ngx.null then
-                save_user_id(comment.user.username, comment.user.id)
+                save_user(comment.user)
             end
         end
     end,
@@ -92,10 +92,17 @@ local bulk_save_ids = {
             item = item.node
 
             if item.user and item.user ~= ngx.null then
-                save_user_id(item.user.username, item.user.id)
+                save_user(item.user)
+            end
+        end
+    end,
+    from_topsearch = function(results)
+        for _, user in ipairs(results.users) do
+            if user.user then
+                save_user(user.user)
             end
         end
     end
 }
 
-return { test_redis = test_redis, cache_item = cache_item, query_item = query_item, cache_timeline = cache_timeline, bulk_save_ids = bulk_save_ids }
+return { test_redis = test_redis, cache_item = cache_item, query_item = query_item, cache_timeline = cache_timeline, bulk_save_users = bulk_save_users }

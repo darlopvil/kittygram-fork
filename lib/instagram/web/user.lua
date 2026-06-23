@@ -7,7 +7,7 @@ local json = require("cjson")
 local config = require("lapis.config").get()
 local cache = require("lib.cache")
 local get_user_id = require("lib.instagram.web.get_user_id_web")
-local user_id_db = require("models.user_ids")
+local user_db = require("models.users")
 local format_post = require("lib.formatters").format_post
 
 local USER_INFO_EXPIRE_TIME = config.cache.expire_times.user_info.positive
@@ -61,7 +61,7 @@ local function get_user_posts(username, cursor)
             }, "cursored_timeline")
         end
         cache.cache_timeline(posts)
-        return { posts = posts, end_cursor = end_cursor }
+        return posts, end_cursor
     end
 
     return errors.unknown{
@@ -120,6 +120,7 @@ local function get_user_hover_info(user_id)
         if info_request.data.xig_user_by_igid_v2 == json.null then
             return errors.not_found{ message = "Hover card info is null.", blob = info_request }
         else
+            user_db.save_user(info_request.data.xig_user_by_igid_v2.user_dict)
             cache.cache_item(key, info_request.data.xig_user_by_igid_v2.user_dict, "user_info")
             return info_request.data.xig_user_by_igid_v2.user_dict
         end
@@ -149,7 +150,7 @@ local function get_user_info(user_id)
     end
 
     cache.cache_item("ig:user:" .. user_id, user_info.data.user, "user_info")
-
+    user_db.save_user(user_info.data.user)
     return user_info.data.user
 end
 
@@ -158,10 +159,54 @@ end
 -- fetching posts also returns the user's id. I can then fetch the user info based on that.
 -- If a user has no posts (or is private), then their userid is retrieved from their user page.
 -- All user ids are stored for later use, as profile pages are ratelimited heavily.
+-- Getting reels requires an id.
 
 local function arrange_user_data(username, after_cursor, timeline_type)
-    if timeline_type == "reel" then
-        local user_id = user_id_db.get_user_id(username)
+    local user_id, posts, user_info, end_cursor
+    local user_query = user_db.get_user(username)
+    if user_query then
+        user_id = user_query.id
+    end
+
+    if timeline_type == "all" then
+        posts, end_cursor = get_user_posts(username, after_cursor)
+
+        -- return posts immediately if there's errors present.
+        if posts.has_errors then
+            return posts
+        end
+
+        -- if the user id was not found in the db, try to find one in the posts. if there are no posts, get the id from a profile page.
+        if not user_id then
+            if not posts[1] then
+                user_id = get_user_id(username)
+            else
+                local first_post = posts[1].node
+                -- Check if a post has coauthors. Usually an indication they are a repost.
+                if first_post.coauthor_producers and first_post.coauthor_producers ~= json.null and #first_post.coauthor_producers >= 1 then
+                    -- Iterate over the coauthors to see if one of them has a username which matches the provided username.
+                    for _, coauthor in ipairs(first_post.coauthor_producers) do
+                        if string.lower(coauthor.username) == string.lower(username) then
+                            user_id = coauthor.id
+                        end
+                        user_db.save_user(coauthor)
+                    end
+                    -- if a user id is not set, then use the id of the user who owns the post itself.
+                    if not user_id then
+                        user_id = first_post.id
+                    end
+                else
+                    user_id = first_post.user.id
+                    user_db.save_user(first_post.user)
+                end
+            end
+        end
+        local formatted_posts = {}
+        for _, post in ipairs(posts) do
+            table.insert(formatted_posts, format_post.from_timeline(post))
+        end
+        posts = formatted_posts
+    elseif timeline_type == "reel" then
         if not user_id then
             user_id = get_user_id(username)
         end
@@ -174,75 +219,20 @@ local function arrange_user_data(username, after_cursor, timeline_type)
                 blob = user_id
             }
         end
-        local user_info = get_user_info(user_id)
-        local user_posts, cursor = get_user_reels(user_id, after_cursor)
-        if user_posts.has_errors then
-            return user_posts
-        end
-        return { user_info = user_info, posts = user_posts, end_cursor = cursor}
-    end
 
-    local user_posts = {}
-    local user_id
-    -- check if a cursor is present (for pagination)
-    if after_cursor then
-        user_posts = get_user_posts(username, after_cursor)
-    else
-        user_posts = get_user_posts(username)
-    end
 
-    if user_posts.has_errors then
-        return user_posts
-    end
-
-    if #user_posts.posts < 1 then
-        if user_id_db.get_user_id(username) then
-            user_id = user_id_db.get_user_id(username)
-        else
-            user_id = get_user_id(username)
-            if user_id.has_errors then
-                return user_id
-            else
-                -- save id for later.
-                user_id_db.save_user_id(username, user_id)
-            end
-        end
-    else
-        -- Check if a post has coauthors. Usually an indication they are a repost.
-        if helpers.check_nested_field(user_posts.posts[1], "node", "coauthor_producers") and user_posts.posts[1].node.coauthor_producers ~= json.null and #user_posts.posts[1].node.coauthor_producers >= 1 then
-            -- Iterate over the coauthors to see if one of them has a username which matches the provided username.
-            for _, coauthor in ipairs(user_posts.posts[1].node.coauthor_producers) do
-                if string.lower(coauthor.username) == string.lower(username) then
-                    user_id = coauthor.id
-                end
-            end
-            -- if a user id is not set, then use the id of the user who owns the post itself.
-            if not user_id then
-                user_id = user_posts.posts[1].node.user.id
-            end
-        else
-            user_id = user_posts.posts[1].node.user.id
-            -- check that the username instagram returns matches the provided username to avoid saving an incorrect id.
-            if string.lower(username) == string.lower(user_posts.posts[1].node.user.username) then
-                 user_id_db.save_user_id(user_posts.posts[1].node.user.username, user_id)
-            end
+        posts, end_cursor = get_user_reels(user_id, after_cursor)
+        if posts.has_errors then
+            return posts
         end
     end
-
 
     local user_info = get_user_info(user_id)
 
-    local formatted_posts = {}
-    for _, post in ipairs(user_posts.posts) do
-        table.insert(formatted_posts, format_post.from_timeline(post))
-    end
-
-    user_posts.posts = formatted_posts
-
     return {
-        posts = user_posts.posts,
+        posts = posts,
         user_info = user_info,
-        end_cursor = user_posts.end_cursor
+        end_cursor = end_cursor
     }
 end
 

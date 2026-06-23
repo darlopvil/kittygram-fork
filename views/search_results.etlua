@@ -9,9 +9,8 @@
     <% if search_results.users and #search_results.users > 0 then %>
         <h3 class="item-heading"><%= strings.explore.users %></h3>
         <% for _, user in ipairs(search_results.users) do %>
-            <% user = user.user %>
             <div class="user-info item-card search-result">
-                <img src="<%= proxy_url(user.profile_pic_url) %>">
+                <img src="<%= proxy_url(user.profile_picture) %>">
                 <a class="username" href="<%= "/" .. user.username %>"> <%= user.username %> </a>
             </div>
         <% end %>
@@ -19,11 +18,16 @@
     <% if search_results.hashtags and #search_results.hashtags > 0 then %>
         <h3 class="item-heading"><%= strings.explore.hashtags %></h3>
         <% for _, hashtag in ipairs(search_results.hashtags) do %>
-            <% hashtag = hashtag.hashtag %>
             <div class="item-card search-result">
                 <p><a href="/popular/<%= hashtag.name %>">#<%= hashtag.name %></a> -- <%= hashtag.search_result_subtitle %> </p>
             </div>
         <% end %>
+    <% end %>
+
+    <% if search_results.search_source == "database" then %>
+        <div class="item-card search-warning">
+            <%= strings.explore.missing_info_warning %>
+        </div>
     <% end %>
 </main>
 

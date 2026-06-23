@@ -36,6 +36,7 @@ return {
         results_for = "Torthaí curdach do ",
         users = "Úsáideoir",
         hashtags = "Hashtags",
+        missing_info_warning = "Search is limited on this instance. Users will only be found if they were previously seen by this instance"
     },
     settings = {
         settings = "Socruithe",

@@ -254,6 +254,9 @@ input[type="text"] {
   border-radius: 15px;
 }
 
+.search-warning {
+    margin-top: 3rem;
+}
 .next-button {
   width: 5em;
   text-decoration: none;

@@ -3,16 +3,19 @@ local queries = require("lib.instagram.web.graphql").queries
 local helpers = require("lib.helpers")
 local errors = require("lib.helpers").create_error
 local util = require("lapis.util")
+local formatters = require("lib.formatters")
 local config = require("lapis.config").get()
 local cache = require("lib.cache")
 local json = require("cjson")
 
+local db_search = require("models.user_search")
 
-local function search(query)
 
+local function web_search(query)
     local payload, doc_id = queries.search(query)
     local search_request = instagram_graphql_request(payload, doc_id, "search")
     local search_results = search_request
+
     -- Check if an error was caught in the graphql function, if so, return that.
     if search_results.has_errors then
         return search_request
@@ -20,10 +23,26 @@ local function search(query)
     if search_results.errors then
         return errors.unknown{ blob = search_results }
     elseif helpers.check_nested_field(search_results, "data", "xdt_api__v1__fbsearch__topsearch_connection") then
-        return search_results.data.xdt_api__v1__fbsearch__topsearch_connection
+        local formatted_results = formatters.format_search.from_web_topsearch(search_results.data.xdt_api__v1__fbsearch__topsearch_connection)
+        cache.bulk_save_users.from_topsearch(search_results.data.xdt_api__v1__fbsearch__topsearch_connection)
+        return  formatted_results
     end
 
     return errors.unknown{ blob = search_results }
+end
+
+local function database_search(query)
+    local search = db_search(query)
+    local formatted_results = formatters.format_search.from_database(search)
+    return formatted_results
+end
+
+local function search(query)
+    if config.web_session and config.web_session.cookies and config.web_session.use_for and config.web_session.use_for.search then
+        return web_search(query)
+    else
+        return database_search(query)
+    end
 end
 
 local function get_popular_page()
