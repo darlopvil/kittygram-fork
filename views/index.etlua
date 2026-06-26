@@ -13,6 +13,7 @@
 
         <p>To get started using it, you can search for users or hashtags by clicking on the search icon above, or replace www.instagram.com in any Instagram link with this domain.</p>
         <p>The source code of this software is available on <a href="https://codeberg.org/irelephant/kittygram">Codeberg</a> under the AGPL-3.0 license.</p>
+        <p>Version: <strong><%= version %></strong></p>
     </div>
 
     <h2 class="item-heading"><%= strings.about_this_instance %></h2>
