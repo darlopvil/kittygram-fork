@@ -24,6 +24,23 @@ local function safe_json_decode(data)
     return status, result
 end
 
+-- add commas to a number.
+-- e.g., 100000, 100,000
+local function comma_value(amount)
+    if type(amount) == "userdata" then
+        return amount
+    end
+
+    local formatted = amount
+    while true do
+        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+        if (k==0) then
+            break
+        end
+    end
+    return formatted
+end
+
 local create_error = {
     not_found = function(args)
         return {
@@ -75,6 +92,16 @@ local create_error = {
             }
         }
     end,
+    route_not_defined = function()
+        return {
+            has_errors = true,
+            error_type = "route_not_defined",
+            error_info = {
+                error_message = "No route was defined for this request.",
+                error_blob = nil,
+            }
+        }
+    end,
     unknown = function(args)
         return {
             has_errors = true,
@@ -91,5 +118,6 @@ return {
     check_nested_field = check_nested_field,
     proxy_url = proxy_url,
     create_error = create_error,
-    safe_json_decode = safe_json_decode
+    safe_json_decode = safe_json_decode,
+    comma_value = comma_value
 }

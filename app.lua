@@ -1,10 +1,11 @@
 local lapis = require("lapis")
-local util = require("lapis.util")
 local config = require("lapis.config").get()
 local app = lapis.Application()
 local date = require("date")
 local helpers = require("lib.helpers")
+local version = require("version")
 
+local instances = require("lib.instances")
 local locales = require("i18n.languages")
 
 app:enable("etlua")
@@ -19,8 +20,11 @@ app:include(api)
 
 local instagram = require("lib.instagram")
 
+math.randomseed(os.time())
+
 -- generate the "view on instagram" link and set the theme.
 app:before_filter(function(self)
+    self.version = version -- set the version number
     self.view_on_instagram_link = "https://www.instagram.com" ..
                                       self.req.parsed_url.path
     if self.session.theme and config.themes[self.session.theme] then
@@ -58,7 +62,15 @@ end
 
 local function render_error(self, error)
     self.error = error
-    if error.error_type == "not_found" then
+
+    -- select an alternate instance.
+    local instances_list = instances.get_list()
+    if #instances_list > 1 then
+        local current_path = self.req.parsed_url.path .. (self.req.parsed_url.query or "")
+        local selected_instance = instances_list[math.random(1, #instances_list)]
+        self.alternate_instance = selected_instance.url .. current_path
+    end
+    if error.error_type == "not_found" or error.error_type == "route_not_defined" then
         self.page_title = "Not Found | Kittygram"
         return { status = 404, render = "error" }
     elseif error.error_type == "ratelimited" then
@@ -127,6 +139,8 @@ app:get("/:username(/:path)(/)", function(self)
     local feed_type
     if self.params.path == "reels" then
         feed_type = "reel"
+    elseif self.params.path then
+        return render_error(self, helpers.create_error.route_not_defined())
     else
         feed_type = "all"
     end
@@ -221,6 +235,7 @@ app:get("/settings(/)", function(self)
     if self.session.sticky_navbar ~= "off" then
         self.sticky_navbar = true
     end
+
     self.page_title = "Settings | Kittygram"
     return { render = "settings" }
 end)
@@ -235,7 +250,6 @@ app:post("/settings/save(/)", function(self)
         self.session.sticky_navbar = "off"
     end
 
-
     return { redirect_to = "/" }
 end)
 
@@ -247,18 +261,8 @@ app:post("/settings/reset(/)", function(self)
     return { redirect_to = "/" }
 end)
 
-
-
 app:get("/*", function(self)
-    self.error = {
-        has_error = true,
-        error_type = "route_not_defined",
-        error_info = {
-            error_message = "No route was defined for this request.",
-            error_blob = nil,
-        }
-    }
-    return { status = 404, render  = "error" }
+    return render_error(self, helpers.create_error.route_not_defined())
 end)
 
 

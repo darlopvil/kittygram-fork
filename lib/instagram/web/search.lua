@@ -85,7 +85,7 @@ local function explore(query, after)
         return search_request
     end
 
-    cache.bulk_save_ids.from_explore(search_request.data.xig_logged_out_popular_search_media_info)
+    cache.bulk_save_users.from_explore(search_request.data.xig_logged_out_popular_search_media_info)
     local key
     if after then
         key = "ig:explore:" .. query  .. ":" .. after

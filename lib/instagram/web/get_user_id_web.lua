@@ -39,7 +39,7 @@ local function get_user_id(username)
         }
     elseif user_request.status == 302 then
         return errors.blocked{
-            message = "Kittygram has been blocked from accessing user pages. This means that private users and users without posts are currently unreachable. Normal users are probably also blocked."
+            message = "Kittygram has been blocked from accessing user pages. This means that private users and users without posts are currently unreachable."
         }
     else
         -- very fragile pattern, may break in future.

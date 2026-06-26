@@ -18,7 +18,8 @@ local cache = {
         },
         explore = 3600 * 3,
         comments = 3600,
-        popular_index = 3600 * 6 -- This doesn't really include much dynamic content, so it can be cached for a long time.
+        popular_index = 3600 * 6, -- This doesn't really include much dynamic content, so it can be cached for a long time.
+        instances_list = 3600 * 60
     }
 }
 

@@ -1,4 +1,5 @@
 <% local proxy_url = require("lib.helpers").proxy_url %>
+<% local comma_value = require("lib.helpers").comma_value %>
 
 <div class="item-card user-info-card">
     <div class="profile-picture">
@@ -23,9 +24,9 @@
     </div>
     <div class="profile-stats">
         <ul>
-            <li><b class="stat-number"><%= user.follower_count %></b> <p><%= strings.user.followers %></p></li>
-            <li><b class="stat-number"><%= user.following_count %></b> <p><%= strings.user.following %></p></li>
-            <li><b class="stat-number"><%= user.media_count %></b> <p><%= strings.user.posts %></p></li>
+            <li><b class="stat-number"><%= comma_value(user.follower_count) %></b> <p><%= strings.user.followers %></p></li>
+            <li><b class="stat-number"><%= comma_value(user.following_count) %></b> <p><%= strings.user.following %></p></li>
+            <li><b class="stat-number"><%= comma_value(user.media_count) %></b> <p><%= strings.user.posts %></p></li>
         </ul>
     </div>
 </div>
