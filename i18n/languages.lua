@@ -8,5 +8,10 @@ return {
         name = "Gaeilge",
         id = "ga",
         strings = require("i18n.ga")
+    },
+    ru = {
+        name = "Russian",
+        id = "ru",
+        strings = require("i18n.ru")
     }
 }
