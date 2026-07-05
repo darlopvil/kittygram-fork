@@ -6,7 +6,8 @@ local util = require("lapis.util")
 
 local WHITELIST = {
     "cdninstagram.com",
-    "fbcdn.net"
+    "fbcdn.net",
+    "fbsbx.com"
 }
 
 app:get("/mediaproxy", function(self)
@@ -29,7 +30,7 @@ app:get("/mediaproxy", function(self)
     end
 
     if not allowed then
-        return { status = 403, "Domain Not Allowed" }
+        return { status = 403, "Domain Not Allowed", layout = false, content_type = "text/plain" }
     end
 
     local ok, err, ssl_session = httpc:connect({

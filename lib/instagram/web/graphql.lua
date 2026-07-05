@@ -26,26 +26,34 @@ local gql_endpoints = {
 }
 
 local doc_ids = {
-    shortcode = {
-        doc_id = "8845758582119845",
-        endpoint = "query",
-        method = "POST",
-        requires_auth = false,
-        requires_anonymous_session = false,
-    },
     user_info = {
         doc_id = "26672929172408668",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = true
+    },
+    initial_comments = {
+        doc_id = "26297736713236852",
         endpoint = "query",
         method = "POST",
         requires_auth = false,
         requires_anonymous_session = false
     },
-    comments = {
+    comments_pagination = {
         doc_id = "26864966453197043",
         endpoint = "query",
         method = "POST",
-        requires_auth = false,
+        requires_auth = true,
         requires_anonymous_session = false,
+    },
+    -- Friendly name: PolarisLoggedOutDesktopWWWPostCommentsPaginationQuery
+    anon_comments_pagination = {
+        doc_id = "27261273046856309",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = true,
     },
     search = {
         doc_id = "24146980661639222",
@@ -76,14 +84,21 @@ local doc_ids = {
         requires_anonymous_session = true,
     },
     -- friendly_name: PolarisPostRootQuery
-    -- Not too sure where this is used, found the query in a post page's source code.
-    -- The same as `shortcode`, but newer and has a different structure.
-    shortcode_root = {
+    shortcode_post_info = {
         doc_id = "26713194205046842",
-        endpoint = "query",
-        method = "GET",
+        endpoint = "api",
+        method = "POST",
         requires_auth = false,
-        requires_anonymous_session = false,
+        requires_anonymous_session = true,
+    },
+    -- friendly_name: PolarisLoggedOutDesktopWWWPostRootContentQuery
+    media_id_post_info = {
+        doc_id = "27130156389949648",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = false,
+        -- Not too sure if it _actually_ requires an anon session, but it's a part of the logged-out stuff.
+        requires_anonymous_session = true,
     },
     -- Equivalent of https://instagram.com/popular.
     popular_page = {
@@ -105,24 +120,29 @@ local doc_ids = {
 }
 
 local queries = {
-    shortcode = function(shortcode)
+    initial_comments = function(post_id)
         return {
-            shortcode = shortcode,
-            fetch_tagged_user_count = json.null,
-            hoisted_comment_id = json.null,
-            hoisted_reply_id = json.null
-        }, doc_ids.shortcode
+            media_id = post_id,
+            __relay_internal__pv__PolarisIsLoggedInrelayprovider =  true
+        }, doc_ids.initial_comments
     end,
-    comments = function(post_id, sort_order)
+    comments_pagination = function(post_id, sort_order, cursor)
         return {
-            after = json.null, -- while an after_cursor _is_ exposed while logged out, this endpoint will only ever return the same page of comments when logged out.
+            after = cursor or json.null, -- while an after_cursor _is_ exposed while logged out, this endpoint will only ever return the same page of comments when logged out.
             before = json.null,
             first = 30, -- I'm pretty sure this is the amount of comments to fetch at a time.
             last = json.null,
             media_id = post_id,
             sort_order = sort_order, -- leaving this at the default. would be cool to make this controllable.
             __relay_internal__pv__PolarisIsLoggedInrelayprovider = true
-        }, doc_ids.comments
+        }, doc_ids.comments_pagination
+    end,
+    anon_comments_pagination = function(media_id, cursor)
+        return {
+            after = cursor,
+            first = 10,
+            media_id = media_id
+        }, doc_ids.anon_comments_pagination
     end,
     user_info = function(user_id)
         return {
@@ -187,11 +207,16 @@ local queries = {
             media_count = 8
         }, doc_ids.explore_search
     end,
-    shortcode_root = function(shortcode)
+    shortcode_post_info = function(shortcode)
         return {
             shortcode = shortcode,
             __relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider = false
-        }, doc_ids.shortcode_root
+        }, doc_ids.shortcode_post_info
+    end,
+    media_id_post_info = function(media_id)
+        return {
+            media_id = media_id,
+        }, doc_ids.media_id_post_info
     end,
     popular_page = function()
         return {}, doc_ids.popular_page

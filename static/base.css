@@ -85,7 +85,9 @@ nav img {
 }
 
 .user-info img {
-  max-height: 2.5em;
+  max-height: 2.3rem;
+  min-width: 2.3rem;
+  min-height: 2.3rem;
   border-radius: 0.2em;
   box-shadow: var(--outline-shadow);
 }
@@ -175,6 +177,10 @@ nav img {
 
 .comments article {
     margin-bottom: 0.8rem;
+}
+
+.comment-text {
+  overflow-wrap: break-word;
 }
 .post-image {
   margin-right: 2rem;

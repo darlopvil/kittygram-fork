@@ -1,61 +1,9 @@
 local json = require("cjson")
-
+local encoding = require("lapis.util.encoding")
 
 -- all of instagram's apis return posts in a different format.
 -- this takes  posts from different formats and turns them into a universal format
 local format_post = {
-    -- posts from the graphql shortcode api.
-    from_shortcode = function(shortcode)
-        -- stuff that should be found across all posts
-        local post = {
-            shortcode = shortcode.shortcode,
-            alt_text = shortcode.accessibility_caption,
-            timestamp = shortcode.taken_at_timestamp,
-            id = shortcode.id,
-        }
-
-        post.user = {
-            username = shortcode.owner.username,
-            display_name = shortcode.owner.full_name,
-            id = shortcode.owner.id,
-            profile_picture = shortcode.owner.profile_pic_url,
-            is_verified = shortcode.owner.is_verified,
-        }
-
-        if shortcode.edge_media_preview_like and shortcode.edge_media_preview_like.count then
-            post.likes = shortcode.edge_media_preview_like.count
-        end
-        if shortcode.edge_media_to_caption and #shortcode.edge_media_to_caption.edges > 0 then
-            post.caption = shortcode.edge_media_to_caption.edges[1].node.text
-        end
-        if shortcode.video_url then
-            post.video_url = shortcode.video_url
-            post.video_thumbnail = shortcode.thumbnail_src
-            post.view_count = shortcode.video_view_count
-        end
-
-        if shortcode.edge_sidecar_to_children then
-            post.images = {}
-            for _, item in ipairs(shortcode.edge_sidecar_to_children.edges) do
-                if item.node.video_url then
-                    table.insert(post.images, {
-                        video_url = item.node.video_url,
-                        video_thumbnail = item.node.display_resources[1].src,
-                        alt_text = item.node.accessibility_caption
-                    })
-                else
-                    table.insert(post.images, {
-                        image_url = item.node.display_resources[1].src,
-                        alt_text = item.node.accessibility_caption
-                    })
-                end
-            end
-        elseif shortcode.display_resources then
-            post.image_url = shortcode.display_resources[1].src
-        end
-
-        return post
-    end,
     -- posts from web post pages
     from_web = function(web_post)
         local formatted_post = {
@@ -189,8 +137,125 @@ local format_post = {
         end
         return reel_formatted
     end,
+    from_media_id_anon = function(post)
+        local formatted_post = {
+            id = post.pk,
+            alt_text = post.accessibility_caption,
+            shortcode = post.code,
+            likes = post.like_count,
+            timestamp = post.taken_at,
+            comment_count = post.comment_count
+        }
+
+        formatted_post.user = {
+            username = post.user.username,
+            id = post.user.id,
+            profile_picture = post.user.profile_pic_url,
+            is_verified = post.user.is_verified
+        }
+
+        if post.caption and post.caption ~= ngx.null then
+            formatted_post.caption = post.caption.text
+        end
+        formatted_post.images = {}
+        if post.carousel_media and post.carousel_media ~= json.null then
+            for _, media in ipairs(post.carousel_media) do
+                if media.video_versions and media.video_versions ~= ngx.null then
+                    table.insert(formatted_post.images, {
+                        video_url = media.video_versions[1].url,
+                        video_thumbnail = media.image_versions2.candidates[1].url,
+                        alt_text = media.accessibility_caption
+                    })
+                else
+                    table.insert(formatted_post.images, {
+                        image_url = media.image_versions2.candidates[1].url,
+                        alt_text = media.accessibility_caption
+                    })
+                end
+            end
+        elseif post.video_versions and post.video_versions ~= ngx.null then
+            formatted_post.video_url = post.video_versions[1].url
+            if post.image_versions2 and post.image_versions2 ~= ngx.null then
+                formatted_post.video_thumbnail = post.image_versions2.candidates[1].url
+            else
+                formatted_post.video_thumbnail = post.display_uri
+            end
+        elseif post.image_versions2 and post.image_versions2 ~= ngx.null then
+            formatted_post.image_url = post.image_versions2.candidates[1].url
+        end
+
+        return formatted_post
+    end
 }
 
+local format_comments = {
+    from_web_graphql = function(comments)
+        local formatted_comments = {
+            items = {},
+        }
+
+        for _, comment in ipairs(comments.edges) do
+            comment = comment.node
+
+            local formatted_comment = {
+                text = comment.text,
+                timestamp = comment.created_at,
+                likes = comment.comment_like_count
+            }
+
+            if comment.giphy_media_info and comment.giphy_media_info ~= ngx.null and type(comment.giphy_media_info) == "table" then
+                formatted_comment.gif_media = comment.giphy_media_info.first_party_cdn_proxied_images.fixed_height.url
+            end
+
+            formatted_comment.user = {
+                username = comment.user.username,
+                is_verified = comment.user.is_verified,
+                id = comment.user.id,
+                profile_picture = comment.user.profile_pic_url,
+            }
+            table.insert(formatted_comments.items, formatted_comment)
+        end
+
+        if comments.page_info and comments.page_info.has_next_page then
+            formatted_comments.end_cursor = encoding.encode_base64(comments.page_info.end_cursor)
+        end
+        return formatted_comments
+    end,
+    from_web_api = function(comments)
+        local formatted = {
+            items = {}
+        }
+
+        for _, comment in ipairs(comments.comments) do
+            local formatted_comment = {
+                text = comment.text,
+                timestamp = comment.created_at,
+                likes = comment.comment_like_count,
+            }
+
+            formatted_comment.user = {
+                username = comment.user.username,
+                profile_picture = comment.user.profile_pic_url,
+                id = comment.user.id,
+                is_verified = comment.user.is_verified
+            }
+
+            if comment.giphy_media_info and comment.giphy_media_info ~= ngx.null then
+                if comment.giphy_media_info.images and comment.giphy_media_info.images ~= json.null then
+                    formatted_comment.gif_media = comment.giphy_media_info.images.fixed_height.url
+                end
+            end
+
+            table.insert(formatted.items, formatted_comment)
+        end
+
+        if comments.next_min_id and comments.next_min_id ~= ngx.null then
+            formatted.end_cursor = encoding.encode_base64(comments.next_min_id)
+        end
+
+        return formatted
+    end
+}
 local format_user_info = {
     from_graphql = function(info)
         return {
@@ -281,4 +346,4 @@ local format_search = {
         return formatted_results
     end
 }
-return { format_post = format_post, format_user_info = format_user_info, format_search = format_search }
+return { format_post = format_post, format_user_info = format_user_info, format_search = format_search, format_comments = format_comments }

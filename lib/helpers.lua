@@ -1,5 +1,7 @@
 local util = require("lapis.util")
 local json = require("cjson")
+local bignum = require("openssl.bignum")
+
 
 local function check_nested_field(tbl, ...)
     local current = tbl
@@ -33,12 +35,30 @@ local function comma_value(amount)
 
     local formatted = amount
     while true do
-        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+        local formatted_, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+        formatted = formatted_
         if (k==0) then
             break
         end
     end
     return formatted
+end
+
+local ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+
+local function shortcode_to_id(shortcode)
+    local num = bignum.new(0)
+
+    for i = 1, #shortcode do
+        local c = shortcode:sub(i, i)
+        local value = ALPHABET:find(c, 1, true)
+        assert(value, "Invalid character: " .. c)
+
+        value = value - 1 -- convert to 0-63
+        num = num * 64 + value
+    end
+
+    return tostring(num)
 end
 
 local create_error = {
@@ -119,5 +139,6 @@ return {
     proxy_url = proxy_url,
     create_error = create_error,
     safe_json_decode = safe_json_decode,
-    comma_value = comma_value
+    comma_value = comma_value,
+    shortcode_to_id = shortcode_to_id
 }

@@ -16,7 +16,6 @@ local function create_headers()
         ["X-Ig-App-Id"] = "936619743392459",
         ["X-CSRFToken"] = "exampletexthere",
         ["Accept"] = "*/*",
-        ["Content-Type"] = "application/x-www-form-urlencoded"
     }
 end
 
@@ -24,13 +23,19 @@ local endpoints = {
     user_reels = {
         path = "clips/user/",
         method = "POST",
-        requires_auth = false
+        requires_auth = false,
+        requires_anonymous_session = true -- This doesn't _actually_ strictly required, but it isn't used anywhere with auth, so it's use could be suspicous.
     },
     -- found this endpoint embedded in a profile page. Seems to be forgotten about or unused.
     user_posts = {
         path = "feed/user/%s/username/",
         method = "GET",
         requires_auth = false
+    },
+    comments = {
+        path = "media/%s/comments/",
+        method = "GET",
+        requires_auth = true
     }
 }
 
@@ -58,6 +63,19 @@ local construct_params = {
             },
         }
     end,
+    comments = function(media_id, cursor)
+        return {
+            body = {},
+            path = {
+                media_id
+            },
+            query = {
+                can_support_threading = "true",
+                min_id = cursor,
+                sort_order = "popular"
+            }
+        }
+    end
 }
 
 
@@ -93,6 +111,12 @@ local function request(endpoint, params, purpose)
         request_opts.proxy_opts = { https_proxy = config.proxies[purpose] }
     end
 
+    if purpose and config.web_session and config.web_session.cookies and config.web_session.use_for[purpose] then
+        if not endpoint.requires_anonymous_session then
+            request_opts.headers["Cookie"] = config.web_session.cookies
+        end
+    end
+
     local request_uri = BASE_PATH .. string.format(endpoint.path, table.unpack(params.path))
 
     local encoded_query_string = util.encode_query_string(params.query)
@@ -104,6 +128,7 @@ local function request(endpoint, params, purpose)
         request_opts.method = "POST"
         local encoded_body = util.encode_query_string(params.body)
         request_opts.body = encoded_body
+        request_opts.headers["Content-Type"] = "application/x-www-form-urlencoded"
     elseif endpoint.method == "GET" then
         request_opts.method = "GET"
     end

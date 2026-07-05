@@ -98,25 +98,15 @@ app:get("/", function(self)
 end)
 
 local function show_post(self)
-    local post, comments
-    if config.post_fetch_mode == "web" then
-        post, comments = instagram.get_post(self.params.shortcode)
-    elseif config.post_fetch_mode == "graphql" or config.post_fetch_mode == "graphql_root" then
-        post = instagram.get_post(self.params.shortcode)
-    -- fall back to web mode if post_fetch_mode isn't set.
-    else
-        post, comments = instagram.get_post(self.params.shortcode)
-    end
+    local post, comments = instagram.get_post(self.params.shortcode, self.params.cursor)
+
 
     if post.has_errors then
         return render_error(self, post)
     else
         self.post = post
-        if config.post_fetch_mode == "graphql" or config.post_fetch_mode == "graphql_root" then
-            comments = instagram.get_comments(post.id)
-        end
-
         self.comments = comments
+
         if self.params.json == "true" and config.allow_json then
             return { json = { post, comments} }
         end
