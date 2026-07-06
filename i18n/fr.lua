@@ -19,6 +19,7 @@ return {
         grid = "Grille",
         reels = "Reels",
         all = "Tout",
+        highlights = "Highlights",
         posts = "Publications",
         verified = "Verifié",
         followers = "Followers",

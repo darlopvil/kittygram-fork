@@ -18,9 +18,15 @@
             <% if params.path == "reels" then %>
                 <a href="/<%= username %>"><%= strings.user.all %></a>
                 <a class="selected" href="/<%= username %>/reels"><%= strings.user.reels %></a>
+                <a href="/<%= username %>/highlights"><%= strings.user.highlights %></a>
+            <% elseif params.path == "highlights" then %>
+                <a href="/<%= username %>"><%= strings.user.all %></a>
+                <a href="/<%= username %>"/reels"><%= strings.user.reels %></a>
+                <a class="selected" href="/<%= username %>/highlights"><%= strings.user.highlights %></a>
             <% else %>
                 <a class="selected" href="/<%= username %>"><%= strings.user.all %></a>
                 <a href="/<%= username %>/reels"><%= strings.user.reels %></a>
+                <a href="/<%= username %>/highlights"><%= strings.user.highlights %></a>
             <% end %>
         </div>
         <div class="selector">
@@ -48,10 +54,12 @@
             <h3><%= strings.user.user_is_private %></h3>
             <a href="<%= view_on_instagram_link %>"><%= strings.view_on_instagram %></a>
         </div>
-    <% elseif #posts < 1 then %>
+    <% elseif posts and #posts < 1 then %>
         <div class="item-card">
             <h3><%= strings.user.has_no_posts %></h3>
         </div>
+    <% elseif highlights then %>
+        <% render("views.widgets.highlights_tray", { highlights = highlights}) %>
     <% else %>
         <% if params.view == "grid" then %>
             <div class="grid">

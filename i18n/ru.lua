@@ -19,6 +19,7 @@ return {
         grid = "Сетка",
         reels = "Reels",
         all = "Все",
+        highlights = "Highlights",
         posts = "Публикации",
         verified = "Верифицирован",
         followers = "Подписчики",

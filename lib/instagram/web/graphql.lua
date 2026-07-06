@@ -33,20 +33,6 @@ local doc_ids = {
         requires_auth = false,
         requires_anonymous_session = true
     },
-    initial_comments = {
-        doc_id = "26297736713236852",
-        endpoint = "query",
-        method = "POST",
-        requires_auth = false,
-        requires_anonymous_session = false
-    },
-    comments_pagination = {
-        doc_id = "26864966453197043",
-        endpoint = "query",
-        method = "POST",
-        requires_auth = true,
-        requires_anonymous_session = false,
-    },
     -- Friendly name: PolarisLoggedOutDesktopWWWPostCommentsPaginationQuery
     anon_comments_pagination = {
         doc_id = "27261273046856309",
@@ -116,27 +102,10 @@ local doc_ids = {
         method = "POST",
         requires_auth = false,
         requires_anonymous_session = true
-    }
+    },
 }
 
 local queries = {
-    initial_comments = function(post_id)
-        return {
-            media_id = post_id,
-            __relay_internal__pv__PolarisIsLoggedInrelayprovider =  true
-        }, doc_ids.initial_comments
-    end,
-    comments_pagination = function(post_id, sort_order, cursor)
-        return {
-            after = cursor or json.null, -- while an after_cursor _is_ exposed while logged out, this endpoint will only ever return the same page of comments when logged out.
-            before = json.null,
-            first = 30, -- I'm pretty sure this is the amount of comments to fetch at a time.
-            last = json.null,
-            media_id = post_id,
-            sort_order = sort_order, -- leaving this at the default. would be cool to make this controllable.
-            __relay_internal__pv__PolarisIsLoggedInrelayprovider = true
-        }, doc_ids.comments_pagination
-    end,
     anon_comments_pagination = function(media_id, cursor)
         return {
             after = cursor,
@@ -226,7 +195,7 @@ local queries = {
             userID = target_id,
             __relay_internal__pv__PolarisAIGMAccountLabelEnabledrelayprovider = false
         }, doc_ids.user_hover_info
-    end
+    end,
 }
 
 

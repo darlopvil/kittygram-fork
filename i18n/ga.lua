@@ -21,6 +21,7 @@ return {
         grid = "Greille",
         reels = "Reels",
         all = "Gach",
+        highlights = "Highlights",
         posts = "Póstálacha",
         verified = "Fíoraithe",
         followers = "Leantóirí",

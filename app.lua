@@ -129,6 +129,8 @@ app:get("/:username(/:path)(/)", function(self)
     local feed_type
     if self.params.path == "reels" then
         feed_type = "reel"
+    elseif self.params.path == "highlights" then
+        feed_type = "highlights"
     elseif self.params.path then
         return render_error(self, helpers.create_error.route_not_defined())
     else
@@ -144,6 +146,7 @@ app:get("/:username(/:path)(/)", function(self)
         end
         self.user = user.user_info
         self.posts = user.posts
+        self.highlights = user.highlights
         self.end_cursor = user.end_cursor
         if self.params.json == "true" and config.allow_json then
             return { json = user }
@@ -157,6 +160,16 @@ app:get("/:username(/:path)(/)", function(self)
         self.page_title = "@" .. self.username .. " | kittygram"
         return { render = "user" }
     end
+end)
+
+
+-- even though you can get a list of highlights, you need auth to view individual ones.
+app:get("/stories/highlights/:id(/)", function(self)
+    return render_error(self, helpers.create_error.feature_not_supported())
+end)
+
+app:get("/stories/:id(/)", function(self)
+    return render_error(self, helpers.create_error.feature_not_supported())
 end)
 
 app:get("/search(/)", function(self)

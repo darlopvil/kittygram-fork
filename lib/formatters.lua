@@ -306,6 +306,23 @@ local format_user_info = {
     end,
 }
 
+local format_highlights = {
+    from_anon_web = function(highlights)
+        local highlights = highlights.user
+
+        local formatted_highlights = {}
+
+        for _, item in ipairs(highlights.edge_highlight_reels.edges) do
+            item = item.node
+            table.insert(formatted_highlights, {
+                id = item.id,
+                title = item.title,
+                image = item.cover_media.thumbnail_src,
+            })
+        end
+        return formatted_highlights
+    end
+}
 local format_search = {
     from_web_topsearch = function(results)
         local formatted_results = {
@@ -346,4 +363,4 @@ local format_search = {
         return formatted_results
     end
 }
-return { format_post = format_post, format_user_info = format_user_info, format_search = format_search, format_comments = format_comments }
+return { format_post = format_post, format_user_info = format_user_info, format_search = format_search, format_comments = format_comments, format_highlights = format_highlights }

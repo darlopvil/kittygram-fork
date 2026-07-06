@@ -19,6 +19,7 @@ return {
         grid = "Grid",
         reels = "Reels",
         all = "All",
+        highlights = "Highlights",
         posts = "Posts",
         verified = "Verified",
         followers = "Followers",

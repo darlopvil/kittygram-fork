@@ -9,6 +9,7 @@ local cache = require("lib.cache")
 local get_user_id = require("lib.instagram.web.get_user_id_web")
 local user_db = require("models.users")
 local format_post = require("lib.formatters").format_post
+local highlights = require("lib.instagram.web.highlights")
 
 local USER_INFO_EXPIRE_TIME = config.cache.expire_times.user_info.positive
 local LATEST_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.latest
@@ -155,6 +156,8 @@ end
 -- All user ids are stored for later use, as profile pages are ratelimited heavily.
 -- Getting reels requires an id.
 
+-- This function is gross, and could probably be a lot cleaner.
+
 local function arrange_user_data(username, after_cursor, timeline_type)
     local user_id, posts, user_info, end_cursor
     local user_query = user_db.get_user(username)
@@ -221,6 +224,25 @@ local function arrange_user_data(username, after_cursor, timeline_type)
         if posts.has_errors then
             return posts
         end
+    elseif timeline_type == "highlights" then
+        if not user_id then
+            user_id = get_user_id(username)
+        end
+
+        if type(user_id) == "table" and user_id.has_errors then
+            return user_id
+        elseif not user_id then
+            return errors.not_found{
+                message = "User Id could not be found.",
+                blob = user_id,
+            }
+        end
+        local user_info = get_user_info(user_id)
+        local highlights = highlights.get_tray(user_id)
+        if highlights.has_errors then
+            return highlights
+        end
+        return { user_info = user_info, highlights = highlights}
     end
 
     local user_info = get_user_info(user_id)

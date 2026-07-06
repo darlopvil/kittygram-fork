@@ -122,6 +122,16 @@ local create_error = {
             }
         }
     end,
+    feature_not_supported = function()
+        return {
+            has_errors = true,
+            error_type = "feature_not_supported",
+            error_info = {
+                message = "This feature is not yet supported on kittygram.",
+                blob = nil
+            }
+        }
+    end,
     unknown = function(args)
         return {
             has_errors = true,
