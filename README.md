@@ -39,9 +39,9 @@ as all requests are handled by Kittygram.
 
 ### Limitations
 
-- As of now, only the first ~20 comments on a post can be fetched.
 - Instagram aggressively rate-limits requests coming from servers,
 which can make running a public instance difficult.
+- Some features (such as stories) are not yet viewable.
 
 ## Instances
 
