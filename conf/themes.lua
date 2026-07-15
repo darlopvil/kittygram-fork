@@ -41,6 +41,12 @@ local themes = {
         url = "/static/themes/catppuccin-mocha.css",
         uses_base_theme = true
     },
+    ferra = {
+        name = "ferra",
+        display_name = "Ferra",
+        url = "/static/themes/ferra.css",
+        uses_base_theme = true
+    },
     basic = {
         name = "basic",
         display_name = "Basic",

@@ -1,0 +1,31 @@
+:root {
+    --bg-color: #2b292d;
+    --card-color: #383539;
+    --card-border: 1px solid #4d424b;
+    --main-text-color: #fecdb2;
+    --alt-text-color: #d1d1e0;
+
+    --nav-bg-color: rgba(43, 41, 45, 0.7);
+    --main-shadow: 0px 4px 12px rgba(0, 0, 0, 0.32);
+    --outline-shadow: rgba(77, 66, 75, 0.96) 0px 1px 3px 0px;
+
+    --nav-icon-hover-color: none;
+
+    --button-bg-color: #f5d76e;
+    --button-text-color: #2b292d;
+    --button-border-radius: 20px;
+    --button-border: 2px solid #6f5d63;
+
+    --button-bg-color-on-hover: #fecdb2;
+    --button-text-color-on-hover: #2b292d;
+
+    --searchbar-border: 2px solid #6f5d63;
+
+    --link-text-color: #ffa07a;
+    --link-hover-color: #f5d76e;
+    --link-visited-color: #f6b6c9;
+}
+
+nav img, .verification-symbol {
+    filter: brightness(0.9) invert(1) sepia(15%) saturate(810%) hue-rotate(335deg);
+}
