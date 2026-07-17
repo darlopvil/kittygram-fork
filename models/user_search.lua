@@ -2,6 +2,11 @@ local db = require("lapis.db")
 
 -- function to check for usernames based on the ids table.
 local function user_search(username)
+    -- fts5 crashes if the username is an empty string.
+    if username == "" then
+        return {}
+    end
+
     local res = db.query([[
         SELECT
         u.id,
