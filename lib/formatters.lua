@@ -157,8 +157,9 @@ local format_post = {
         if post.caption and post.caption ~= ngx.null then
             formatted_post.caption = post.caption.text
         end
-        formatted_post.images = {}
+
         if post.carousel_media and post.carousel_media ~= json.null then
+            formatted_post.images = {}
             for _, media in ipairs(post.carousel_media) do
                 if media.video_versions and media.video_versions ~= ngx.null then
                     table.insert(formatted_post.images, {
@@ -216,7 +217,7 @@ local format_comments = {
             table.insert(formatted_comments.items, formatted_comment)
         end
 
-        if comments.page_info and comments.page_info.has_next_page then
+        if comments.page_info and comments.page_info ~= json.null and  comments.page_info.has_next_page then
             formatted_comments.end_cursor = encoding.encode_base64(comments.page_info.end_cursor)
         end
         return formatted_comments

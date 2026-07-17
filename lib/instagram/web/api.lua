@@ -1,5 +1,5 @@
 local json = require("cjson")
-local http = require("resty.http")
+local http_request = require("lib.http")
 local web_state = ngx.shared.web_state
 local ngx_resp = require("ngx.resp")
 local config = require("lapis.config").get()
@@ -11,12 +11,28 @@ local BASE_PATH = "https://www.instagram.com/api/v1/"
 local WINDOW_LENGTH = config.ratelimits.window_length
 local REQUEST_LIMIT = config.ratelimits.request_limit
 
-local function create_headers()
-    return {
-        ["X-Ig-App-Id"] = "936619743392459",
-        ["X-CSRFToken"] = "exampletexthere",
-        ["Accept"] = "*/*",
+local function create_headers(content_type, cookie)
+    local headers =  {
+        { "accept", "*/*"},
+        { "content-type", content_type },
+        { "cookie", cookie },
+        { "sec-ch-prefers-color-scheme", "dark" },
+        { "sec-ch-ua", "\"Chromium\";v=\"135\", \"Not)A;Brand\";v=\"24\"" },
+        { "sec-ch-ua-full-version-list", "\"Google Chrome\";v=\"135.0.0.0\", \"Chromium\";v=\"135.0.0.0\", \"Not.A/Brand\";v=\"24\"" },
+        { "sec-ch-ua-mobile", "?0"},
+        { "sec-ch-ua-model", "\"\"" },
+        { "sec-ch-ua-platform-version", "\"10.0.19045\""},
+        { "sec-fetch-dest", "empty" },
+        { "sec-fetch-mode", "cors" },
+        { "sec-fetch-site", "same-origin" },
+        { "x-ig-app-id", "936619743392459" },
+        { "x-csrftoken", "exampletexthere" }, -- this can be anything. I could get valid CSRF tokens, but this works for now.
+        { "x-ig-max-touch-points", "0" },
+        { "x-requested-with", "XMLHttpRequest" },
+
     }
+
+    return headers
 end
 
 local endpoints = {
@@ -63,6 +79,15 @@ local construct_params = {
             },
         }
     end,
+    web_profile_info = function(username)
+        return {
+            body = {},
+            path = {},
+            query = {
+                username = username
+            }
+        }
+    end,
     comments = function(media_id, cursor)
         return {
             body = {},
@@ -93,7 +118,6 @@ local function cooldown(endpoint)
 end
 -- This assumes the same ratelimits as graphql.
 local function request(endpoint, params, purpose)
-    local httpc = http:new()
     --See comments at graphql.lua on ratelimits.
     local request_count = web_state:incr("api:" .. endpoint.path, 1, 0, WINDOW_LENGTH)
     if request_count > REQUEST_LIMIT and config.ratelimits.cooldown_on_ratelimit then
@@ -102,20 +126,19 @@ local function request(endpoint, params, purpose)
         }
     end
 
-    local headers = create_headers()
-    local request_opts = {
-        headers = headers
-    }
+    local request_opts = {}
 
     if purpose and config.proxies[purpose] then
         request_opts.proxy_opts = { https_proxy = config.proxies[purpose] }
     end
 
+    local cookie
     if purpose and config.web_session and config.web_session.cookies and config.web_session.use_for[purpose] then
         if not endpoint.requires_anonymous_session then
-            request_opts.headers["Cookie"] = config.web_session.cookies
+            cookie = config.web_session.cookies
         end
     end
+
 
     local request_uri = BASE_PATH .. string.format(endpoint.path, table.unpack(params.path))
 
@@ -124,17 +147,22 @@ local function request(endpoint, params, purpose)
         request_uri = request_uri .. "?" .. encoded_query_string
     end
 
+    local content_type
     if endpoint.method == "POST" then
         request_opts.method = "POST"
         local encoded_body = util.encode_query_string(params.body)
         request_opts.body = encoded_body
-        request_opts.headers["Content-Type"] = "application/x-www-form-urlencoded"
+        content_type = "application/x-www-form-urlencoded"
     elseif endpoint.method == "GET" then
         request_opts.method = "GET"
     end
 
-    local request = httpc:request_uri(request_uri, request_opts)
+    request_opts.headers = create_headers(content_type, cookie)
+    local request, err = http_request(request_uri, request_opts)
 
+    if not request then
+        return errors.network_error{ blob = err }
+    end
     if config.include_debug_headers then
         ngx_resp.add_header("X-Kg-Debug-Endpoints", endpoint.path)
     end

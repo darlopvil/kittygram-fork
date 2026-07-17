@@ -48,6 +48,11 @@ config({"development", "production", "docker"}, {
     host = "127.0.0.1",
     port = 6379
   },
+  http_sidecar = {
+    enabled = false,
+    url = "http://127.0.0.1:35358/fetch",
+    proxy = false, -- This can be a SOCKS or HTTP proxy. Per-endpoint proxies will override this.
+  },
   instances_list = "https://codeberg.org/irelephant/kittygram/raw/branch/main/instances.json"
 })
 
@@ -75,6 +80,7 @@ config("docker", {
   num_workers = os.getenv("NUM_WORKERS") or "4",
   allow_json = os.getenv("ALLOW_JSON") == "true" or false,
   enable_atom = os.getenv("ENABLE_ATOM") == "true" or false,
+  logging = os.getenv("DISABLE_LOGGING") == "true" and false or { server = true, queries = true, requests = true },
   base_atom_path = os.getenv("BASE_ATOM_PATH") or "http://localhost/", -- The base path for generating links in atom feeds. Requires the trailing slash.
   resolver = os.getenv("RESOLVER") or "127.0.0.11",
   ratelimits = {
@@ -85,6 +91,11 @@ config("docker", {
   about_message = os.getenv("ABOUT_MESSAGE") or "<p>The operator of this message has not written an about message yet.",
   require_api_token = os.getenv("REQUIRE_API_TOKEN") ~= "false",
   api_token_expire_length = tonumber(os.getenv("API_TOKEN_EXPIRE_LENGTH")) or 365 * 86400,
+  http_sidecar = {
+    enabled = os.getenv("USE_HTTP_SIDECAR") == "true" or false,
+    url = os.getenv("HTTP_SIDECAR_URL") or "http://127.0.0.1:35358/fetch",
+    proxy = os.getenv("HTTP_SIDECAR_PROXY") or false,
+  },
   redis = {
     host = os.getenv("REDIS_HOST") or "redis",
     port = tonumber(os.getenv("REDIS_PORT")) or 6379,

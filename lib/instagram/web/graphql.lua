@@ -1,4 +1,4 @@
-local http = require("resty.http")
+local http_request = require("lib.http")
 local util = require("lapis.util")
 local encoding = require("lapis.util.encoding")
 local json = require("cjson")
@@ -11,13 +11,27 @@ local web_state = ngx.shared.web_state
 local WINDOW_LENGTH = config.ratelimits.window_length
 local REQUEST_LIMIT = config.ratelimits.request_limit
 
-local function create_headers()
-    return {
-        ["X-IG-App-ID"] = "936619743392459",
-        ["X-CSRFToken"] = "exampletexthere", -- this can be anything. I could get valid CSRF tokens, but this works for now.
-        ["Content-Type"] = "application/x-www-form-urlencoded",
-        ["Accept"] = "*/*",
+local function create_headers(lsd, cookie)
+    local headers =  {
+        { "accept", "*/*"},
+        { "content-type", "application/x-www-form-urlencoded" },
+        { "cookie", cookie},
+        { "sec-ch-prefers-color-scheme", "dark" },
+        { "sec-ch-ua", "\"Chromium\";v=\"135\", \"Not)A;Brand\";v=\"24\"" },
+        { "sec-ch-ua-full-version-list", "\"Google Chrome\";v=\"135.0.0.0\", \"Chromium\";v=\"135.0.0.0\", \"Not.A/Brand\";v=\"24\"" },
+        { "sec-ch-ua-mobile", "?0"},
+        { "sec-ch-ua-model", "\"\"" },
+        { "sec-ch-ua-platform-version", "\"10.0.19045\""},
+        { "sec-fetch-dest", "empty" },
+        { "sec-fetch-mode", "cors" },
+        { "sec-fetch-site", "same-origin" },
+        { "x-ig-app-id", "936619743392459" },
+        { "x-csrftoken", "exampletexthere" }, -- this can be anything. I could get valid CSRF tokens, but this works for now.
+        { "x-ig-max-touch-points", "0" },
+        { "x-fb-lsd", lsd}
     }
+
+    return headers
 end
 
 local gql_endpoints = {
@@ -223,13 +237,13 @@ local function graphql_request(request_payload, doc_id, request_type)
         }
     end
 
-    local headers = create_headers()
+    local cookie, lsd
 
     -- Add cookies to request if the request supports it.
     if config.web_session and config.web_session.cookies then
         if config.web_session.use_for and config.web_session.use_for[request_type] then
             if not doc_id.requires_anonymous_session then
-                headers["Cookie"] = config.web_session.cookies
+                cookie = config.web_session.cookies
             end
         end
     end
@@ -239,12 +253,11 @@ local function graphql_request(request_payload, doc_id, request_type)
 
     -- This endpoint requires extra information
     if doc_id.endpoint == "api" then
-        local lsd = encoding.encode_base64(math.random())
+        lsd = encoding.encode_base64(math.random())
             :gsub("+", "-")
             :gsub("/", "_")
             :gsub("=", "")
 
-        headers["X-Fb-Lsd"] = lsd
         request_body = "av=0&__d=www&__user=0&__a=1&__comet_req=7&lsd=" .. lsd .. "&server_timestamps=true&"
     end
     -- some queries are sent through get requests.
@@ -254,6 +267,8 @@ local function graphql_request(request_payload, doc_id, request_type)
     else
         request_body = request_body .. "variables=" .. util.escape(json.encode(request_payload)) .. "&doc_id=" .. doc_id.doc_id
     end
+
+    local headers = create_headers(lsd, cookie)
     local request_opts = {
         method = doc_id.method,
         headers = headers
@@ -268,9 +283,8 @@ local function graphql_request(request_payload, doc_id, request_type)
         request_opts.proxy_opts = { https_proxy = config.proxies[request_type] }
     end
 
-    local httpc = http.new()
-    local request, err = httpc:request_uri(request_url, request_opts)
 
+    local request, err = http_request(request_url, request_opts)
     if config.include_debug_headers then
         ngx_resp.add_header("X-Kg-Debug-Endpoints", doc_id.doc_id)
     end
