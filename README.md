@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- TODO: Update preview/cover image. -->
-<!-- Colors - https://colorhunt.co/palette/14279b3d56b25c7aeae6e6e6 -->
+<!-- https://colorhunt.co/palette/14279b3d56b25c7aeae6e6e6 -->
 
 ![Kittygram](./docs/assets/cover.png)
 
@@ -45,33 +45,36 @@ requests are handled by Kittygram.
 
 ## Instances
 
-| Instance link:                     | Operated by:                                  | Notes:                |
-| ---------------------------------- | --------------------------------------------- | --------------------- |
-| <https://kittygram.irelephant.net> | [Irelephant](https://codeberg.org/irelephant) | Creator of Kittygram. |
-| <https://kittygr.am>               | [FSKY](https://fsky.io)                       |                       |
-| <https://kittygram.kareem.one>     | [Kareem](https://kareem.one)                  | Cloudflare.           |
-| <https://kittygram.nexussfan.cz>   | [NexusSfan](https://mrchicken.nexussfan.cz)   |                       |
-| <https://kg.lus.lu>                | [ffb0f3](https://lus.lu)                      |                       |
-| <https://kg.meowing.de>            | [patrick](https://patriick.dev)               |                       |
-| <https://kittygram.nadeko.net>     | [Fijxu](https://nadeko.net)                   |                       |
+| Instance link:                     | Operated by:                                  | Notes:               |
+| ---------------------------------- | --------------------------------------------- | -------------------- |
+| <https://kittygram.irelephant.net> | [Irelephant](https://codeberg.org/irelephant) | Kittygram maintainer |
+| <https://kittygr.am>               | [FSKY](https://fsky.io)                       |                      |
+| <https://kittygram.kareem.one>     | [Kareem](https://kareem.one)                  | Cloudflare           |
+| <https://kittygram.nexussfan.cz>   | [NexusSfan](https://mrchicken.nexussfan.cz)   |                      |
+| <https://kg.lus.lu>                | [ffb0f3](https://lus.lu)                      |                      |
+| <https://kg.meowing.de>            | [patrick](https://patriick.dev)               |                      |
+| <https://kittygram.nadeko.net>     | [Fijxu](https://nadeko.net)                   |                      |
 
-<!-- Note: If you add a new instance,
-then edit the entire table to correct the length of the cells. -->
+<!-- NOTE: If you add a new instance, then edit the entire table to correct the length of the cells. -->
 
-Also see the `/instances.json` file.
+Also see the `instances.json` file.
 
 ## Installation
 
 ### Method 1: Containers
 
-> [!NOTE] It's the recommended way to run Kittygram.
+> [!NOTE]
+>
+> It's the recommended way to run Kittygram.
 
 #### Docker
 
 1. Install [git](https://git-scm.org), [git-lfs](https://git-lfs.com) and
    [Docker](https://docs.docker.com/engine/install).
 
-   > [!TIP] You can also install
+   > [!TIP]
+   >
+   > You can also install
    > [Docker Desktop for GUI](https://www.docker.com/products/docker-desktop),
    > or [LazyDocker for TUI](https://github.com/jesseduffield/lazydocker).
 
@@ -79,9 +82,7 @@ Also see the `/instances.json` file.
    start the container:
 
    ```bash
-   git clone git@codeberg.org:irelephant/kittygram.git --depth=1 && cd kittygram
-   git lfs pull
-
+   git clone git@codeberg.org:irelephant/kittygram.git --depth=1 && cd kittygram && git lfs pull
    sudo docker compose up
    ```
 
@@ -91,24 +92,27 @@ Also see the `/instances.json` file.
    [Podman](https://podman.io/docs/installation) and
    [Podman Compose](https://docs.podman.io/en/latest/markdown/podman-compose.1.html).
 
-   > [!TIP] You can also install
-   > [Podman Desktop for GUI](https://podman-desktop.io), or
-   > [Podman TUI](https://github.com/containers/podman-tui).
+   > [!TIP]
+   >
+   > You can also install [Podman Desktop for GUI](https://podman-desktop.io),
+   > or [Podman TUI](https://github.com/containers/podman-tui).
 
 2. Clone the repository, move to the `kittygram` folder, set up Git LFS, and
    start the container:
 
-   > [!WARNING] Don't run Podman as root (`sudo` / `doas`).
+   > [!WARNING]
+   >
+   > Don't run Podman as root (`sudo` / `doas`).
 
    ```bash
-   git clone git@codeberg.org:irelephant/kittygram.git --depth=1 && cd kittygram
-   git lfs pull
-
+   git clone git@codeberg.org:irelephant/kittygram.git --depth=1 && cd kittygram && git lfs pull
    podman-compose -p kittygram -f compose.yaml up -d
    ```
 
-   > [!NOTE] If you have DNS/network issues, change DNS in `compose.yaml` to
-   > Podman native using: `podman compose exec kittygram cat /etc/resolv.conf`.
+   > [!NOTE]
+   >
+   > If you have DNS/network issues, change DNS in `compose.yaml` to Podman
+   > native using: `podman compose exec kittygram cat /etc/resolv.conf`.
 
 ### Method 2: Native
 
@@ -121,8 +125,7 @@ Also see the `/instances.json` file.
 2. Clone the repository, move to the `kittygram` folder, and set up Git LFS.
 
    ```bash
-   git clone git@codeberg.org:irelephant/kittygram.git --depth=1 && cd kittygram
-   git lfs pull
+   git clone git@codeberg.org:irelephant/kittygram.git --depth=1 && cd kittygram && git lfs pull
    ```
 
 3. Copy the example configuration files:
