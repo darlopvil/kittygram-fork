@@ -364,4 +364,37 @@ local format_search = {
         return formatted_results
     end
 }
-return { format_post = format_post, format_user_info = format_user_info, format_search = format_search, format_comments = format_comments, format_highlights = format_highlights }
+
+local format_popular_index = function(results)
+    local formatted_page = { }
+    for _, section in ipairs(results.popular_search_home_sections) do
+        local formatted_section = {
+            title = section.display_title,
+            entries = {}
+        }
+        for _, entry in ipairs(section.entries) do
+            if entry.keyword and entry.keyword ~= ngx.null then
+                local formatted_entry = {
+                    count = entry.keyword.media_count,
+                    text = entry.keyword.keyword_text,
+                    thumbnail = entry.keyword.thumbnail_url
+                }
+                table.insert(formatted_section.entries, formatted_entry)
+            end
+        end
+
+        if #formatted_section.entries >= 1 then
+            table.insert(formatted_page, formatted_section)
+        end
+
+    end
+    return formatted_page
+end
+return {
+    format_post = format_post,
+    format_user_info = format_user_info,
+    format_search = format_search,
+    format_comments = format_comments,
+    format_highlights = format_highlights,
+    format_popular_index = format_popular_index
+}

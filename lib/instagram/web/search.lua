@@ -57,10 +57,14 @@ local function get_popular_page()
     if request.has_errors then
         return request
     end
+
     if request.data and request.data.popular_search_home_sections then
-        cache.cache_item("ig:popular", request.data.popular_search_home_sections, "popular_index")
+        local formatted = formatters.format_popular_index(request.data)
+        cache.cache_item("ig:popular", formatted, "popular_index")
+        return formatted
+    else
+        return errors.unknown{ blob = request }
     end
-    return request.data.popular_search_home_sections
 end
 
 local function explore(query, after)

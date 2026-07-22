@@ -205,6 +205,7 @@ app:get("/popular(/)", function(self)
     end
     self.popular = popular_page
     self.page_title = "Popular | Kittygram"
+
     return { render = "popular" }
 end)
 

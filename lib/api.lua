@@ -69,6 +69,19 @@ app:before_filter(function(self)
     end
 end)
 
+local function return_error(err)
+    local status
+    if err.error_type == "not_found" then
+        status = 404
+    elseif err.error_type == "ratelimited" then
+        status = 503
+    elseif err.error_type == "null_content" then
+        status = 410
+    else
+        status = 500
+    end
+    return { json = err, status = status }
+end
 app:get("/api/status(/)", function(self)
     return { json = {
         redis = test_redis(),
@@ -121,20 +134,11 @@ app:get("/api/post/:shortcode(/)", function(self)
     post.comments = comments
     local status_code
     if post.has_errors then
-        if post.error_type == "not_found" then
-            status_code = 404
-        elseif post.error_type == "ratelimited" then
-            status_code = 502
-        elseif post.error_type == "null_content" then
-            status_code = 410
-        else
-            status_code = 500
-        end
-    else
-        status_code = 200
+        return return_error(post)
     end
 
-    return { json = post, status = status_code }
+    post.status = "ok"
+    return { json = post }
 end)
 
 app:get("/api/user/:username(/:path)(/)", function(self)
@@ -156,21 +160,14 @@ app:get("/api/user/:username(/:path)(/)", function(self)
 
     local status_code
     if user.has_errors then
-        if user.error_type == "not_found" then
-            status_code = 404
-        elseif user.error_type == "ratelimited" then
-            status_code = 502
-        else
-            status_code = 500
-        end
-    else
-        status_code = 200
+       return return_error(user)
     end
 
-    return { json = user, status = status_code }
+    user.status = "ok"
+    return { json = user }
 end)
 
-app:get("/api/search", function(self)
+app:get("/api/search(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
         return { json = {
             status = "fail",
@@ -201,5 +198,24 @@ app:get("/api/search", function(self)
     query.status = "ok"
 
     return { json = query }
+end)
+
+app:get("/api/popular(/)", function(self)
+    if config.require_api_token ~= false and not self.token_is_valid then
+        return { json = {
+            status = "fail",
+            message = "An API token is required."
+        }, status = 401}
+    end
+
+    local items = instagram.search.popular_page()
+    if items.has_errors then
+        return return_error(items)
+    end
+
+    return { json = {
+        items = items,
+        status = "ok"
+    }}
 end)
 return app
