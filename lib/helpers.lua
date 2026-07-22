@@ -144,11 +144,89 @@ local create_error = {
     end
 }
 
+--[[
+  Decodes a compressed sparse row bitmap string.
+  Returns a list of integer indices where the original bits are 1.
+  The string uses a custom base-64 encoding (digits, a-z, A-Z, '-', '_').
+--]]
+local function decode_csr_bitmap(encoded_str)
+  local charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
+  local char_to_val = {}
+  for i = 1, #charset do
+    char_to_val[charset:sub(i, i)] = i - 1
+  end
+
+  -- Step 1: convert each character to a 6‑bit binary string
+  local bit_string = ""
+  for i = 1, #encoded_str do
+    local ch = encoded_str:sub(i, i)
+    local val = char_to_val[ch]            -- 0..63
+    -- Build 6-bit binary representation manually (no external bit library needed)
+    local bin = ""
+    local v = val
+    for _ = 1, 6 do
+      bin = (v % 2) .. bin
+      v = math.floor(v / 2)
+    end
+    bit_string = bit_string .. bin
+  end
+
+  -- Helper: read an Elias‑gamma encoded number from the bit string.
+  -- pos is 0‑based.
+  local function read_gamma(bits, pos)
+    local z = 0
+    -- count leading zeros
+    while pos + z < #bits and bits:sub(pos + z + 1, pos + z + 1) == "0" do
+      z = z + 1
+    end
+    -- need z+1 data bits
+    if pos + z + z + 1 > #bits then
+      return nil   -- truncated, ran into padding
+    end
+    local num_bits = bits:sub(pos + z + 1, pos + z + z + 1)
+    local val = tonumber(num_bits, 2)  -- Lua 5.2+ ; otherwise implement manually
+    return {
+      val = val,
+      new_pos = pos + z + z + 1,
+    }
+  end
+
+  -- Step 2: the first bit is the initial run value (0 or 1)
+  local cur_val = tonumber(bit_string:sub(1, 1))
+  local pos = 1   -- 0‑based index of next bit
+
+  -- Step 3: decode run lengths using gamma codes
+  local runs = {}
+  while pos < #bit_string do
+    local result = read_gamma(bit_string, pos)
+    if not result then break end
+    table.insert(runs, {cur_val, result.val})
+    pos = result.new_pos
+    cur_val = 1 - cur_val   -- runs alternate between 0 and 1
+  end
+
+  -- Step 4: expand runs into the list of indices where bit == 1
+  local number_list = {}
+  local current_idx = 0
+  for _, run in ipairs(runs) do
+    local run_val, run_len = run[1], run[2]
+    if run_val == 1 then
+      for k = 0, run_len - 1 do
+        table.insert(number_list, current_idx + k)
+      end
+    end
+    current_idx = current_idx + run_len
+  end
+
+  return number_list
+end
+
 return {
     check_nested_field = check_nested_field,
     proxy_url = proxy_url,
     create_error = create_error,
     safe_json_decode = safe_json_decode,
     comma_value = comma_value,
-    shortcode_to_id = shortcode_to_id
+    shortcode_to_id = shortcode_to_id,
+    decode_csr_bitmap = decode_csr_bitmap,
 }

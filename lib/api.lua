@@ -117,7 +117,8 @@ app:get("/api/post/:shortcode(/)", function(self)
         }, status = 401}
     end
 
-    local post = instagram.get_post(self.params.shortcode)
+    local post, comments = instagram.get_post(self.params.shortcode, self.params.cursor)
+    post.comments = comments
     local status_code
     if post.has_errors then
         if post.error_type == "not_found" then

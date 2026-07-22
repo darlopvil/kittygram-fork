@@ -57,11 +57,11 @@ local function get_highlights_tray(user_id)
         headers = headers
     }
 
-    if request_type and config.proxies["highlights"] then
+    if config.proxies["highlights"] then
         request_opts.proxy_opts = { https_proxy = config.proxies["highlights"] }
     end
 
-    local request = httpc:request_uri(url, request_opts)
+    local request, err = httpc:request_uri(url, request_opts)
 
     if config.include_debug_headers then
         ngx_resp.add_header("X-Kg-Debug-Endpoints", "highlights_tray:" .. HIGHLIGHTS_TRAY_QUERY_ID)

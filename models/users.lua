@@ -3,7 +3,7 @@ local Users = Model:extend("user_ids", {primary_key = "username"})
 
 local function save_user(user_dict)
     if not user_dict.username or not user_dict.id then
-        ngx.say(ngx.ERR, "Error saving user: Required field not present.")
+        ngx.log(ngx.ERR, "Error saving user: Required field not present.")
         return nil
     end
 
@@ -33,8 +33,19 @@ end
 
 local function get_user(username)
     local user = Users:find(string.lower(username))
+    local verification_status
+    if user.is_verified == 1 then
+        verification_status = true
+    else
+        verification_status = false
+    end
+
     if user then
-        return user
+        return {
+            username = user.username,
+            id = user.user_id,
+            is_verified = verification_status
+        }
     end
 end
 
