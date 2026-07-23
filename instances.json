@@ -1,9 +1,9 @@
-[ 
+[
     {
         "url": "https://kittygr.am",
-        "tor": "http://instab6cpzrbczpkrvjj3gutly5qx3o2xzpyhlmtwthtzjmjw4tppvad.onion/",
+        "tor": "http://instab6cpzrbczpkrvjj3gutly5qx3o2xzpyhlmtwthtzjmjw4tppvad.onion",
         "i2p": null,
-        "yggdrasil": "http://ygg.kittygr.am/",
+        "yggdrasil": "http://ygg.kittygr.am",
         "country": "PL"
     },
     {
@@ -29,7 +29,7 @@
     },
     {
         "url": "https://kg.lus.lu",
-        "tor": "http://fomwahqfe3i5e25kye66r274anglb53ehydbh4g2yth6vthsdy5k4rid.onion/",
+        "tor": "http://fomwahqfe3i5e25kye66r274anglb53ehydbh4g2yth6vthsdy5k4rid.onion",
         "i2p": null,
         "yggdrasil": null,
         "country": "US"
@@ -40,5 +40,12 @@
         "i2p": null,
         "yggdrasil": null,
         "country": "DE"
+    },
+    {
+        "url": "https://kittygram.nadeko.net",
+        "tor": null,
+        "i2p": null,
+        "yggdrasil": null,
+        "country": "CL"
     }
 ]
