@@ -1,5 +1,17 @@
 local db = require("lapis.db")
 
+local function sanitize_fts_query(query)
+    if query == nil then
+        query = ""
+    end
+
+    query = tostring(query)
+    query = query:gsub("%z", "")
+    query = query:gsub('"', '""')
+
+    return '"' .. query .. '"'
+end
+
 -- function to check for usernames based on the ids table.
 local function user_search(username)
     -- fts5 crashes if the username is an empty string.
@@ -20,7 +32,7 @@ local function user_search(username)
         WHERE user_ids_fts MATCH ?
         ORDER BY fts.rank ASC
         LIMIT 20;
-    ]], username)
+    ]], sanitize_fts_query(username))
 
     local processed_results = {}
     for _, item in ipairs(res) do

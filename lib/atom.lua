@@ -81,7 +81,7 @@ local function create_feed_xml(username, posts)
                 <name>%s</name>
                 <uri>%s</uri>
             </author>
-    ]], username, user_link, self_link, user_link, updated_timestamp, username, "https://www.instagram.com/" .. username)
+    ]], xml_escape(username), user_link, self_link, user_link, updated_timestamp, xml_escape(username), "https://www.instagram.com/" .. username)
 
     for _, post in ipairs(posts) do
         local html_content = create_html_content(post)
