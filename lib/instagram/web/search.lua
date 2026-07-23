@@ -68,12 +68,8 @@ local function get_popular_page()
 end
 
 local function explore(query, after)
-    local key
-    if after then
-        key = "ig:explore:" .. query  .. ":" .. after
-    else
-        key = "ig:explore:" .. query .. ":latest"
-    end
+    local key = "ig:explore:" .. query .. ":" .. (after or "latest")
+
     local explore_query = cache.query_item(key)
     if explore_query ~= ngx.null then
         return explore_query
@@ -88,15 +84,13 @@ local function explore(query, after)
     if search_request.has_errors then
         return search_request
     end
-
-    cache.bulk_save_users.from_explore(search_request.data.xig_logged_out_popular_search_media_info)
-    local key
-    if after then
-        key = "ig:explore:" .. query  .. ":" .. after
+    if search_request.data.xig_logged_out_popular_search_media_info and search_request.data.xig_logged_out_popular_search_media_info ~= ngx.null then
+        cache.bulk_save_users.from_explore(search_request.data.xig_logged_out_popular_search_media_info)
+        local formatted = formatters.format_explore_results.from_anon_web(search_request.data.xig_logged_out_popular_search_media_info)
+        cache.cache_item(key, formatted, "explore")
+        return formatted
     else
-        key = "ig:explore:" .. query .. ":latest"
+        return errors.unknown{ blob = search_request }
     end
-    cache.cache_item(key, search_request.data.xig_logged_out_popular_search_media_info, "explore")
-    return search_request.data.xig_logged_out_popular_search_media_info
 end
 return { search = search, explore = explore, popular_page = get_popular_page }

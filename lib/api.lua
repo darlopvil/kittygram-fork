@@ -82,6 +82,7 @@ local function return_error(err)
     end
     return { json = err, status = status }
 end
+
 app:get("/api/status(/)", function(self)
     return { json = {
         redis = test_redis(),
@@ -140,6 +141,7 @@ app:get("/api/post/:shortcode(/)", function(self)
     post.status = "ok"
     return { json = post }
 end)
+
 
 app:get("/api/user/:username(/:path)(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
@@ -218,4 +220,23 @@ app:get("/api/popular(/)", function(self)
         status = "ok"
     }}
 end)
+
+app:get("/api/popular/:query(/)", function(self)
+    if config.require_api_token ~= false and not self.token_is_valid then
+        return { json = {
+            status = "fail",
+            message = "An API token is required."
+        }, status = 401}
+    end
+
+    local items = instagram.search.explore(self.params.query, self.params.cursor)
+    if items.has_errors then
+        return return_error(items)
+    end
+
+    items.status = "ok"
+    return { json =  items }
+end)
+
+
 return app

@@ -390,11 +390,50 @@ local format_popular_index = function(results)
     end
     return formatted_page
 end
+
+local format_explore_results = {
+    from_anon_web = function(results)
+        local formatted_results = {
+            items = {}
+        }
+        for _, item in ipairs(results.edges) do
+            item = item.node
+            local formatted_item = {
+                shortcode = item.code,
+                play_count = item.play_count,
+                thumbnail = item.display_uri
+            }
+            formatted_item.user = {
+                is_verified = item.user.is_verified,
+                username = item.user.username,
+                id = item.user.id,
+                profile_picture = item.user.profile_pic_url
+            }
+
+            if item.caption and item.caption ~= ngx.null then
+                formatted_item.caption = item.caption.text
+            end
+
+            if item.video_versions and item.video_versions ~= ngx.null then
+                formatted_item.video_url = item.video_versions[1].url
+            end
+            table.insert(formatted_results.items, formatted_item)
+        end
+
+        if results.page_info and results.page_info ~= json.null and results.page_info.has_next_page == true then
+            -- There's also a start cursor interestingly.
+            formatted_results.end_cursor = results.page_info.end_cursor
+        end
+
+        return formatted_results
+    end
+}
 return {
     format_post = format_post,
     format_user_info = format_user_info,
     format_search = format_search,
     format_comments = format_comments,
     format_highlights = format_highlights,
-    format_popular_index = format_popular_index
+    format_popular_index = format_popular_index,
+    format_explore_results = format_explore_results
 }

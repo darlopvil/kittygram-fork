@@ -4,20 +4,19 @@
 <main id="main">
     <h2 class="item-heading"><%= strings.explore.posts_matching .. explore_query %></h2>
     <div class="grid">
-        <% for _, item in ipairs(results.edges) do %>
-            <% item = item.node %>
+        <% for _, item in ipairs(results.items) do %>
             <div class="grid-item">
                 <div class="user-info">
-                    <img src="<%= proxy_url(item.user.profile_pic_url) %>" loading="lazy">
+                    <img src="<%= proxy_url(item.user.profile_picture) %>" loading="lazy">
                     <a class="username" href="<%= "/" .. item.user.username %>"> <%= item.user.username %> </a>
                 </div>
                 <div class="grid-item-media">
-                    <% if item.video_versions ~= json.null and #item.video_versions >= 1 then %>
-                        <video controls preload="none" poster="<%= proxy_url(item.display_uri) %>">
+                    <% if item.video_url then %>
+                        <video controls preload="none" poster="<%= proxy_url(item.thumbnail) %>">
                             <% if session.disable_video_proxying then %>
-                                <source crossorigin="anonymous" src="<%= item.video_versions[1].url %>">
+                                <source crossorigin="anonymous" src="<%= item.video_url %>">
                             <% else %>
-                                <source src="<%= proxy_url(item.video_versions[1].url) %>">
+                                <source src="<%= proxy_url(item.video_url) %>">
                             <% end %>
                         </video>
                     <% end %>
@@ -25,8 +24,8 @@
             </div>
         <% end %>
     </div>
-    <% if results.page_info and results.page_info.has_next_page then %>
-        <a href="<%= "/popular/" .. explore_query .. "/?after=" .. results.page_info.end_cursor %>" class="next-button"><%= strings.next_page %></a>
+    <% if results.end_cursor then %>
+        <a href="<%= "/popular/" .. explore_query .. "/?after=" .. results.end_cursor %>" class="next-button"><%= strings.next_page %></a>
     <% end %>
 </main>
 
