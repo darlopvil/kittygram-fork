@@ -34,13 +34,14 @@ end
 local function get_user(username)
     local user = Users:find(string.lower(username))
     local verification_status
-    if user.is_verified == 1 then
-        verification_status = true
-    else
-        verification_status = false
-    end
 
     if user then
+        if user.is_verified == 1 then
+            verification_status = true
+        else
+            verification_status = false
+        end
+
         return {
             username = user.username,
             id = user.user_id,
