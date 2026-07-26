@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime.version": "LuaJIT",
+  "workspace.checkThirdParty": "OpenResty",
+  "workspace.library": ["${workspaceFolder}/lib"],
+  "diagnostics.globals": ["ngx", "lapis"],
+  "runtime.special": {
+    "fail": "error"
+  },
+  "diagnostics.disable": ["redefined-local"]
+}
