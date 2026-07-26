@@ -41,7 +41,7 @@ local gql_endpoints = {
 
 local doc_ids = {
     user_info = {
-        doc_id = "26672929172408668",
+        doc_id = "37095153540132433",
         endpoint = "api",
         method = "POST",
         requires_auth = false,
@@ -63,7 +63,7 @@ local doc_ids = {
         requires_anonymous_session = false
     },
     user_posts = {
-        doc_id = "25570792892598075",
+        doc_id = "27414153238279961",
         endpoint = "query",
         method = "POST",
         requires_auth = false,
@@ -131,31 +131,32 @@ local queries = {
         return {
             enable_integrity_filters = true,
             id = user_id,
-            __relay_internal__pv__PolarisWebSchoolsEnabledrelayprovider = false,
             __relay_internal__pv__PolarisCannesGuardianExperienceEnabledrelayprovider = true,
             __relay_internal__pv__PolarisCASB976ProfileEnabledrelayprovider = false,
-            __relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider = false
+            __relay_internal__pv__PolarisWebSchoolsEnabledrelayprovider = false,
+            __relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider = true,
+            __relay_internal__pv__PolarisShortDramaEnabledrelayprovider = false,
         }, doc_ids.user_info
     end,
     user_posts = function(username, count, after_cursor)
-        if not after_cursor then
-            after_cursor = json.null
-        end
         return {
-            after = after_cursor,
+            after = after_cursor or json.null,
             before = json.null,
             data = {
                 count = count,
-                include_reel_media_seen_timestamp = true, -- no idea what this stuff does, but the requests fail without them ¯\_(ツ)_/¯
+                include_reel_media_seen_timestamp = true,
                 include_relationship_info = true,
                 latest_besties_reel_media = true,
                 latest_reel_media = true
             },
             first = 12,
+            include_multi_captions = false,
             last = json.null,
             username = username,
-            __relay_internal__pv__PolarisIsLoggedInrelayprovider = true, -- no idea what this does either
-            __relay_internal__pv__PolarisShareSheetV3relayprovider = true
+            __relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider = false,
+            __relay_internal__pv__PolarisShortDramaEnabledrelayprovider = false,
+            __relay_internal__pv__PolarisAIGMAccountLabelEnabledrelayprovider = false,
+            __relay_internal__pv__PolarisReelsRecoDebugOverlayEnabledrelayprovider = false,
         }, doc_ids.user_posts
     end,
     user_reels = function(user_id, after_cursor)
@@ -285,6 +286,7 @@ local function graphql_request(request_payload, doc_id, request_type)
 
 
     local request, err = http_request(request_url, request_opts)
+
     if config.include_debug_headers then
         ngx_resp.add_header("X-Kg-Debug-Endpoints", doc_id.doc_id)
     end
