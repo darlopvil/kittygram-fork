@@ -47,5 +47,12 @@
         "i2p": null,
         "yggdrasil": null,
         "country": "CL"
+    },
+    {
+        "url": "https://kittygram.pussthecat.org",
+        "tor": null,
+        "i2p": null,
+        "yggdrasil": null,
+        "country": "DE"
     }
 ]
