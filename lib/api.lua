@@ -4,6 +4,7 @@ local json_params = require("lapis.application").json_params
 local api_codes = require("models.api_codes")
 local test_redis = require("lib.cache").test_redis
 local config = require("lapis.config").get()
+local version = require("version")
 local web_state = ngx.shared.web_state
 local encoding = require("lapis.util.encoding")
 local json = require("cjson")
@@ -94,7 +95,9 @@ end)
 app:get("/api/info(/)", function(self)
     return { json = {
         about = config.about_message,
-        atom_enabled = config.enable_atom
+        atom_enabled = config.enable_atom,
+        version = version or "Unknown",
+        api_token_required = config.require_api_token
     }}
 end)
 
