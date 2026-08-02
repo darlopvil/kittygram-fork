@@ -15,7 +15,7 @@
         <h3> <%= user.full_name %> </h3>
         <p> @<%= user.username %>
         <% if user.is_verified then %>
-            <img src="/static/icons/check_circle.svg" title="<%= strings.user.verified %>" class="verification-symbol">
+            <span title="<%= strings.user.verified %>" class="verification-symbol"><% render("views.widgets.icon", { id = "checkmark", size = 18 }) %></span>
         <% end %>
         </p>
     </div>

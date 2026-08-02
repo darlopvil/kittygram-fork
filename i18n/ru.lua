@@ -17,6 +17,7 @@ return {
     user = {
         list = "Список",
         grid = "Сетка",
+        tile = "Tile",
         reels = "Reels",
         all = "Все",
         highlights = "Highlights",

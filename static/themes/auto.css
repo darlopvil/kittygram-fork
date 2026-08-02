@@ -10,6 +10,7 @@
     --nav-icon-hover-color: #D4D3D4;
     --alt-text-color: #3a3a3a; /* used on the post's time and when hovering on usernames */
 
+    --pre-bg-color: #c9c9c9;
 
     --button-bg-color: black;
     --button-text-color: white;
@@ -23,6 +24,8 @@
     --link-text-color: #0000EE;
     --link-hover-color: #0000EE;
     --link-visited-color: #551A8B;
+
+    --icon-color: black;
 }
 
 
@@ -45,7 +48,7 @@
         rgba(255, 255, 255, 0.12) 0px 0px 0px 1px;
 
 
-        --nav-icon-hover-color: none;
+        --nav-icon-hover-color: #1A1B1E;
 
         --button-bg-color: #F5F5F7;
         --button-text-color: #111215;
@@ -55,16 +58,18 @@
         --button-bg-color-on-hover: #2C2D32;
         --button-text-color-on-hover: #F5F5F7;
 
+        --pre-bg-color: #46484f;
 
         --searchbar-border: 2px solid #2C2D32;
 
         --link-text-color: #6CA8FF;
         --link-hover-color: #A9C9FF;
         --link-visited-color: #9BA2D0;
+
+        --icon-color: #F5F5F7;
     }
 
-    /* inverts the colours of the icons in the navbar */
-    nav img, .verification-symbol {
+    nav img {
         filter: brightness(0) invert(1);
     }
 }

@@ -31,20 +31,20 @@
         </div>
         <div class="selector">
             <% if params.after then %>
-                <% if params.view == "grid" then %>
+                <% if params.view == "tile" then %>
                     <a href="<%= "/" .. username  .. "?after=" .. params.after %>"><%= strings.user.list %></a>
-                    <a class="selected" href="?view=grid&after=<%= params.after %>"><%= strings.user.grid %></a>
+                    <a class="selected" href="?view=tile&after=<%= params.after %>"><%= strings.user.tile %></a>
                 <% else %>
                     <a class="selected" href="<%= "/" .. username  .. "?after=" .. params.after %>"><%= strings.user.list %></a>
-                    <a href="?view=grid&after=<%= params.after %>"><%= strings.user.grid %></a>
+                    <a href="?view=tile&after=<%= params.after %>"><%= strings.user.tile %></a>
                 <% end %>
             <% else %>
-                <% if params.view == "grid" then %>
+                <% if params.view == "tile" then %>
                     <a href="<%= "/" .. username %>"><%= strings.user.list %></a>
-                    <a class="selected" href="?view=grid"><%= strings.user.grid %></a>
+                    <a class="selected" href="?view=tile"><%= strings.user.tile %></a>
                 <% else %>
                     <a class="selected" href="<%= "/" .. username %>"><%= strings.user.list %></a>
-                    <a href="?view=grid"><%= strings.user.grid %></a>
+                    <a href="?view=tile"><%= strings.user.tile %></a>
                 <% end %>
             <% end %>
         </div>
@@ -61,14 +61,14 @@
     <% elseif highlights then %>
         <% render("views.widgets.highlights_tray", { highlights = highlights}) %>
     <% else %>
-        <% if params.view == "grid" then %>
-            <div class="grid">
+        <% if params.view == "tile" then %>
+            <div class="tile-container">
                 <% for _, post in ipairs(posts) do %>
-                    <% render("views.widgets.grid_post", { post = post} ) %>
+                    <% render("views.widgets.tile_post", { post = post} ) %>
                 <% end %>
             </div>
             <% if end_cursor and end_cursor ~= "None" then %>
-                <a href="<%= "?after=" .. end_cursor %>&view=grid" class="next-button"><%= strings.next_page %></a>
+                <a href="<%= "?after=" .. end_cursor %>&view=tile" class="next-button"><%= strings.next_page %></a>
             <% end %>
         <% else %>
             <div class="user-posts">

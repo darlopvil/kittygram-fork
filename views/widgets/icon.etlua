@@ -1,0 +1,3 @@
+<svg class="icon" width="<% if size then %><%= size %><% else %>32<% end %>" height="<% if size then %><%= size %><% else %>32<% end %>" viewBox="0 0 24 24">
+    <use href="#<%= id %>"></use>
+</svg>

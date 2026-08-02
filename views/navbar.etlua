@@ -1,11 +1,11 @@
 <nav <% if session.sticky_navbar ~= "off" then %>class="sticky"<% end %>>
     <a href="/"><img src="/static/kittygram.png" title="Kittygram" alt="<%= strings.navbar.kittygram_logo %>"></a>
     <ul class="right-navbar-items">
-        <li><a href="<%= view_on_instagram_link %>" title="<%= strings.view_on_instagram %>"><img src="/static/icons/instagram_logo.svg"></a></li>
+        <li><a href="<%= view_on_instagram_link %>" title="<%= strings.view_on_instagram %>"><% render("views.widgets.icon", { id = "instagram" }) %></a></li>
         <% if atom_link then %>
-            <li><a href="<%= atom_link %>" title="<%= strings.navbar.atom_feed %>"><img src="/static/icons/rss_icon.svg"></a></li>
+            <li><a href="<%= atom_link %>" title="<%= strings.navbar.atom_feed %>"><% render("views.widgets.icon", { id = "feed" }) %></a></li>
         <% end %>
-        <li><a href="/search" title="<%= strings.explore.search %>"><img src="/static/icons/search_icon.svg"></a></li>
-        <li><a href="/settings" title="<%= strings.settings.settings %>"><img src="/static/icons/settings_icon.svg"></a></li>
+        <li><a href="/search" title="<%= strings.explore.search %>"><% render("views.widgets.icon", { id = "search" }) %></a></li>
+        <li><a href="/settings" title="<%= strings.settings.settings %>"><% render("views.widgets.icon", { id = "settings" }) %></a></li>
     </ul>
 </nav>

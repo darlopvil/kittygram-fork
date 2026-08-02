@@ -2,6 +2,7 @@
 
     --bg-color: #eff1f5;
     --card-color: #bcc0cc;
+    --card-border: 1px solid #dce0e8;
     --main-text-color: #4c4f69;
     --alt-text-color: #5c5f77;
 
@@ -10,7 +11,7 @@
     --outline-shadow: rgba(230, 233, 239, 0.96) 0px 1px 3px 0px;
 
 
-    --nav-icon-hover-color: none; /* setting this to a proper colour interferes with the filter */
+    --nav-icon-hover-color: #bcc0cc;
 
     --button-bg-color: #7287fd;
     --button-text-color: #eff1f5;
@@ -26,9 +27,11 @@
     --link-text-color: #1e66f5;
     --link-hover-color: #209fb5;
     --link-visited-color: #7287fd;
+
+    --icon-color: #4c4f69;
 }
 
-nav img, .verification-symbol {
+nav img {
     filter: brightness(0) saturate(100%) invert(37%) sepia(18%) saturate(510%) hue-rotate(196deg) brightness(95%) contrast(90%);
 }
 

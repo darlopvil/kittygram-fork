@@ -3,14 +3,14 @@
 
 <main id="main">
     <h2 class="item-heading"><%= strings.explore.posts_matching .. explore_query %></h2>
-    <div class="grid">
+    <div class="tile-container">
         <% for _, item in ipairs(results.items) do %>
-            <div class="grid-item">
+            <div class="tile-item">
                 <div class="user-info">
                     <img src="<%= proxy_url(item.user.profile_picture) %>" loading="lazy">
                     <a class="username" href="<%= "/" .. item.user.username %>"> <%= item.user.username %> </a>
                 </div>
-                <div class="grid-item-media">
+                <div class="tile-item-media">
                     <% if item.video_url then %>
                         <video controls preload="none" poster="<%= proxy_url(item.thumbnail) %>">
                             <% if session.disable_video_proxying then %>

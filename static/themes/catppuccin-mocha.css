@@ -2,6 +2,7 @@
 
     --bg-color: #1e1e2e;
     --card-color: #45475a;
+    --card-border: 1px solid #11111b;
     --main-text-color: #cdd6f4;
     --alt-text-color: #bac2de;
 
@@ -10,7 +11,7 @@
     --outline-shadow: rgba(24, 24, 37, 0.96) 0px 1px 3px 0px;
 
 
-    --nav-icon-hover-color: none; /* setting this to a proper colour interferes with the filter */
+    --nav-icon-hover-color: #45475a;
 
     --button-bg-color: #b4befe;
     --button-text-color: #1e1e2e;

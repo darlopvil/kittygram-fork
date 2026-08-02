@@ -41,27 +41,40 @@ nav img {
   max-height: 3em;
 }
 
+.icon, .right-navbar-items li a {
+    color: var(--icon-color);
+}
+
 .right-navbar-items {
   float: right;
   list-style-type: none;
   display: inline-block;
   margin-top: 0;
-  padding-top: 0.2em;
-  margin-right: 0.5em;
+
 }
 
 .right-navbar-items li {
+  height: 100%;
   display: inline;
+  vertical-align: middle;
+  margin-right: 0.2em;
+  line-height: 3em;
+
 }
 
-.right-navbar-items li img {
+.right-navbar-items li a {
+  text-decoration: none;
+}
+
+.right-navbar-items li .icon {
   max-height: 2.5em;
   border-radius: 0.3em;
-  padding: 0.1em;
+  padding: 0.3em;
+  vertical-align: middle;
 }
 
 
-.right-navbar-items li img:hover {
+.right-navbar-items li .icon:hover {
   background-color: var(--nav-icon-hover-color);
   box-shadow: var(--main-shadow);
 }
@@ -290,15 +303,16 @@ input[type="text"] {
 .settings-form span input, .settings-form span select {
   float: right;
 }
+
 pre {
   white-space: pre-line;
-  background-color: #c9c9c9;
+  background-color: var(--pre-bg-color);
   border-radius: 10px;
   padding: 0.5em;
   overflow-x: scroll;
 }
 
-.grid {
+.tile-container {
   columns: 220px;
   column-gap: 1rem;
   margin: 0 auto;
@@ -306,41 +320,42 @@ pre {
   max-width: 90%;
 }
 
-.grid-item {
+.tile-item {
   background-color: var(--card-color);
   break-inside: avoid;
   margin-bottom: 1rem;
   border-radius: 10px;
 }
 
-.grid-item:hover {
+.tile-item:hover {
     border: var(--card-border);
 }
 
-.grid-item .user-info {
+.tile-item .user-info {
   padding: 0.5rem 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.grid-item .username {
+.tile-item .username {
   position: static;
 }
-.grid-item-media video, .grid-item-media img {
+.tile-item-media video, .tile-item-media img {
   width: 100%;
   height: auto;
   display: block;
 }
 
-.selector-group  {
+.selector-group {
     display: flex;
-    justify-content: space-evenly;
+    justify-content: center;
     gap: 1rem;
-    width: 12rem;
+    width: fit-content;
     margin: 0 auto;
     margin-bottom: 1rem;
 }
+
 .selector {
     display: flex;
     align-items: center;

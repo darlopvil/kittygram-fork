@@ -4,12 +4,12 @@
    end
 %>
 
-<div class="grid-item">
+<div class="tile-item">
     <div class="user-info">
         <img src="<%= proxy_url(post.user.profile_picture) %>" loading="lazy">
         <a class="username" href="<%= "/" .. post.user.username %>"> <%= post.user.username %> </a>
     </div>
-    <div class="grid-item-media">
+    <div class="tile-item-media">
         <a href="/p/<%= post.shortcode %>">
             <% if post.video_url then%>
                 <video controls preload="none" poster="<%= proxy_url(post.video_thumbnail) %>">

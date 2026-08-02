@@ -17,6 +17,7 @@ return {
     user = {
         list = "List",
         grid = "Grid",
+        tile = "Tile",
         reels = "Reels",
         all = "All",
         highlights = "Highlights",
