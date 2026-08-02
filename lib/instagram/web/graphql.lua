@@ -218,6 +218,8 @@ local function cooldown(doc_id)
     if config.ratelimits.cooldown_on_ratelimit then
         -- Get the remaining ttl on the key
         local key_ttl = web_state:ttl("graphql:" .. doc_id)
+        local count = web_state:get("graphql:" .. doc_id)
+        ngx.log(ngx.WARN, "Rate limit hit on " .. tostring(doc_id) .. " after " .. tostring(count) .. " requests.")
         if key_ttl and key_ttl > 0 then
             web_state:replace("graphql:" .. doc_id, REQUEST_LIMIT + 999, key_ttl)
         else
@@ -323,6 +325,11 @@ local function graphql_request(request_payload, doc_id, request_type)
             if gql_error.code == 4630001 then
                 return errors.not_found{
                     message = "Item (likely a user) not found.",
+                    blob = decoded_body
+                }
+            elseif gql_error.code == 1675004 then
+                cooldown(doc_id.doc_id)
+                return errors.ratelimited{
                     blob = decoded_body
                 }
             end
