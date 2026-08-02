@@ -3,6 +3,7 @@ return {
     view_on_instagram = "Посмотреть в Instagram.",
     about = "О проекте",
     about_this_instance = "Об этом инстансе",
+    thousand_separator = ",",
     navbar = {
         kittygram_logo = "Логотип Kittygram",
         atom_feed = "Лента Atom",

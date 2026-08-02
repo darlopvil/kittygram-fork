@@ -28,20 +28,22 @@ end
 
 -- add commas to a number.
 -- e.g., 100000, 100,000
-local function comma_value(amount)
-    if type(amount) == "userdata" then
-        return amount
-    end
-
-    local formatted = amount
-    while true do
-        local formatted_, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
-        formatted = formatted_
-        if (k==0) then
-            break
+local function comma_value(separator)
+    return function(amount)
+        if type(amount) == "userdata" then
+            return amount
         end
+
+        local formatted = amount
+        while true do
+            local formatted_, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1' .. separator .. '%2')
+            formatted = formatted_
+            if (k==0) then
+                break
+            end
+        end
+        return formatted
     end
-    return formatted
 end
 
 local ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"

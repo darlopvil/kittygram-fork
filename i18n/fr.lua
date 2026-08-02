@@ -3,6 +3,7 @@ return {
     view_on_instagram = "Voir sur Instagram.",
     about = "À propos",
     about_this_instance = "À propos de cette instance",
+    thousand_separator = "\u{202f}",
     navbar = {
         kittygram_logo = "Logo de Kittygram",
         atom_feed = "Flux Atom",

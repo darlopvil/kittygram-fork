@@ -5,6 +5,7 @@ return {
     view_on_instagram = "Féach ar Instagram.",
     about = "Faoi",
     about_this_instance = "Faoin ásc seo",
+    thousand_separator = ",",
     navbar = {
         kittygram_logo = "Lógó Kittygram",
         atom_feed = "Fotha Atom",

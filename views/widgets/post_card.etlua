@@ -1,5 +1,5 @@
 <% local proxy_url = require("lib.helpers").proxy_url %>
-<% local comma_value = require("lib.helpers").comma_value %>
+<% local comma_value = require("lib.helpers").comma_value(strings.thousand_separator) %>
 
 <div class="item-card post">
     <div class="user-info">

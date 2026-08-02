@@ -3,6 +3,7 @@ return {
     view_on_instagram = "View on Instagram.",
     about = "About",
     about_this_instance = "About this instance",
+    thousand_separator = ",", -- The symbol to put between thousands when separating numbers. E.g: 1000 -> 1,000.
     navbar = {
         kittygram_logo = "Kittygram logo",
         atom_feed = "Atom feed",
