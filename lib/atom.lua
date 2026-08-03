@@ -20,6 +20,10 @@ end
 
 local function create_html_content(post)
     local base_url_path = config.base_atom_path
+    if string.sub(tostring(base_url_path), #base_url_path, -1) == "/" then
+        base_url_path = string.sub(base_url_path, 1, #base_url_path - 1)
+    end
+
     local html_string = ""
     if post.images and #post.images >= 1 then
 
