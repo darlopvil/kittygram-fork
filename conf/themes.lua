@@ -41,6 +41,12 @@ local themes = {
         url = "/static/themes/catppuccin-mocha.css",
         uses_base_theme = true
     },
+    gruvbox_dark = {
+        name = "gruvbox_dark",
+        display_name = "Gruvbox Dark",
+        url = "/static/themes/gruvbox-dark.css",
+        uses_base_theme = true
+    },
     ferra = {
         name = "ferra",
         display_name = "Ferra",
