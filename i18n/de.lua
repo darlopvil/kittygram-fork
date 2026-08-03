@@ -26,7 +26,7 @@ return {
         verified = "Verifiziert",
         followers = "Follower",
         following = "Gefolgt",
-        user_is_private = "Dieser Account is privat.",
+        user_is_private = "Dieser Account ist privat.",
         has_no_posts = "Dieser Nutzer hat noch nichts gepostet.",
     },
     explore = {
