@@ -7,6 +7,11 @@ local function save_user(user_dict)
         return nil
     end
 
+    if string.sub(tostring(user_dict.id), 1, 6) == "178414" then
+        ngx.log(ngx.ERR, "save_user: trying to save " .. formatted_post.user.username .. "(" .. formatted_post.user.id .. "), user id seems to be an fbid.")
+        return
+    end
+
     local verification_num = 0
     if user_dict.is_verified then
         verification_num = 1

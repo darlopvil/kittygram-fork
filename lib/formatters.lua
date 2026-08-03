@@ -149,7 +149,7 @@ local format_post = {
 
         formatted_post.user = {
             username = post.user.username,
-            id = post.user.id,
+            id = post.user.pk,
             profile_picture = post.user.profile_pic_url,
             is_verified = post.user.is_verified
         }
