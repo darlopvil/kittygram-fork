@@ -1,4 +1,5 @@
 local json = require("cjson")
+local construct_error = require("lib.helpers").create_error
 local encoding = require("lapis.util.encoding")
 
 -- all of instagram's apis return posts in a different format.
@@ -61,6 +62,7 @@ local format_post = {
             shortcode = item.code,
             id = item.pk,
             timestamp = item.taken_at,
+            thumbnail = item.display_uri,
             likes = item.like_count,
             comment_count = item.comment_count,
         }
@@ -72,6 +74,29 @@ local format_post = {
             profile_picture = item.user.profile_pic_url,
             is_verified = item.user.is_verified,
         }
+
+        if item.product_type == "feed" then
+            post.kind = "post"
+        elseif item.product_type == "clips" then
+            post.kind = "reel"
+        elseif item.product_type == "carousel_container" then
+            post.kind = "carousel"
+        else
+            post.kind = "unknown"
+        end
+
+        if item.coauthor_producers and item.coauthor_producers ~= json.null then
+            post.coauthors = {}
+            for _, coauthor in ipairs(item.coauthor_producers) do
+                table.insert(post.coauthors, {
+                    username = coauthor.username,
+                    id = coauthor.id,
+                    profile_picture = coauthor.profile_pic_url,
+                    is_verified = coauthor.id_verified
+                })
+            end
+        end
+
         if item.accessibility_caption then
             post.alt_text = item.accessibility_caption
         end
@@ -113,6 +138,9 @@ local format_post = {
         local reel_formatted = {
             id = reel.id,
             comment_count = reel.comment_count,
+            thumbnail = reel.display_uri,
+            -- considering its a reel timeline, everything should be a reel
+            kind = "reel",
             shortcode = reel.code,
             timestamp = reel.taken_at,
             likes = reel.like_count,
@@ -142,6 +170,7 @@ local format_post = {
             id = post.pk,
             alt_text = post.accessibility_caption,
             shortcode = post.code,
+            thumbnail = post.display_uri,
             likes = post.like_count,
             timestamp = post.taken_at,
             comment_count = post.comment_count
@@ -189,6 +218,64 @@ local format_post = {
     end
 }
 
+local format_timeline = {
+    from_reel_api = function(reels, page_data)
+        page_data = page_data or {}
+        local formatted = {
+            items = {},
+        }
+
+        for _, reel in ipairs(reels.items) do
+            local formatted_reel = format_post.from_reel_timeline(reel)
+            table.insert(formatted.items, formatted_reel)
+        end
+
+        if reels.paging_info and reels.paging_info ~= ngx.null then
+            if reels.paging_info.more_available then
+                local encoded_cursor = encoding.encode_base64(json.encode({
+                    cursor = reels.paging_info.max_id,
+                    page_data = page_data,
+                    id = page_data.user_id,
+                    kind = "timeline"
+                }))
+
+                formatted.cursor = encoded_cursor
+            end
+        end
+
+        return formatted
+    end,
+    from_timeline_graphql = function(timeline, page_data)
+        local formatted = {
+            items = {},
+        }
+
+        if timeline.xdt_api__v1__feed__user_timeline_graphql_connection then
+            for _, post in ipairs(timeline.xdt_api__v1__feed__user_timeline_graphql_connection.edges) do
+                local formatted_post = format_post.from_timeline(post)
+                table.insert(formatted.items, formatted_post)
+            end
+
+            if timeline.xdt_api__v1__feed__user_timeline_graphql_connection.page_info and timeline.xdt_api__v1__feed__user_timeline_graphql_connection.page_info ~= ngx.null then
+                if timeline.xdt_api__v1__feed__user_timeline_graphql_connection.page_info.has_next_page then
+                    local encoded_cursor = encoding.encode_base64(json.encode({
+                        cursor = timeline.xdt_api__v1__feed__user_timeline_graphql_connection.page_info.end_cursor,
+                        page_data = page_data,
+                        kind = "timeline"
+                    }))
+
+                    formatted.cursor = encoded_cursor
+                end
+            end
+        else
+            return construct_error.unknown{ blob = timeline }
+        end
+
+        return formatted
+    end,
+
+
+}
 local format_comments = {
     from_web_graphql = function(comments)
         local formatted_comments = {
@@ -259,15 +346,16 @@ local format_comments = {
 }
 local format_user_info = {
     from_graphql = function(info)
-        return {
-            follower_count = info.follower_count,
+        info = info.user or {}
+        local formatted_info = {
+            followers = info.follower_count,
             pronouns = info.pronouns,
             display_name = info.full_name,
-            following_count = info.following_count,
+            following = info.following_count,
             media_count = info.media_count,
             -- not exposed on web_profile_info.
             is_cannes = info.is_cannes,
-            profile_pic_url = info.profile_pic_url,
+            profile_picture = info.profile_pic_url,
             bio_links = info.bio_links,
             is_private = info.is_private,
             id = info.id,
@@ -275,55 +363,77 @@ local format_user_info = {
             biography = info.biography,
             is_verified = info.is_verified,
             is_business = info.is_business,
-            -- don't know what this is. Keeping it in case it's useful in future.
-            -- not exposed on the web_profile_info api though.
-            account_type = info.account_type
-        }
-    end,
-    from_web_api = function(info)
-        local info_formatted = {
-            username = info.username,
-            display_name = info.full_name,
-            biography = info.biography,
-            profile_pic_url = info.profile_pic_url,
-            id = info.id,
-            is_verified = info.is_verified,
-            is_private = info.is_private,
-            is_business = info.is_business_account,
-            bio_links = info.bio_links,
-            pronouns = info.pronouns
         }
 
-        if info.edge_follow and info.edge_follow ~= json.null and info.edge_follow.count and info.edge_follow.count ~= json.null then
-            info_formatted.following_count = info.edge_follow.count
+        if info.hd_profile_pic_url_info and info.hd_profile_pic_url_info ~= ngx.null then
+            if info.hd_profile_pic_url_info.url and info.hd_profile_pic_url_info.url ~= ngx.null then
+                formatted_info.hd_profile_picture = info.hd_profile_pic_url_info.url
+            end
         end
-        if info.edge_followed_by and info.edge_followed_by ~= json.null and info.edge_followed_by.count and info.edge_followed_by.count ~= json.null then
-            info_formatted.follower_count = info.edge_followed_by.count
-        end
-        if info.edge_owner_to_timeline_media and info.edge_owner_to_timeline_media ~= json.null and info.edge_owner_to_timeline_media.count and info.edge_owner_to_timeline_media.count ~= json.null then
-            info_formatted.media_count = info.edge_owner_to_timeline_media.count
-        end
-        return info_formatted
+
+        return formatted_info
     end,
-}
+    from_hover_graphql = function(user)
+        if user.xig_user_by_igid_v2 then
+            if user.xig_user_by_igid_v2 == ngx.null then
+                return construct_error.not_found{ message = "Hover info is null", blob = user }
+            end
+            local info = user.xig_user_by_igid_v2.user_dict
+            local formatted_info = {
+                followers = info.follower_count,
+                pronouns = info.pronouns,
+                display_name = info.full_name,
+                following = info.following_count,
+                media_count = info.media_count,
+                profile_picture = info.profile_pic_url,
+                is_private = info.is_private,
+                id = info.id,
+                username = info.username,
+                biography = info.biography,
+                is_verified = info.is_verified,
+            }
 
-local format_highlights = {
-    from_anon_web = function(highlights)
-        local highlights = highlights.user
+            if info.hd_profile_pic_url_info and info.hd_profile_pic_url_info ~= ngx.null then
+                if info.hd_profile_pic_url_info.url and info.hd_profile_pic_url_info.url ~= ngx.null then
+                    formatted_info.hd_profile_picture = info.hd_profile_pic_url_info.url
+                end
+            end
 
-        local formatted_highlights = {}
-
-        for _, item in ipairs(highlights.edge_highlight_reels.edges) do
-            item = item.node
-            table.insert(formatted_highlights, {
-                id = item.id,
-                title = item.title,
-                image = item.cover_media.thumbnail_src,
-            })
+            return formatted_info
+        else
+            return construct_error.unknown{ blob = user }
         end
-        return formatted_highlights
+    end,
+    from_anon_web_graphql = function(info)
+        if info.xig_user_by_username  then
+            if info.xig_user_by_username == ngx.null then
+                return construct_error.not_found{
+                    message = "xig_user_by_username is null.",
+                    blob = info
+                }
+            end
+            info = info.xig_user_by_username
+            return {
+                followers = info.follower_count,
+                pronouns = info.pronouns,
+                display_name = info.full_name,
+                following = info.following_count,
+                media_count = info.all_media_count,
+                profile_picture = info.profile_pic_url,
+                bio_links = info.bio_links,
+                is_private = info.is_private,
+                id = info.pk,
+                username = info.username,
+                biography = info.biography,
+                is_verified = info.is_verified,
+            }
+        else
+            return {}
+        end
     end
 }
+
+
 local format_search = {
     from_web_topsearch = function(results)
         local formatted_results = {
@@ -428,6 +538,150 @@ local format_explore_results = {
         return formatted_results
     end
 }
+
+local format_grid = {
+    from_anon_web_graphql = function(grid, page_data)
+        local formatted_grid = {
+            items = {}
+        }
+
+        if grid.xig_user_by_username then
+            if grid.xig_user_by_username == ngx.null then
+                return construct_error.not_found{
+                    message = "xig_user_by_username is null.",
+                    blob = grid
+                }
+            end
+            grid = grid.xig_user_by_username
+        elseif grid.node and grid.node.polaris_ordered_timeline_connection then
+            grid = grid.node
+        else
+            return formatted_grid
+        end
+
+        if grid.polaris_ordered_timeline_connection and grid.polaris_ordered_timeline_connection ~= json.null then
+            for _, item in ipairs(grid.polaris_ordered_timeline_connection.edges) do
+                item = item.node
+                local formatted_item = {
+                    id = item.pk,
+                    shortcode = item.code,
+                    alt_text = item.accessibility_caption,
+                    thumbnail = item.display_uri,
+                    likes = item.like_count,
+                    views = item.view_count,
+                    comment_count = item.comment_count
+                }
+
+                if item.user then
+                    formatted_item.user = {
+                        username = item.user.username,
+                        id = item.user.pk
+                    }
+                end
+
+                if item.caption and item.caption ~= ngx.null then
+                    formatted_item.caption = item.caption.text
+                end
+
+                if item.product_type == "feed" then
+                    formatted_item.kind = "post"
+                elseif item.product_type == "clips" then
+                    formatted_item.kind = "reel"
+                elseif item.product_type == "carousel_container" then
+                    formatted_item.kind = "carousel"
+                else
+                    formatted_item.kind = "unknown"
+                end
+
+                table.insert(formatted_grid.items, formatted_item)
+            end
+        end
+
+        if grid.polaris_ordered_timeline_connection.page_info and grid.polaris_ordered_timeline_connection.page_info.has_next_page then
+            local encoded_cursor = encoding.encode_base64(json.encode({
+                cursor = grid.polaris_ordered_timeline_connection.page_info.end_cursor,
+                page_data = page_data,
+                id = grid.id,
+                kind = "grid"
+            }))
+
+
+            formatted_grid.cursor = encoded_cursor
+        end
+
+        return formatted_grid
+    end,
+    from_anon_reel_web_graphql = function(grid, page_data)
+        local formatted = {
+            items = {}
+        }
+
+        if grid.xig_user_by_username then
+            if grid.xig_user_by_username == ngx.null then
+                return construct_error.not_found{
+                    message = "(formatter) xig_user_by_username is null.",
+                    blob = grid
+                }
+            else
+                grid = grid.xig_user_by_username
+            end
+        elseif grid.node and grid.node ~= ngx.null then
+            grid = grid.node
+        end
+
+        if grid.polaris_clips_connection and grid.polaris_clips_connection ~= json.null then
+            for _, item in ipairs(grid.polaris_clips_connection.edges) do
+                item = item.node
+                local formatted_item = {
+                    id = item.pk,
+                    shortcode = item.code,
+                    alt_text = item.accessibility_caption,
+                    thumbnail = item.display_uri,
+                    likes = item.like_count,
+                    views = item.view_count,
+                    comment_count = item.comment_count
+                }
+
+                if item.user then
+                    formatted_item.user = {
+                        username = item.user.username,
+                        id = item.user.pk
+                    }
+                end
+
+                if item.caption and item.caption ~= ngx.null then
+                    formatted_item.caption = item.caption.text
+                end
+
+                if item.product_type == "feed" then
+                    formatted_item.kind = "post"
+                elseif item.product_type == "clips" then
+                    formatted_item.kind = "reel"
+                elseif item.product_type == "carousel_container" then
+                    formatted_item.kind = "carousel"
+                else
+                    formatted_item.kind = "unknown"
+                end
+
+                table.insert(formatted.items, formatted_item)
+            end
+        end
+        if grid.polaris_clips_connection.page_info and grid.polaris_clips_connection.page_info.has_next_page then
+            local encoded_cursor = encoding.encode_base64(json.encode({
+                cursor = grid.polaris_clips_connection.page_info.end_cursor,
+                page_data = page_data,
+                id = grid.id,
+                kind = "grid"
+            }))
+
+
+            formatted.cursor = encoded_cursor
+        end
+        return formatted
+    end
+}
+
+
 return {
     format_post = format_post,
     format_user_info = format_user_info,
@@ -435,5 +689,7 @@ return {
     format_comments = format_comments,
     format_highlights = format_highlights,
     format_popular_index = format_popular_index,
-    format_explore_results = format_explore_results
+    format_explore_results = format_explore_results,
+    format_grid = format_grid,
+    format_timeline = format_timeline
 }

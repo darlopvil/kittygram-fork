@@ -1,0 +1,24 @@
+<div class="item-card">
+    <h2><%= title %></h2>
+    <p><%= description %>
+
+    <% if include_instagram_link then %>
+        <p><a href="<%= view_on_instagram_link %>">View on instagram</a></p>
+    <% end %>
+
+    <% if has_details then %>
+        <details>
+        <summary>More Details</summary>
+            <p><%= error.error_info.message %></p>
+            <pre>
+                <%= error.error_info.blob %>
+            </pre>
+        </details>
+    <% end %>
+
+    <% if alternate_instance then %>
+        <p><a href="<%= alternate_instance %>">Try another random instance</a></p>
+    <% end %>
+
+    <p><%= version %></p>
+</div>

@@ -28,7 +28,9 @@ local function sidecar_request(url, options)
             end
         end
         payload.headers = json.encode(clean_headers)
+
     end
+
 
     local request, err = httpc:request_uri(config.http_sidecar.url, {
         method = "POST",
@@ -40,6 +42,7 @@ local function sidecar_request(url, options)
     if err then
         return nil, err
     end
+
 
     local decode_ok, decoded = helpers.safe_json_decode(request.body)
 

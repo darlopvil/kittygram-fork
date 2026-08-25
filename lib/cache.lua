@@ -74,8 +74,7 @@ end
 -- cache individual posts from a users timeline
 local function cache_timeline(posts)
     for _, post in ipairs(posts) do
-        local post_formatted = formatters.format_post.from_timeline(post)
-        cache_item("ig:shortcode:" .. post_formatted.shortcode, post_formatted, "positive_post")
+        cache_item("ig:shortcode:" .. post.shortcode, post, "positive_post")
     end
 end
 

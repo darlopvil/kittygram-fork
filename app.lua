@@ -125,39 +125,50 @@ app:get("/p/:shortcode/embed(/)", show_post)
 app:get("/reel/:shortcode/embed(/)", show_post)
 
 app:get("/:username(/:path)(/)", function(self)
+    self.selectors = {}
 
     local feed_type
     if self.params.path == "reels" then
-        feed_type = "reel"
-    elseif self.params.path == "highlights" then
-        feed_type = "highlights"
+        feed_type = "reels"
+        self.selectors.selected_feed = "reels"
     elseif self.params.path then
         return render_error(self, helpers.create_error.route_not_defined())
     else
         feed_type = "all"
+        self.selectors.selected_feed = "all"
     end
 
-    local user = instagram.get_user(self.params.username, self.params.after, feed_type)
+    local view_type
+    if self.params.view == "timeline" or self.params.view == "tile" then
+        view_type = self.params.view
+        self.selectors.selected_view = self.params.view
+    else
+        view_type = "grid"
+        self.selectors.selected_view = "grid"
+    end
+
+    local user = instagram.get_user(self.params.username, self.params.after, feed_type, view_type)
+
     if user.has_errors then
         return render_error(self, user)
     else
         if config.enable_atom then
             self.atom_link = "/" .. self.params.username .. "/atom.xml"
         end
-        self.user = user.user_info
-        self.posts = user.posts
-        self.highlights = user.highlights
-        self.end_cursor = user.end_cursor
+
+        self.user = user
+
         if self.params.json == "true" and config.allow_json then
             return { json = user }
         end
-        if not user.user_info.has_errors then
-            self.username = user.user_info.username
+        if not user.info.has_errors then
+            self.username = user.info.username
         else
             -- fall back to the param if the username isn't available
             self.username = self.params.username
         end
         self.page_title = "@" .. self.username .. " | kittygram"
+
         return { render = "user" }
     end
 end)

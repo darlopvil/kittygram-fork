@@ -53,6 +53,7 @@ local function get_request_counts()
 end
 
 app:before_filter(function(self)
+
     local decoded_token = encoding.decode_with_secret((self.req.headers["Authorization"] or ""):gsub("Bearer ", "", 1), config.secret)
     if decoded_token and decoded_token.expires then
         if not (decoded_token.expires < os.time()) then
@@ -126,7 +127,7 @@ app:post("/api/register_token", json_params(function(self)
     }}
 end))
 
-app:get("/api/post/:shortcode(/)", function(self)
+app:get("/api/post(s)/:shortcode(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
         return { json = {
             status = "fail",
@@ -145,7 +146,51 @@ app:get("/api/post/:shortcode(/)", function(self)
     return { json = post }
 end)
 
+app:get("/api/users/:view_type/:username(/:path)(/)", function(self)
+    if config.require_api_token ~= false and not self.token_is_valid then
+        return { json = {
+            status = "fail",
+            message = "An API token is required."
+        }, status = 401}
+    end
 
+    local feed_type
+    if self.params.path and self.params.path == "reels" or self.params.path == "reel" then
+        feed_type = "reels"
+    else
+        feed_type = "all"
+    end
+
+    local view_type
+    if self.params.view_type == "grid" then
+        view_type = "grid"
+    elseif self.params.view_type == "timeline" then
+        view_type = "timeline"
+    else
+        return { json = {
+            status = "fail",
+            message = "Incorrect view_type (must be `grid` or `timeline`)"
+        }, status = 400 }
+    end
+
+    local user = instagram.get_user(self.params.username, self.params.cursor, feed_type, view_type)
+
+    if user and user.has_errors then
+        return return_error(user)
+    end
+    if user.timeline and user.timeline.has_errors then
+       return return_error(user.timeline)
+    end
+
+    if user.info and user.info.has_errors then
+        return return_error(user.info)
+    end
+
+    user.status = "ok"
+    return { json = user }
+end)
+-- This endpoint is only kept around for compatability.
+-- NOTE: remove this soon.
 app:get("/api/user/:username(/:path)(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
         return { json = {
@@ -156,18 +201,49 @@ app:get("/api/user/:username(/:path)(/)", function(self)
 
     local feed_type
     if self.params.path and self.params.path == "reels" then
-        feed_type = "reel"
+        feed_type = "reels"
     else
         feed_type = "all"
     end
 
-    local user = instagram.get_user(self.params.username, self.params.cursor, feed_type)
+    local user = instagram.get_user(self.params.username, self.params.cursor, feed_type, "timeline")
 
-    local status_code
-    if user.has_errors then
-       return return_error(user)
+
+    if user.timeline and user.timeline.has_errors then
+       return return_error(user.timeline)
     end
 
+    if user.info and user.info.has_errors then
+        return return_error(user.info)
+    end
+
+    -- Rearrange the table structure for compatability.
+
+    user.user_info = {
+        full_name = user.info.display_name,
+        username = user.info.username,
+        id = user.info.id,
+        pk = user.info.id,
+        is_verified = user.info.is_verified,
+        pronouns = user.info.pronouns,
+        profile_picture_url = user.info.profile_picture,
+        hd_profile_pic_info = {
+            url = user.info.hd_profile_picture
+        },
+        follower_count = user.info.followers,
+        following_count = user.info.following,
+        media_count = user.info.media_count,
+        is_private = user.info.is_private,
+        bio_links = user.info.bio_links,
+        biography = user.info.biography,
+
+    }
+    user.info = nil
+    user.posts = user.timeline.items
+    user.end_cursor = user.timeline.cursor
+    user.timeline = nil
+
+    user._message = "This endpoint is deprecated and will be removed soon. Please use users/grid or users/timeline instead. "
     user.status = "ok"
     return { json = user }
 end)

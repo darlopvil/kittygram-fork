@@ -1,78 +1,54 @@
 
 <main id="main">
-    <div class="item-card">
-        <% if error.error_type == "not_found" then %>
-            <h2> Not Found. </h2>
-            <p>The requested content was not found. Your link could be broken, or the item may have been deleted.</p>
-            <br>
-            <details>
-                <summary>More Details</summary>
-                <p> <%= error.error_info.message %> </p>
-                <pre>
-                    <%= error.error_info.blob %>
-                </pre>
-            </details>
-        <% elseif error.error_type == "ratelimited" then %>
-            <h2> This instance has been ratelimited. </h2>
-            <p>Try again in a few minutes.</p>
-            <br>
-            <details>
-                <summary>More Details</summary>
-                <p> <%= error.error_info.message %> </p>
-                <pre><%= error.error_info.blob %></pre>
-            </details>
-        <% elseif error.error_type == "route_not_defined" then %>
-            <h2>Page not found</h2>
-            <p>Your link may be broken.</p>
-            <details>
-                <summary>More Details</summary>
-                <p>No route was defined for this request</p>
-            </details>
-        <% elseif error.error_type == "blocked" then %>
-            <h2>Blocked by instagram.</h2>
-            <p>This server has been blocked from accessing some data by instagram.</p>
-            <p>Non-private users or users with posts may still be accessible</p>
-            <details>
-                <summary>More Details</summary>
-                <p><%= error.error_info.message %></p>
-            </details>
-        <% elseif error.error_type == "null_content" then %>
-            <h2>Post unavailable.</h2>
-            <p>This post is unavailable on kittygram.</p>
-            <p><a href="<%= view_on_instagram_link %>">View on instagram</a></p>
-            <details>
-                <summary>More Details</summary>
-                <p><%= error.error_info.message %></p>
-                <pre>
-                    <%= error.error_info.blob %>
-                </pre>
-            </details>
-        <% elseif error.error_type == "feature_not_supported" then %>
-            <h2>This feature is unavailable on kittygram.</h2>
-            <p>This feature is currently unavailable on kittygram.</p>
-            <p><a href="<%= view_on_instagram_link %>">View on instagram</a></p>
-            <details>
-                <summary>More Details</summary>
-                <p><%= error.error_info.message %></p>
-                <pre>
-                    <%= error.error_info.blob %>
-                </pre>
-            </details>
-        <% else %>
-            <h2> Error! </h2>
-            <p>An unexpected error occurred</p>
-            <br>
-            <details>
-                <summary>More Details</summary>
-                <p> <%= error.error_info.message %> </p>
-                <pre>
-                    <%= error.error_info.blob %>
-                </pre>
-            </details>
-        <% end %>
-        <% if alternate_instance then %>
-            <p><a href="<%= alternate_instance %>">Try another random instance</a></p>
-        <% end %>
-        <p><%= version %></p>
-    </div>
+    <% if error.error_type == "not_found" then %>
+        <% render("views.widgets.error_card", { title = "Not Found.",
+            description = "The requested content was not found. Your link could be broken, or the item may have been deleted.",
+            has_details = true,
+            error = error
+        }) %>
+    <% elseif error.error_type == "ratelimited" then %>
+        <% render("views.widgets.error_card", {
+            title = "This instance has been ratelimited.",
+            description = "Try again in a few minutes.",
+            has_details = true,
+            error = error
+        }) %>
+    <% elseif error.error_type == "route_not_defined" then %>
+        <% render("views.widgets.error_card", {
+            title = "Page not found.",
+            description = "Your link may be broken.",
+            has_details = true,
+            error = error
+        }) %>
+    <% elseif error.error_type == "blocked" then %>
+        <% render("views.widgets.error_card", {
+            title = "Blocked by instagram.",
+            description = "This server has been blocked from accessing some data by instagram. \nNon-private users or users with posts may still be accessible",
+            has_details = true,
+            error = error
+        }) %>
+    <% elseif error.error_type == "null_content" then %>
+        <% render("views.widgets.error_card", {
+            title = "Post unavailable.",
+            description = "This post is unavailable on kittygram.",
+            has_details = true,
+            error = error,
+            include_instagram_link = true,
+        }) %>
+    <% elseif error.error_type == "feature_not_supported" then %>
+        <% render("views.widgets.error_card", {
+            title = "This feature is unavailable on kittygram.",
+            description = "",
+            has_details = true,
+            error = error,
+            include_instagram_link = true,
+        }) %>
+    <% else %>
+        <% render("views.widgets.error_card", {
+            title = "Error!",
+            description = "An unexpected error occurred.",
+            has_details = true,
+            error = error
+        }) %>
+    <% end %>
 </main>

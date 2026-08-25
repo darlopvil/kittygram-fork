@@ -23,18 +23,19 @@ local function save_user(user_dict)
         local new_user = Users:create({
             username = string.lower(user_dict.username),
             user_id = user_dict.id,
-            profile_picture = user_dict.profile_pic_url,
+            profile_picture = user_dict.profile_pic_url or user_dict.profile_picture,
             is_verified = verification_num
         })
     else
         user:update({
             username = string.lower(user_dict.username),
             user_id = user_dict.id,
-            profile_picture = user_dict.profile_pic_url,
+            profile_picture = user_dict.profile_pic_url or user_dict.profile_picture,
             is_verified = verification_num
         })
     end
 end
+
 
 local function get_user(username)
     local user = Users:find(string.lower(username))

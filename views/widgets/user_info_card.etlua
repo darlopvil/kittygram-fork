@@ -3,30 +3,30 @@
 
 <div class="item-card user-info-card">
     <div class="profile-picture">
-        <% if user.hd_profile_pic_url_info then %>
-            <a href="<%= user.hd_profile_pic_url_info.url %>">
-                <img src="<%= proxy_url(user.profile_pic_url) %>" loading="lazy">
+        <% if user_info.hd_profile_picture then %>
+            <a href="<%= user_info.hd_profile_picture %>">
+                <img src="<%= proxy_url(user_info.profile_picture) %>" loading="lazy">
             </a>
         <% else %>
-            <img src="<%= proxy_url(user.profile_pic_url) %>" loading="lazy">
+            <img src="<%= proxy_url(user_info.profile_picture) %>" loading="lazy">
         <% end %>
     </div>
     <div class="usernames" >
-        <h3> <%= user.full_name %> </h3>
-        <p> @<%= user.username %>
-        <% if user.is_verified then %>
+        <h3> <%= user_info.display_name %> </h3>
+        <p> @<%= user_info.username %>
+        <% if user_info.is_verified then %>
             <span title="<%= strings.user.verified %>" class="verification-symbol"><% render("views.widgets.icon", { id = "checkmark", size = 18 }) %></span>
         <% end %>
         </p>
     </div>
     <div class="user-bio">
-        <p class="user-bio-text"><%= user.biography or "" %></p>
+        <p class="user-bio-text"><%= user_info.biography or "" %></p>
     </div>
     <div class="profile-stats">
         <ul>
-            <li><b class="stat-number"><%= comma_value(user.follower_count) %></b> <p><%= strings.user.followers %></p></li>
-            <li><b class="stat-number"><%= comma_value(user.following_count) %></b> <p><%= strings.user.following %></p></li>
-            <li><b class="stat-number"><%= comma_value(user.media_count) %></b> <p><%= strings.user.posts %></p></li>
+            <li><b class="stat-number"><%= comma_value(user_info.followers) %></b> <p><%= strings.user.followers %></p></li>
+            <li><b class="stat-number"><%= comma_value(user_info.following) %></b> <p><%= strings.user.following %></p></li>
+            <li><b class="stat-number"><%= comma_value(user_info.media_count) %></b> <p><%= strings.user.posts %></p></li>
         </ul>
     </div>
 </div>

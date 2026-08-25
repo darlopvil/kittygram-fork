@@ -1,0 +1,14 @@
+<% local helpers = require("lib.helpers") %>
+
+<span class="grid-item">
+    <a href="<%= "/p/" .. item.shortcode %>">
+        <img src="<%= helpers.proxy_url(item.thumbnail) %>" alt="<%= item.alt_text or "" %>">
+        <% if item.kind then %>
+            <% if item.kind == "carousel" then %>
+                <span class="grid-icon"><% render("views.widgets.icon", { size = 16, id = "layers" }) %></span>
+            <% elseif item.kind == "reel" then %>
+                <span class="grid-icon"><% render("views.widgets.icon", { size = 16, id = "play" }) %></span>
+            <% end %>
+        <% end %>
+    </a>
+</span>

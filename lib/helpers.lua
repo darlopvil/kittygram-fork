@@ -30,7 +30,7 @@ end
 -- e.g., 100000, 100,000
 local function comma_value(separator)
     return function(amount)
-        if type(amount) == "userdata" then
+        if type(amount) ~= "number" then
             return amount
         end
 
@@ -223,6 +223,37 @@ local function decode_csr_bitmap(encoded_str)
   return number_list
 end
 
+-- the lapis function to do this is currently broken.
+-- NOTE: Replace with the lapis function when it's fixed.
+-- If a value is nil, that key is omitted.
+local function encode_query_string(query_table)
+    local query_string = ""
+    for key, value in pairs(query_table) do
+        local form_key, form_value
+        if type(key) == "number" then
+            form_key = value[1]
+            form_value = value[2]
+        else
+            form_key = key
+            form_value = value
+        end
+
+        if form_value ~= nil then
+            if query_string == "" then
+                query_string = form_key .. "=" .. util.escape(form_value)
+            else
+                query_string = query_string .. "&" .. form_key .. "=" .. util.escape(form_value)
+            end
+        end
+    end
+
+    return query_string
+end
+
+
+
+
+
 return {
     check_nested_field = check_nested_field,
     proxy_url = proxy_url,
@@ -231,4 +262,5 @@ return {
     comma_value = comma_value,
     shortcode_to_id = shortcode_to_id,
     decode_csr_bitmap = decode_csr_bitmap,
+    encode_query_string = encode_query_string,
 }

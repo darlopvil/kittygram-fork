@@ -11,11 +11,12 @@ local web_state = ngx.shared.web_state
 local WINDOW_LENGTH = config.ratelimits.window_length
 local REQUEST_LIMIT = config.ratelimits.request_limit
 
-local function create_headers(lsd, cookie)
+local function create_headers(lsd, csrftoken, friendly_name, cookie)
     local headers =  {
         { "accept", "*/*"},
         { "content-type", "application/x-www-form-urlencoded" },
         { "cookie", cookie},
+        { "user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"},
         { "sec-ch-prefers-color-scheme", "dark" },
         { "sec-ch-ua", "\"Chromium\";v=\"135\", \"Not)A;Brand\";v=\"24\"" },
         { "sec-ch-ua-full-version-list", "\"Google Chrome\";v=\"135.0.0.0\", \"Chromium\";v=\"135.0.0.0\", \"Not.A/Brand\";v=\"24\"" },
@@ -25,10 +26,12 @@ local function create_headers(lsd, cookie)
         { "sec-fetch-dest", "empty" },
         { "sec-fetch-mode", "cors" },
         { "sec-fetch-site", "same-origin" },
+        { "x-csrftoken", csrftoken or "exampletexthere" },
+        { "x-fb-friendly_name", friendly_name },
+        { "x-fb-lsd", lsd},
         { "x-ig-app-id", "936619743392459" },
-        { "x-csrftoken", "exampletexthere" }, -- this can be anything. I could get valid CSRF tokens, but this works for now.
         { "x-ig-max-touch-points", "0" },
-        { "x-fb-lsd", lsd}
+
     }
 
     return headers
@@ -41,15 +44,16 @@ local gql_endpoints = {
 
 local doc_ids = {
     user_info = {
-        doc_id = "37095153540132433",
+        doc_id = "38611279431804694",
+        query_name = "PolarisProfilePageContentQuery",
         endpoint = "api",
         method = "POST",
         requires_auth = false,
         requires_anonymous_session = true
     },
-    -- Friendly name: PolarisLoggedOutDesktopWWWPostCommentsPaginationQuery
     anon_comments_pagination = {
         doc_id = "27261273046856309",
+        query_name = "PolarisLoggedOutDesktopWWWPostCommentsPaginationQuery",
         endpoint = "api",
         method = "POST",
         requires_auth = false,
@@ -63,18 +67,12 @@ local doc_ids = {
         requires_anonymous_session = false
     },
     user_posts = {
-        doc_id = "27414153238279961",
+        doc_id = "37691262543822084",
+        query_name = "PolarisProfilePostsQuery",
         endpoint = "query",
         method = "POST",
         requires_auth = false,
         requires_anonymous_session = false
-    },
-    user_reels = {
-        doc_id = "26909206778772295",
-        endpoint = "query",
-        method = "POST",
-        requires_auth = false,
-        requires_anonymous_session = false,
     },
     explore_search = {
         doc_id = "27319959457629526",
@@ -83,17 +81,17 @@ local doc_ids = {
         requires_auth = false,
         requires_anonymous_session = true,
     },
-    -- friendly_name: PolarisPostRootQuery
     shortcode_post_info = {
         doc_id = "26713194205046842",
+        query_name = "PolarisPostRootQuery",
         endpoint = "api",
         method = "POST",
         requires_auth = false,
         requires_anonymous_session = true,
     },
-    -- friendly_name: PolarisLoggedOutDesktopWWWPostRootContentQuery
     media_id_post_info = {
         doc_id = "27130156389949648",
+        query_name = "PolarisLoggedOutDesktopWWWPostRootContentQuery",
         endpoint = "api",
         method = "POST",
         requires_auth = false,
@@ -111,12 +109,53 @@ local doc_ids = {
     },
     -- Query used to get user info from hover cards. Doesn't include a bio/links, has almost everything else.
     user_hover_info = {
-        doc_id = "26785645987802781",
+        doc_id = "27756568060663620",
+        query_name = "PolarisUserHoverCardContentV2Query",
         endpoint = "api",
         method = "POST",
         requires_auth = false,
         requires_anonymous_session = true
     },
+    anon_user_info = {
+        doc_id = "27981003384861049",
+        query_name = "PolarisLoggedOutDesktopWWWProfileRootContentQuery",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = true,
+    },
+    anon_initial_grid = {
+        doc_id = "27553725110923321",
+        query_name = "PolarisLoggedOutDesktopWWWProfilePostsTabContentQuery",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = true
+    },
+    anon_paginated_grid = {
+        doc_id = "27389614800735091",
+        query_name = "PolarisLoggedOutDesktopWWWProfilePostsTabContentQuery_connection",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = true
+    },
+    anon_reel_initial_grid = {
+        doc_id = "27838951732404191",
+        query_name = "PolarisLoggedOutDesktopWWWProfileReelsTabContentQuery",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = true
+    },
+    anon_reel_paginated_grid = {
+        doc_id = "27420265870989234",
+        query_name = "PolarisLoggedOutDesktopWWWProfileReelsTabContentQuery_connection",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = false,
+        requires_anonymous_session = true,
+    }
 }
 
 local queries = {
@@ -131,11 +170,13 @@ local queries = {
         return {
             enable_integrity_filters = true,
             id = user_id,
+            render_surface = "PROFILE",
             __relay_internal__pv__PolarisCannesGuardianExperienceEnabledrelayprovider = true,
             __relay_internal__pv__PolarisCASB976ProfileEnabledrelayprovider = false,
             __relay_internal__pv__PolarisWebSchoolsEnabledrelayprovider = false,
             __relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider = true,
             __relay_internal__pv__PolarisShortDramaEnabledrelayprovider = false,
+             __relay_internal__pv__PolarisLongformEnabledrelayprovider = false,
         }, doc_ids.user_info
     end,
     user_posts = function(username, count, after_cursor)
@@ -158,22 +199,6 @@ local queries = {
             __relay_internal__pv__PolarisAIGMAccountLabelEnabledrelayprovider = false,
             __relay_internal__pv__PolarisReelsRecoDebugOverlayEnabledrelayprovider = false,
         }, doc_ids.user_posts
-    end,
-    user_reels = function(user_id, after_cursor)
-        local before
-        if after_cursor then
-            before = json.null
-        end
-
-        return {
-            data = {
-                include_feed_video = true,
-                page_size = 12,
-                target_user_id = user_id,
-            },
-            after = after_cursor,
-            before = before
-        }, doc_ids.user_reels
     end,
     search = function(query)
         return {
@@ -211,6 +236,37 @@ local queries = {
             __relay_internal__pv__PolarisAIGMAccountLabelEnabledrelayprovider = false
         }, doc_ids.user_hover_info
     end,
+    anon_user_info = function(username)
+        return {
+            username = username
+        }, doc_ids.anon_user_info
+    end,
+    anon_initial_grid = function(username)
+        return {
+            first = 12,
+            username = username
+        }, doc_ids.anon_initial_grid
+    end,
+    anon_paginated_grid = function(cursor, id)
+        return {
+            after = cursor,
+            first = 12,
+            id = id,
+        }, doc_ids.anon_paginated_grid
+    end,
+    anon_reel_initial_grid = function(username)
+        return {
+            first = 12,
+            username = username
+        }, doc_ids.anon_reel_initial_grid
+    end,
+    anon_reel_paginated_grid = function(cursor, id)
+        return {
+            after = cursor,
+            first = 12,
+            id = id,
+        }, doc_ids.anon_reel_paginated_grid
+    end
 }
 
 
@@ -228,7 +284,26 @@ local function cooldown(doc_id)
     end
 end
 
-local function graphql_request(request_payload, doc_id, request_type)
+local default_tokens = {
+    haste_session = "20681.HYP:instagram_web_pkg.2.1...0",
+    spin_b = "trunk",
+    spin_r = "1045311908",
+    revision = "1045311908",
+    connection_class = "EXCELLENT",
+    actor_id = "0",
+    lsd = encoding.encode_base64(math.random())
+        :gsub("+", "-")
+        :gsub("/", "_")
+        :gsub("=", ""),
+    csrf_token = encoding.encode_base64(math.random())
+        :gsub("+", "-")
+        :gsub("/", "_")
+        :gsub("=", ""),
+    hsi = "7674722996112187910",
+    comet_env = "7"
+}
+
+local function graphql_request(request_payload, doc_id, request_type, page_info)
     -- count the total number of requests sent using that doc_id, in an 11 minute window.
     -- Instagram ratelimits each server to 200 requests/11 minute window for most doc_ids.
     -- some instances may have workarounds in place, so they can disable the cooldown in their config.
@@ -240,8 +315,7 @@ local function graphql_request(request_payload, doc_id, request_type)
         }
     end
 
-    local cookie, lsd
-
+    local cookie
     -- Add cookies to request if the request supports it.
     if config.web_session and config.web_session.cookies then
         if config.web_session.use_for and config.web_session.use_for[request_type] then
@@ -251,27 +325,46 @@ local function graphql_request(request_payload, doc_id, request_type)
         end
     end
 
-    local request_body = ""
     local request_url = gql_endpoints[doc_id.endpoint]
-
-    -- This endpoint requires extra information
-    if doc_id.endpoint == "api" then
-        lsd = encoding.encode_base64(math.random())
-            :gsub("+", "-")
-            :gsub("/", "_")
-            :gsub("=", "")
-
-        request_body = "av=0&__d=www&__user=0&__a=1&__comet_req=7&lsd=" .. lsd .. "&server_timestamps=true&"
+    if not page_info or page_info == {} then
+        page_info  = default_tokens
     end
+
+    local unencoded_body = {
+        { "av", page_info.actor_id },
+        { "__d", "www" },
+        { "__user", "0" },
+        { "__a", "1" },
+        { "__hs", page_info.haste_session },
+        -- TODO: Don't hardcode this.
+        { "dpr", "1" },
+        { "__ccg", page_info.connection_class },
+        { "__rev", page_info.revision },
+        { "__hsi", page_info.hsi },
+        { "__comet_req", page_info.comet_env },
+        { "lsd", page_info.lsd },
+        { "__spin_r", page_info.spin_r },
+        { "__spin_b", page_info.spin_b },
+        { "__spin_t", page_info.spin_t },
+        { "__crn", page_info.canonical_route_name },
+        { "fb_api_caller_class", "RelayModern" },
+        { "fb_api_req_friendly_name", doc_id.query_name },
+        { "server_timestamps", "true" },
+        { "variables", json.encode(request_payload) },
+        { "doc_id", doc_id.doc_id }
+    }
+
+    local request_body
     -- some queries are sent through get requests.
     if doc_id.method == "GET" then
         request_body = "doc_id=" .. doc_id.doc_id .. "&variables=" .. util.escape(json.encode(request_payload))
         request_url = request_url .. "?" .. request_body
     else
-        request_body = request_body .. "variables=" .. util.escape(json.encode(request_payload)) .. "&doc_id=" .. doc_id.doc_id
+        request_body = helpers.encode_query_string(unencoded_body)
+
     end
 
-    local headers = create_headers(lsd, cookie)
+    local headers = create_headers(page_info.lsd, page_info.csrf_token, doc_id.query_name, cookie)
     local request_opts = {
         method = doc_id.method,
         headers = headers
@@ -347,4 +440,21 @@ local function graphql_request(request_payload, doc_id, request_type)
     end
 end
 
-return { request = graphql_request, queries = queries, doc_ids = doc_ids }
+local function query_and_format(query, doc_id, formatter, options)
+    options = options or {}
+    local request = graphql_request(query, doc_id, options.purpose, options.page_data)
+    if request.has_errors then
+        return request
+    end
+
+    local formatted = formatter(request.data, table.unpack(options.extra_formatter_options or {}))
+
+    return formatted
+end
+
+return {
+    request = graphql_request,
+    queries = queries,
+    doc_ids = doc_ids,
+    query_and_format = query_and_format
+}

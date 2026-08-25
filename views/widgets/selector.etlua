@@ -1,0 +1,10 @@
+<div class="selector">
+    <% for _, option in ipairs(list_options) do %>
+        <% if option.type == selected_option then %>
+            <a class="selected" href="<%= option.link %>"><%= option.label %></a>
+        <% else %>
+            <a href="<%= option.link %>"><%= option.label %></a>
+        <% end %>
+    <% end %>
+</div>
+

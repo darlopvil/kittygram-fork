@@ -61,6 +61,10 @@ local function get_post_graphql_media_id(shortcode, comments_cursor)
             return errors.not_found{ blob = request }
         end
 
+        if request.data.xig_polaris_media.if_not_gated_logged_out == json.null then
+            return errors.null_content{ blob = request }
+        end
+
         post = format_post.from_media_id_anon(request.data.xig_polaris_media.if_not_gated_logged_out)
         cache.bulk_save_users.from_comments(request.data.xig_polaris_media.comments_connection)
         users_db.save_user({

@@ -347,6 +347,48 @@ pre {
   display: block;
 }
 
+.grid {
+    display: grid;
+    width: 60rem;
+    max-width: 90%;
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0 auto;
+}
+
+
+.grid-item {
+    width: fit-content;
+    max-width: 100%;
+    text-decoration: none;
+    object-fit: none;
+    position: relative;
+}
+
+.grid-item:hover {
+    filter: brightness(50%);
+}
+
+.grid-item a {
+    width: fit-content;
+    color: var(--icon-color);
+}
+.grid-item img {
+    display: block;
+    aspect-ratio: 1 / 1.7;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
+.grid-icon .icon {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: var(--icon-color);
+}
+
 .selector-group {
     display: flex;
     justify-content: center;
