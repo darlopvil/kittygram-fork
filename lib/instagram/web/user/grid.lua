@@ -81,7 +81,7 @@ local function get_user_grid(username, cursor, feed_type)
     local request_url = "https://www.instagram.com/" .. username .. "/"
     local pattern = "/%s/"
     if feed_type == "reels" then
-        pattern = pattern + "reels/"
+        pattern = pattern .. "reels/"
         request_url = request_url .. "reels/"
     end
 
@@ -98,10 +98,7 @@ local function get_user_grid(username, cursor, feed_type)
 
         -- I can't see any better way of detecting a 404. Instagram uses 200 on almost every request.
         -- Ratelimits almost always use 302.
-        if
-            request.data.canonical_route_name
-            and request.data.canonical_route_name == "comet.igweb.PolarisErrorRoute"
-        then
+        if request.data.canonical_route_name and request.data.canonical_route_name == "comet.igweb.PolarisErrorRoute" then
             return errors.not_found {
                 message = "Initial html indicated 404. Open an issue if this user really exists.",
                 blob = page_data,
@@ -109,13 +106,8 @@ local function get_user_grid(username, cursor, feed_type)
         end
 
         if feed_type == "all" then
-            local grid_preloader_result = helpers.check_nested_field(
-                request,
-                "data",
-                "preloaders",
-                "PolarisLoggedOutDesktopWWWProfilePostsTabContentQuery",
-                "result"
-            )
+            local grid_preloader_result =
+                helpers.check_nested_field(request, "data", "preloaders", "PolarisLoggedOutDesktopWWWProfilePostsTabContentQuery", "result")
             if grid_preloader_result and grid_preloader_result ~= ngx.null then
                 grid = formatters.format_grid.from_anon_web_graphql(grid_preloader_result.data, page_data)
             else
@@ -127,13 +119,8 @@ local function get_user_grid(username, cursor, feed_type)
                 })
             end
         elseif feed_type == "reels" then
-            local grid_preloader_result = helpers.check_nested_field(
-                request,
-                "data",
-                "preloaders",
-                "PolarisLoggedOutDesktopWWWProfileReelsTabContentQuery",
-                "result"
-            )
+            local grid_preloader_result =
+                helpers.check_nested_field(request, "data", "preloaders", "PolarisLoggedOutDesktopWWWProfileReelsTabContentQuery", "result")
             if grid_preloader_result and grid_preloader_result ~= ngx.null then
                 grid = formatters.format_grid.from_anon_reel_web_graphql(grid_preloader_result.data, page_data)
             else
@@ -146,13 +133,8 @@ local function get_user_grid(username, cursor, feed_type)
             end
         end
 
-        local user_preloader_result = helpers.check_nested_field(
-            request,
-            "data",
-            "preloaders",
-            "PolarisLoggedOutDesktopWWWProfileRootContentQuery",
-            "result"
-        )
+        local user_preloader_result =
+            helpers.check_nested_field(request, "data", "preloaders", "PolarisLoggedOutDesktopWWWProfileRootContentQuery", "result")
         if user_preloader_result and user_preloader_result ~= ngx.null then
             user = formatters.format_user_info.from_anon_web_graphql(user_preloader_result.data)
         else

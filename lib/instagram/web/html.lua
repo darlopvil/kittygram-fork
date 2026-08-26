@@ -118,12 +118,13 @@ local function parse_initial_html(html_body)
 end
 
 local WINDOW_LENGTH = config.ratelimits.window_length
-local REQUEST_LIMIT = config.ratelimits.request_limit
+-- I have no idea what the actual ratelimits for html pages are, but the graphql window is too high.
+local REQUEST_LIMIT = config.ratelimits.request_limit / 2
 
 local function cooldown(url_pattern)
     local key = "html:" .. url_pattern
     local count = web_state:get(key)
-    ngx.log(ngx.WARN, "Rate limit hit on " .. tostring(url_pattern) .. " after " .. tostring(count) .. " requests.")
+    ngx.log(ngx.WARN, "Ratelimit hit on " .. tostring(url_pattern) .. " after " .. tostring(count) .. " requests.")
     if config.ratelimits.cooldown_on_ratelimit then
         -- Get the remaining ttl on the key
         local key_ttl = web_state:ttl(key)

@@ -185,8 +185,7 @@ app:get("/stories/:id(/)", function(self)
 end)
 
 app:get("/search(/)", function(self)
-    local instagram_url_regex =
-        [[^(?:https?://)?(?:www\.)?instagram\.com/(?:p|reel|[^/]+/(?:p|reel))/([A-Za-z0-9_-]+)/?(?:\?.*)?$]]
+    local instagram_url_regex = [[^(?:https?://)?(?:www\.)?instagram\.com/(?:p|reel|[^/]+/(?:p|reel))/([A-Za-z0-9_-]+)/?(?:\?.*)?$]]
     if self.params.q then
         -- check if a url leads to an instagram post, if so, redirect to that post.
         local url_match = ngx.re.match(self.params.q, instagram_url_regex, "jo")
@@ -237,6 +236,8 @@ app:get("/settings(/)", function(self)
     self.themes = config.themes
     if self.session.language then
         self.selected_language = self.session.language
+    else
+        self.selected_language = "en"
     end
     if self.session.theme then
         self.selected_theme = self.session.theme
