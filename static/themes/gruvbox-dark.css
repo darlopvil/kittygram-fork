@@ -1,0 +1,33 @@
+:root {
+    --bg-color: #282828;
+    --card-color: #3C3836;
+    --card-border: 1px solid #504945;
+    --main-text-color: #EBDBB2;
+    --alt-text-color: #D5C4A1;
+
+    --nav-bg-color: #3C3836;
+    --main-shadow: 0px 4px 12px rgba(0, 0, 0, 0.32);
+    --outline-shadow: rgba(28, 28, 28, 0.96) 0px 1px 3px 0px;
+
+    --nav-icon-hover-color: #504945;
+
+    --button-bg-color: #665C54;
+    --button-text-color: #F2E4BE;
+    --button-border-radius: 20px;
+    --button-border: 2px solid #7C6F64;
+
+    --button-bg-color-on-hover: #7C6F64;
+    --button-text-color-on-hover: #F9F5D7;
+
+
+    --searchbar-border: 2px solid #7C6F64;
+
+    --link-text-color: #8EC07C;
+    --link-hover-color: #8EC07C;
+    --link-visited-color: #D3869B;
+}
+
+nav img {
+    filter: brightness(0) invert(0.7) sepia();
+}
+

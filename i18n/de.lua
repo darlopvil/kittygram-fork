@@ -1,0 +1,51 @@
+return {
+    next_page = "Nächste Seite",
+    view_on_instagram = "Auf Instagram ansehen.",
+    about = "Über Kittygram",
+    about_this_instance = "Über diese Instanz",
+    thousand_separator = ".", -- The symbol to put between thousands when separating numbers. E.g: 1000 -> 1,000.
+    navbar = {
+        kittygram_logo = "Kittygram-Logo",
+        atom_feed = "Atom-Feed",
+    },
+    post = {
+        posted_at = "Gepostet am: ",
+        likes = " Likes",
+        comments = "Kommentare",
+        error_loading_comments = "Fehler beim Laden der Kommentare: ",
+        fetching_comments_impossible = "Das Laden weiterer Kommentare ist derzeit nicht möglich."
+    },
+    user = {
+        list = "Liste",
+        grid = "Gitter",
+        tile = "Kacheln",
+        reels = "Reels",
+        all = "Alle",
+        highlights = "Highlights",
+        posts = "Posts",
+        verified = "Verifiziert",
+        followers = "Follower",
+        following = "Gefolgt",
+        user_is_private = "Dieser Account ist privat.",
+        has_no_posts = "Dieser Nutzer hat noch nichts gepostet.",
+    },
+    explore = {
+        posts_matching = "Übereinstimmende Posts: ",
+        popular = "Beliebt",
+        enter_search = "Suchbegriff eingeben...",
+        search = "Suchen",
+        results_for = "Suchergebnisse für ",
+        users = "Nutzer",
+        hashtags = "Hashtags",
+        missing_info_warning = "Die Suche ist für diese Instanz limitiert. Es werden nur Nutzer angezeigt, die bereits zuvor von dieser Instanz gesehen wurden."
+    },
+    settings = {
+        settings = "Einstellungen",
+        theme = "Farbschema",
+        keep_nav_fixed = "Navigationsleiste fixieren",
+        disable_video_proxying = "Proxy für die Wiedergabe von Videos deaktivieren (kann die Ladezeit verringern)",
+        language = "Sprache",
+        save_settings = "Einstellungen speichern",
+        reset_settings = "Einstellungen zurücksetzen",
+    }
+}
