@@ -13,6 +13,7 @@
 *.jsonc        linguist-language=JSON
 *.nginx        linguist-detectable
 *.rockspec     linguist-language=Lua
+*.toml         linguist-detectable
 *.types        linguist-language=Lua
 *.yaml         linguist-detectable
 *.yml          linguist-language=YAML
