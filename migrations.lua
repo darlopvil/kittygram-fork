@@ -1,25 +1,25 @@
-local schema = require("lapis.db.schema")
 local db = require("lapis.db")
+local schema = require("lapis.db.schema")
 local types = schema.types
 
-local schema = require("lapis.db.schema")
 local db = require("lapis.db")
+local schema = require("lapis.db.schema")
 local types = schema.types
 
 return {
     [1] = function()
         schema.create_table("user_ids", {
             { "id", types.id },
-            { "username", types.text },    -- Changed from types.varchar
-            { "user_id", types.text },     -- Changed from types.varchar
-            "PRIMARY KEY (username)"
+            { "username", types.text }, -- Changed from types.varchar
+            { "user_id", types.text }, -- Changed from types.varchar
+            "PRIMARY KEY (username)",
         })
     end,
     [1779735501] = function()
         schema.create_table("api_codes", {
             { "id", types.id },
-            { "code", types.text },        -- Changed from types.varchar
-            { "is_used", types.integer{ default = 0 } },
+            { "code", types.text }, -- Changed from types.varchar
+            { "is_used", types.integer { default = 0 } },
             { "created_at", types.integer },
         })
     end,
@@ -79,10 +79,10 @@ return {
         end
 
         if not has_profile_picture then
-            schema.add_column("user_ids", "profile_picture", types.text{ null = true })
+            schema.add_column("user_ids", "profile_picture", types.text { null = true })
         end
         if not has_is_verified then
-            schema.add_column("user_ids", "is_verified", types.integer{ default = 0 })
+            schema.add_column("user_ids", "is_verified", types.integer { default = 0 })
         end
     end,
     [1785761674] = function()
@@ -161,5 +161,5 @@ return {
         ]])
 
         db.query("COMMIT;")
-    end
+    end,
 }

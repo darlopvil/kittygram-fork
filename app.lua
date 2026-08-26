@@ -1,5 +1,5 @@
-local lapis = require("lapis")
 local config = require("lapis.config").get()
+local lapis = require("lapis")
 local app = lapis.Application()
 local date = require("date")
 local helpers = require("lib.helpers")
@@ -10,9 +10,9 @@ local locales = require("i18n.languages")
 
 app:enable("etlua")
 app.layout = require("views.layout")
-local media_proxy = require("lib.media_proxy")
-local atom = require("lib.atom")
 local api = require("lib.api")
+local atom = require("lib.atom")
+local media_proxy = require("lib.media_proxy")
 
 app:include(media_proxy)
 app:include(atom)
@@ -25,8 +25,7 @@ math.randomseed(os.time())
 -- generate the "view on instagram" link and set the theme.
 app:before_filter(function(self)
     self.version = version -- set the version number
-    self.view_on_instagram_link = "https://www.instagram.com" ..
-                                      self.req.parsed_url.path
+    self.view_on_instagram_link = "https://www.instagram.com" .. self.req.parsed_url.path
     if self.session.theme and config.themes[self.session.theme] then
         local theme = config.themes[self.session.theme]
         self.css_url = theme.url
@@ -75,7 +74,7 @@ local function render_error(self, error)
         return { status = 404, render = "error" }
     elseif error.error_type == "ratelimited" then
         self.page_title = "Ratelimited | Kittygram"
-        return { status = 503, render = "error"}
+        return { status = 503, render = "error" }
     elseif error.error_type == "null_content" then
         self.page_title = "Unavailable | Kittygram"
         return { status = 410, render = "error" }
@@ -100,7 +99,6 @@ end)
 local function show_post(self)
     local post, comments = instagram.get_post(self.params.shortcode, self.params.cursor)
 
-
     if post.has_errors then
         return render_error(self, post)
     else
@@ -108,7 +106,7 @@ local function show_post(self)
         self.comments = comments
 
         if self.params.json == "true" and config.allow_json then
-            return { json = { post, comments} }
+            return { json = { post, comments } }
         end
         self.page_title = "A post by " .. post.user.username
         return { render = "post" }
@@ -151,6 +149,10 @@ app:get("/:username(/:path)(/)", function(self)
 
     if user.has_errors then
         return render_error(self, user)
+    elseif user.grid and user.grid.has_errors then
+        return render_error(self, user.grid)
+    elseif user.timeline and user.timeline.has_errors then
+        return render_error(self, user.timeline)
     else
         if config.enable_atom then
             self.atom_link = "/" .. self.params.username .. "/atom.xml"
@@ -173,7 +175,6 @@ app:get("/:username(/:path)(/)", function(self)
     end
 end)
 
-
 -- even though you can get a list of highlights, you need auth to view individual ones.
 app:get("/stories/highlights/:id(/)", function(self)
     return render_error(self, helpers.create_error.feature_not_supported())
@@ -184,7 +185,8 @@ app:get("/stories/:id(/)", function(self)
 end)
 
 app:get("/search(/)", function(self)
-    local instagram_url_regex = [[^(?:https?://)?(?:www\.)?instagram\.com/(?:p|reel|[^/]+/(?:p|reel))/([A-Za-z0-9_-]+)/?(?:\?.*)?$]]
+    local instagram_url_regex =
+        [[^(?:https?://)?(?:www\.)?instagram\.com/(?:p|reel|[^/]+/(?:p|reel))/([A-Za-z0-9_-]+)/?(?:\?.*)?$]]
     if self.params.q then
         -- check if a url leads to an instagram post, if so, redirect to that post.
         local url_match = ngx.re.match(self.params.q, instagram_url_regex, "jo")
@@ -196,17 +198,15 @@ app:get("/search(/)", function(self)
         if search_results.has_errors then
             return render_error(self, search_results)
         end
-        self.page_title = "Search for \"" .. self.params.q .. "\" | kittygram"
+        self.page_title = 'Search for "' .. self.params.q .. '" | kittygram'
         self.search_query = self.params.q
         self.search_results = search_results
-
 
         return { render = "search_results" }
     else
         self.page_title = "Search | kittygram"
         return { render = "search" }
     end
-
 end)
 
 app:get("/popular(/)", function(self)
@@ -230,7 +230,6 @@ app:get("/popular/:query(/)", function(self)
     self.page_title = "Explore " .. self.params.query .. " | Kittygram"
     return { render = "explore" }
 end)
-
 
 -- RIP to instagram user "settings".
 app:get("/settings(/)", function(self)
@@ -279,6 +278,5 @@ end)
 app:get("/*", function(self)
     return render_error(self, helpers.create_error.route_not_defined())
 end)
-
 
 return app

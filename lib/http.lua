@@ -1,12 +1,11 @@
+local config = require("lapis.config").get()
+local helpers = require("lib.helpers")
 local http = require("resty.http")
 local json = require("cjson")
 local util = require("lapis.util")
-local helpers = require("lib.helpers")
-local config = require("lapis.config").get()
 
 local function sidecar_request(url, options)
     local httpc = http.new()
-
 
     local payload = {
         method = options.method,
@@ -28,21 +27,18 @@ local function sidecar_request(url, options)
             end
         end
         payload.headers = json.encode(clean_headers)
-
     end
-
 
     local request, err = httpc:request_uri(config.http_sidecar.url, {
         method = "POST",
         body = util.encode_query_string(payload),
         headers = {
-            ["Content-Type"] = "application/x-www-form-urlencoded"
-        }
+            ["Content-Type"] = "application/x-www-form-urlencoded",
+        },
     })
     if err then
         return nil, err
     end
-
 
     local decode_ok, decoded = helpers.safe_json_decode(request.body)
 

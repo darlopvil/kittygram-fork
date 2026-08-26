@@ -19,9 +19,9 @@ local function user_search(username)
         return {}
     end
 
-    local res = db.query([[
+    local res = db.query(
+        [[
         SELECT
-        u.id,
         u.username,
         u.user_id,
         u.profile_picture,
@@ -32,7 +32,9 @@ local function user_search(username)
         WHERE user_ids_fts MATCH ?
         ORDER BY fts.rank ASC
         LIMIT 20;
-    ]], sanitize_fts_query(username))
+    ]],
+        sanitize_fts_query(username)
+    )
 
     local processed_results = {}
     for _, item in ipairs(res) do

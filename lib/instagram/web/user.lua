@@ -1,5 +1,5 @@
-local user_db = require("models.users")
 local html = require("lib.instagram.web.html")
+local user_db = require("models.users")
 local html_request = html.request
 local get_grid = require("lib.instagram.web.user.grid")
 local get_user_info = require("lib.instagram.web.user.info")
@@ -40,7 +40,7 @@ local function get_timeline_user(username, cursor, feed_type, is_grid_fallback)
         return { grid = posts, info = info }
     end
 
-    return { timeline = posts, info = info}
+    return { timeline = posts, info = info }
 end
 
 local function check_ratelimit(item)

@@ -2,14 +2,13 @@ local instagram_graphql_request = require("lib.instagram.web.graphql").request
 local queries = require("lib.instagram.web.graphql").queries
 local helpers = require("lib.helpers")
 local errors = require("lib.helpers").create_error
-local util = require("lapis.util")
-local formatters = require("lib.formatters")
-local config = require("lapis.config").get()
 local cache = require("lib.cache")
+local config = require("lapis.config").get()
+local formatters = require("lib.formatters")
 local json = require("cjson")
+local util = require("lapis.util")
 
 local db_search = require("models.user_search")
-
 
 local function web_search(query)
     local payload, doc_id = queries.search(query)
@@ -21,14 +20,15 @@ local function web_search(query)
         return search_request
     end
     if search_results.errors then
-        return errors.unknown{ blob = search_results }
+        return errors.unknown { blob = search_results }
     elseif helpers.check_nested_field(search_results, "data", "xdt_api__v1__fbsearch__topsearch_connection") then
-        local formatted_results = formatters.format_search.from_web_topsearch(search_results.data.xdt_api__v1__fbsearch__topsearch_connection)
+        local formatted_results =
+            formatters.format_search.from_web_topsearch(search_results.data.xdt_api__v1__fbsearch__topsearch_connection)
         cache.bulk_save_users.from_topsearch(search_results.data.xdt_api__v1__fbsearch__topsearch_connection)
-        return  formatted_results
+        return formatted_results
     end
 
-    return errors.unknown{ blob = search_results }
+    return errors.unknown { blob = search_results }
 end
 
 local function database_search(query)
@@ -38,7 +38,12 @@ local function database_search(query)
 end
 
 local function search(query)
-    if config.web_session and config.web_session.cookies and config.web_session.use_for and config.web_session.use_for.search then
+    if
+        config.web_session
+        and config.web_session.cookies
+        and config.web_session.use_for
+        and config.web_session.use_for.search
+    then
         return web_search(query)
     else
         return database_search(query)
@@ -63,7 +68,7 @@ local function get_popular_page()
         cache.cache_item("ig:popular", formatted, "popular_index")
         return formatted
     else
-        return errors.unknown{ blob = request }
+        return errors.unknown { blob = request }
     end
 end
 
@@ -84,13 +89,18 @@ local function explore(query, after)
     if search_request.has_errors then
         return search_request
     end
-    if search_request.data.xig_logged_out_popular_search_media_info and search_request.data.xig_logged_out_popular_search_media_info ~= ngx.null then
+    if
+        search_request.data.xig_logged_out_popular_search_media_info
+        and search_request.data.xig_logged_out_popular_search_media_info ~= ngx.null
+    then
         cache.bulk_save_users.from_explore(search_request.data.xig_logged_out_popular_search_media_info)
-        local formatted = formatters.format_explore_results.from_anon_web(search_request.data.xig_logged_out_popular_search_media_info)
+        local formatted = formatters.format_explore_results.from_anon_web(
+            search_request.data.xig_logged_out_popular_search_media_info
+        )
         cache.cache_item(key, formatted, "explore")
         return formatted
     else
-        return errors.unknown{ blob = search_request }
+        return errors.unknown { blob = search_request }
     end
 end
 return { search = search, explore = explore, popular_page = get_popular_page }

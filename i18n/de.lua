@@ -13,7 +13,7 @@ return {
         likes = " Likes",
         comments = "Kommentare",
         error_loading_comments = "Fehler beim Laden der Kommentare: ",
-        fetching_comments_impossible = "Das Laden weiterer Kommentare ist derzeit nicht möglich."
+        fetching_comments_impossible = "Das Laden weiterer Kommentare ist derzeit nicht möglich.",
     },
     user = {
         list = "Liste",
@@ -37,7 +37,7 @@ return {
         results_for = "Suchergebnisse für ",
         users = "Nutzer",
         hashtags = "Hashtags",
-        missing_info_warning = "Die Suche ist für diese Instanz limitiert. Es werden nur Nutzer angezeigt, die bereits zuvor von dieser Instanz gesehen wurden."
+        missing_info_warning = "Die Suche ist für diese Instanz limitiert. Es werden nur Nutzer angezeigt, die bereits zuvor von dieser Instanz gesehen wurden.",
     },
     settings = {
         settings = "Einstellungen",
@@ -47,5 +47,5 @@ return {
         language = "Sprache",
         save_settings = "Einstellungen speichern",
         reset_settings = "Einstellungen zurücksetzen",
-    }
+    },
 }

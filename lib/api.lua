@@ -53,8 +53,8 @@ local function get_request_counts()
 end
 
 app:before_filter(function(self)
-
-    local decoded_token = encoding.decode_with_secret((self.req.headers["Authorization"] or ""):gsub("Bearer ", "", 1), config.secret)
+    local decoded_token =
+        encoding.decode_with_secret((self.req.headers["Authorization"] or ""):gsub("Bearer ", "", 1), config.secret)
     if decoded_token and decoded_token.expires then
         if not (decoded_token.expires < os.time()) then
             self.token_is_valid = true
@@ -67,7 +67,7 @@ app:before_filter(function(self)
 
     -- Handle preflight here so it applies to all routes
     if ngx.req.get_method() == "OPTIONS" then
-        return self:write({ status = 204 })
+        return self:write { status = 204 }
     end
 end)
 
@@ -86,53 +86,72 @@ local function return_error(err)
 end
 
 app:get("/api/status(/)", function(self)
-    return { json = {
-        redis = test_redis(),
-        ratelimits = get_ratelimits(),
-        request_counts = get_request_counts()
-    }}
+    return {
+        json = {
+            redis = test_redis(),
+            ratelimits = get_ratelimits(),
+            request_counts = get_request_counts(),
+        },
+    }
 end)
 
 app:get("/api/info(/)", function(self)
-    return { json = {
-        about = config.about_message,
-        atom_enabled = config.enable_atom,
-        version = version or "Unknown",
-        api_token_required = config.require_api_token
-    }}
+    return {
+        json = {
+            about = config.about_message,
+            atom_enabled = config.enable_atom,
+            version = version or "Unknown",
+            api_token_required = config.require_api_token,
+        },
+    }
 end)
 
-app:post("/api/register_token", json_params(function(self)
-    local timestamp = os.time()
+app:post(
+    "/api/register_token",
+    json_params(function(self)
+        local timestamp = os.time()
 
-    if not self.params.code then
-        return {json = {
-            status = "fail",
-            message = "A code is required."
-        }, status = 400}
-    end
+        if not self.params.code then
+            return {
+                json = {
+                    status = "fail",
+                    message = "A code is required.",
+                },
+                status = 400,
+            }
+        end
 
-    if not api_codes.validate_code(self.params.code) then
-        return {json = {
-            status = "fail",
-            message = "Code is invalid."
-        }, status = 400}
-    end
-    api_codes.mark_code_as_used(self.params.code)
+        if not api_codes.validate_code(self.params.code) then
+            return {
+                json = {
+                    status = "fail",
+                    message = "Code is invalid.",
+                },
+                status = 400,
+            }
+        end
+        api_codes.mark_code_as_used(self.params.code)
 
-    local token = encoding.encode_with_secret({ timestamp = timestamp, expires = timestamp + config.api_token_expire_length, code = self.params.code}, config.secret)
-    return { json = {
-        status = "ok",
-        token = token,
-    }}
-end))
+        local token = encoding.encode_with_secret(
+            { timestamp = timestamp, expires = timestamp + config.api_token_expire_length, code = self.params.code },
+            config.secret
+        )
+        return { json = {
+            status = "ok",
+            token = token,
+        } }
+    end)
+)
 
 app:get("/api/post(s)/:shortcode(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
-        return { json = {
-            status = "fail",
-            message = "An API token is required."
-        }, status = 401}
+        return {
+            json = {
+                status = "fail",
+                message = "An API token is required.",
+            },
+            status = 401,
+        }
     end
 
     local post, comments = instagram.get_post(self.params.shortcode, self.params.cursor)
@@ -148,10 +167,13 @@ end)
 
 app:get("/api/users/:view_type/:username(/:path)(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
-        return { json = {
-            status = "fail",
-            message = "An API token is required."
-        }, status = 401}
+        return {
+            json = {
+                status = "fail",
+                message = "An API token is required.",
+            },
+            status = 401,
+        }
     end
 
     local feed_type
@@ -167,10 +189,13 @@ app:get("/api/users/:view_type/:username(/:path)(/)", function(self)
     elseif self.params.view_type == "timeline" then
         view_type = "timeline"
     else
-        return { json = {
-            status = "fail",
-            message = "Incorrect view_type (must be `grid` or `timeline`)"
-        }, status = 400 }
+        return {
+            json = {
+                status = "fail",
+                message = "Incorrect view_type (must be `grid` or `timeline`)",
+            },
+            status = 400,
+        }
     end
 
     local user = instagram.get_user(self.params.username, self.params.cursor, feed_type, view_type)
@@ -179,7 +204,7 @@ app:get("/api/users/:view_type/:username(/:path)(/)", function(self)
         return return_error(user)
     end
     if user.timeline and user.timeline.has_errors then
-       return return_error(user.timeline)
+        return return_error(user.timeline)
     end
 
     if user.info and user.info.has_errors then
@@ -193,10 +218,13 @@ end)
 -- NOTE: remove this soon.
 app:get("/api/user/:username(/:path)(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
-        return { json = {
-            status = "fail",
-            message = "An API token is required."
-        }, status = 401}
+        return {
+            json = {
+                status = "fail",
+                message = "An API token is required.",
+            },
+            status = 401,
+        }
     end
 
     local feed_type
@@ -208,9 +236,8 @@ app:get("/api/user/:username(/:path)(/)", function(self)
 
     local user = instagram.get_user(self.params.username, self.params.cursor, feed_type, "timeline")
 
-
     if user.timeline and user.timeline.has_errors then
-       return return_error(user.timeline)
+        return return_error(user.timeline)
     end
 
     if user.info and user.info.has_errors then
@@ -228,7 +255,7 @@ app:get("/api/user/:username(/:path)(/)", function(self)
         pronouns = user.info.pronouns,
         profile_picture_url = user.info.profile_picture,
         hd_profile_pic_info = {
-            url = user.info.hd_profile_picture
+            url = user.info.hd_profile_picture,
         },
         follower_count = user.info.followers,
         following_count = user.info.following,
@@ -236,37 +263,44 @@ app:get("/api/user/:username(/:path)(/)", function(self)
         is_private = user.info.is_private,
         bio_links = user.info.bio_links,
         biography = user.info.biography,
-
     }
     user.info = nil
     user.posts = user.timeline.items
     user.end_cursor = user.timeline.cursor
     user.timeline = nil
 
-    user._message = "This endpoint is deprecated and will be removed soon. Please use users/grid or users/timeline instead. "
+    user._message =
+        "This endpoint is deprecated and will be removed soon. Please use users/grid or users/timeline instead. "
     user.status = "ok"
     return { json = user }
 end)
 
 app:get("/api/search(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
-        return { json = {
-            status = "fail",
-            message = "An API token is required."
-        }, status = 401}
+        return {
+            json = {
+                status = "fail",
+                message = "An API token is required.",
+            },
+            status = 401,
+        }
     end
 
     if not self.params.query then
-        return { json = {
-            status = "fail",
-            message = "Missing parameter `query`"
-        }, status = 400 }
+        return {
+            json = {
+                status = "fail",
+                message = "Missing parameter `query`",
+            },
+            status = 400,
+        }
     elseif type(self.params.query) ~= "string" then
         return {
             json = {
                 status = "fail",
                 message = "Invalid data type for parameter `query`",
-            }, status = 400
+            },
+            status = 400,
         }
     end
 
@@ -283,10 +317,13 @@ end)
 
 app:get("/api/popular(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
-        return { json = {
-            status = "fail",
-            message = "An API token is required."
-        }, status = 401}
+        return {
+            json = {
+                status = "fail",
+                message = "An API token is required.",
+            },
+            status = 401,
+        }
     end
 
     local items = instagram.search.popular_page()
@@ -296,16 +333,19 @@ app:get("/api/popular(/)", function(self)
 
     return { json = {
         items = items,
-        status = "ok"
-    }}
+        status = "ok",
+    } }
 end)
 
 app:get("/api/popular/:query(/)", function(self)
     if config.require_api_token ~= false and not self.token_is_valid then
-        return { json = {
-            status = "fail",
-            message = "An API token is required."
-        }, status = 401}
+        return {
+            json = {
+                status = "fail",
+                message = "An API token is required.",
+            },
+            status = 401,
+        }
     end
 
     local items = instagram.search.explore(self.params.query, self.params.cursor)
@@ -314,8 +354,7 @@ app:get("/api/popular/:query(/)", function(self)
     end
 
     items.status = "ok"
-    return { json =  items }
+    return { json = items }
 end)
-
 
 return app

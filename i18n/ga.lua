@@ -15,7 +15,7 @@ return {
         likes = " mholadh",
         comments = "Tráchtanna",
         error_loading_comments = "Tharla earráid agus tráchtanna á lódáil: ",
-        fetching_comments_impossible = "Fetching more comments is currently impossible."
+        fetching_comments_impossible = "Fetching more comments is currently impossible.",
     },
     user = {
         list = "Liosta",
@@ -39,7 +39,7 @@ return {
         results_for = "Torthaí curdach do ",
         users = "Úsáideoir",
         hashtags = "Hashtags",
-        missing_info_warning = "Search is limited on this instance. Users will only be found if they were previously seen by this instance"
+        missing_info_warning = "Search is limited on this instance. Users will only be found if they were previously seen by this instance",
     },
     settings = {
         settings = "Socruithe",
@@ -49,5 +49,5 @@ return {
         language = "Teanga",
         save_settings = "Sábháil socruithe",
         reset_settings = "Athshocraigh scruithe",
-    }
+    },
 }

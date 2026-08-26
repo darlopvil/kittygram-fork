@@ -1,10 +1,10 @@
-local json = require("cjson")
 local http_request = require("lib.http")
+local json = require("cjson")
 local web_state = ngx.shared.web_state
-local ngx_resp = require("ngx.resp")
 local config = require("lapis.config").get()
-local util = require("lapis.util")
 local helpers = require("lib.helpers")
+local ngx_resp = require("ngx.resp")
+local util = require("lapis.util")
 local errors = helpers.create_error
 
 local BASE_PATH = "https://www.instagram.com/api/v1/"
@@ -12,16 +12,19 @@ local WINDOW_LENGTH = config.ratelimits.window_length
 local REQUEST_LIMIT = config.ratelimits.request_limit
 
 local function create_headers(content_type, cookie)
-    local headers =  {
-        { "accept", "*/*"},
+    local headers = {
+        { "accept", "*/*" },
         { "content-type", content_type },
         { "cookie", cookie },
         { "sec-ch-prefers-color-scheme", "dark" },
-        { "sec-ch-ua", "\"Chromium\";v=\"135\", \"Not)A;Brand\";v=\"24\"" },
-        { "sec-ch-ua-full-version-list", "\"Google Chrome\";v=\"135.0.0.0\", \"Chromium\";v=\"135.0.0.0\", \"Not.A/Brand\";v=\"24\"" },
-        { "sec-ch-ua-mobile", "?0"},
-        { "sec-ch-ua-model", "\"\"" },
-        { "sec-ch-ua-platform-version", "\"10.0.19045\""},
+        { "sec-ch-ua", '"Chromium";v="135", "Not)A;Brand";v="24"' },
+        {
+            "sec-ch-ua-full-version-list",
+            '"Google Chrome";v="135.0.0.0", "Chromium";v="135.0.0.0", "Not.A/Brand";v="24"',
+        },
+        { "sec-ch-ua-mobile", "?0" },
+        { "sec-ch-ua-model", '""' },
+        { "sec-ch-ua-platform-version", '"10.0.19045"' },
         { "sec-fetch-dest", "empty" },
         { "sec-fetch-mode", "cors" },
         { "sec-fetch-site", "same-origin" },
@@ -29,7 +32,6 @@ local function create_headers(content_type, cookie)
         { "x-csrftoken", "exampletexthere" }, -- this can be anything. I could get valid CSRF tokens, but this works for now.
         { "x-ig-max-touch-points", "0" },
         { "x-requested-with", "XMLHttpRequest" },
-
     }
 
     return headers
@@ -40,19 +42,19 @@ local endpoints = {
         path = "clips/user/",
         method = "POST",
         requires_auth = false,
-        requires_anonymous_session = true -- This doesn't _actually_ strictly required, but it isn't used anywhere with auth, so it's use could be suspicous.
+        requires_anonymous_session = true, -- This doesn't _actually_ strictly required, but it isn't used anywhere with auth, so it's use could be suspicous.
     },
     -- found this endpoint embedded in a profile page. Seems to be forgotten about or unused.
     user_posts = {
         path = "feed/user/%s/username/",
         method = "GET",
-        requires_auth = false
+        requires_auth = false,
     },
     comments = {
         path = "media/%s/comments/",
         method = "GET",
-        requires_auth = true
-    }
+        requires_auth = true,
+    },
 }
 
 local construct_params = {
@@ -62,20 +64,20 @@ local construct_params = {
                 include_feed_video = "true",
                 page_size = "12",
                 target_user_id = user_id,
-                max_id = cursor
+                max_id = cursor,
             },
             path = {},
-            query = {}
+            query = {},
         }
     end,
     user_posts = function(username, count)
         return {
             body = {},
             path = {
-                username
+                username,
             },
             query = {
-                count = count
+                count = count,
             },
         }
     end,
@@ -84,25 +86,24 @@ local construct_params = {
             body = {},
             path = {},
             query = {
-                username = username
-            }
+                username = username,
+            },
         }
     end,
     comments = function(media_id, cursor)
         return {
             body = {},
             path = {
-                media_id
+                media_id,
             },
             query = {
                 can_support_threading = "true",
                 min_id = cursor,
-                sort_order = "popular"
-            }
+                sort_order = "popular",
+            },
         }
-    end
+    end,
 }
-
 
 local function cooldown(endpoint)
     local key = "api:" .. endpoint.path
@@ -121,7 +122,7 @@ local function request(endpoint, params, purpose)
     --See comments at graphql.lua on ratelimits.
     local request_count = web_state:incr("api:" .. endpoint.path, 1, 0, WINDOW_LENGTH)
     if request_count > REQUEST_LIMIT and config.ratelimits.cooldown_on_ratelimit then
-        return errors.ratelimited{
+        return errors.ratelimited {
             message = "The server has blocked further requests to Instagram temporarily.",
         }
     end
@@ -138,7 +139,6 @@ local function request(endpoint, params, purpose)
             cookie = config.web_session.cookies
         end
     end
-
 
     local request_uri = BASE_PATH .. string.format(endpoint.path, table.unpack(params.path))
 
@@ -161,7 +161,7 @@ local function request(endpoint, params, purpose)
     local request, err = http_request(request_uri, request_opts)
 
     if not request then
-        return errors.network_error{ blob = err }
+        return errors.network_error { blob = err }
     end
     if config.include_debug_headers then
         ngx_resp.add_header("X-Kg-Debug-Endpoints", endpoint.path)
@@ -171,34 +171,34 @@ local function request(endpoint, params, purpose)
 
     if request.status == 429 then
         cooldown(endpoint)
-        return errors.ratelimited{
+        return errors.ratelimited {
             blob = request.body,
-            message = "Instagram returned 429."
+            message = "Instagram returned 429.",
         }
     elseif request.status == 302 then
         cooldown(endpoint)
-        return errors.ratelimited{
+        return errors.ratelimited {
             blob = request.body,
-            message = "Instagram returned 302 with location " .. tostring(request.headers.location)
+            message = "Instagram returned 302 with location " .. tostring(request.headers.location),
         }
     end
     if not decode_status then
-        return errors.unknown{
+        return errors.unknown {
             message = "Instagram returned invalid json. Status code: " .. request.status,
-            blob = request.body
+            blob = request.body,
         }
     else
         if decoded_body.status == "fail" then
             if decoded_body.require_login then
                 cooldown(endpoint)
-                return errors.ratelimited{
+                return errors.ratelimited {
                     message = "Instagram is temporarily blocking requests sent by the server.",
-                    blob = decoded_body
+                    blob = decoded_body,
                 }
             else
-                return errors.unknown{
+                return errors.unknown {
                     message = "An unknown error occurred (instagram indicated failure)",
-                    blob = decoded_body
+                    blob = decoded_body,
                 }
             end
         else
@@ -210,8 +210,5 @@ end
 return {
     endpoints = endpoints,
     construct_params = construct_params,
-    request = request
+    request = request,
 }
-
-
-

@@ -1,10 +1,10 @@
+local cache = require("lib.cache")
+local encoding = require("lapis.util.encoding")
+local formatters = require("lib.formatters")
 local graphql = require("lib.instagram.web.graphql")
 local ig_api = require("lib.instagram.web.api")
-local user_db = require("models.users")
-local cache = require("lib.cache")
 local json = require("cjson")
-local formatters = require("lib.formatters")
-local encoding = require("lapis.util.encoding")
+local user_db = require("models.users")
 
 local function derive_id_from_timeline(posts, username)
     local user_id
@@ -19,10 +19,10 @@ local function derive_id_from_timeline(posts, username)
                 end
                 user_db.save_user(coauthor)
             end
-                -- if a user id is not set, then use the id of the user who owns the post itself.
-                if not user_id then
-                    user_id = first_post.user.id
-                end
+            -- if a user id is not set, then use the id of the user who owns the post itself.
+            if not user_id then
+                user_id = first_post.user.id
+            end
         else
             user_id = first_post.user.id
             user_db.save_user(first_post.user)
@@ -33,7 +33,6 @@ local function derive_id_from_timeline(posts, username)
 end
 
 local function get_timeline(username, cursor, page_data)
-
     local decoded_cursor
     if cursor then
         local decoded_cursor_table = json.decode(encoding.decode_base64(cursor))
@@ -51,7 +50,7 @@ local function get_timeline(username, cursor, page_data)
     local posts = graphql.query_and_format(payload, doc_id, formatters.format_timeline.from_timeline_graphql, {
         purpose = "user_posts",
         extra_formatter_data = { page_data },
-        page_data = page_data
+        page_data = page_data,
     })
 
     if posts.has_errors then

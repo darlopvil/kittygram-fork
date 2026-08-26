@@ -8,7 +8,7 @@ local function extract_preloaders(data)
                 for _, preloader in ipairs(item[1].expectedPreloaders) do
                     table.insert(preloaders, {
                         id = preloader.preloaderID,
-                        query_name = preloader.queryName
+                        query_name = preloader.queryName,
                     })
                 end
             end
@@ -87,7 +87,12 @@ local function pare_initial_data(data)
 
     if data["CometPlatformRootClient"] then
         for _, item in ipairs(data["CometPlatformRootClient"]) do
-            if item[1] and item[1].initialRouteInfo and item[1].initialRouteInfo ~= ngx.null and item[1].initialRouteInfo.route then
+            if
+                item[1]
+                and item[1].initialRouteInfo
+                and item[1].initialRouteInfo ~= ngx.null
+                and item[1].initialRouteInfo.route
+            then
                 local route = item[1].initialRouteInfo.route
                 if route ~= ngx.null then
                     if route.rootView and route.rootView ~= ngx.null then
@@ -107,5 +112,5 @@ local function pare_initial_data(data)
 end
 
 return {
-    pare_initial_data = pare_initial_data
+    pare_initial_data = pare_initial_data,
 }

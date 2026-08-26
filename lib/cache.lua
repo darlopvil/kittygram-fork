@@ -1,8 +1,8 @@
 local get_redis = require("lapis.redis").get_redis
 local json = require("cjson")
 local save_user = require("models.users").save_user
-local formatters = require("lib.formatters")
 local config = require("lapis.config").get()
+local formatters = require("lib.formatters")
 local ngx_resp = require("ngx.resp")
 
 local POSITIVE_POST_EXPIRE_TIME = config.cache.expire_times.posts.positive
@@ -11,7 +11,7 @@ local USER_INFO_EXPIRE_TIME = config.cache.expire_times.user_info.positive
 local LATEST_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.latest
 local CURSORED_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.with_cursor
 local NEGATIVE_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timelines.negative
-local EXPLORE_PAGE_EXPIRE_TIME =  config.cache.expire_times.explore
+local EXPLORE_PAGE_EXPIRE_TIME = config.cache.expire_times.explore
 local COMMENTS_EXPIRE_TIME = config.cache.expire_times.comments
 local POPULAR_PAGE_EXPIRE_TIME = config.cache.expire_times.popular_index
 local INSTANCES_LIST_EXPIRE_TIME = config.cache.expire_times.instances_list
@@ -104,7 +104,13 @@ local bulk_save_users = {
                 save_user(user.user)
             end
         end
-    end
+    end,
 }
 
-return { test_redis = test_redis, cache_item = cache_item, query_item = query_item, cache_timeline = cache_timeline, bulk_save_users = bulk_save_users }
+return {
+    test_redis = test_redis,
+    cache_item = cache_item,
+    query_item = query_item,
+    cache_timeline = cache_timeline,
+    bulk_save_users = bulk_save_users,
+}

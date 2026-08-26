@@ -1,37 +1,42 @@
-local http_request = require("lib.http")
-local util = require("lapis.util")
 local encoding = require("lapis.util.encoding")
-local json = require("cjson")
 local helpers = require("lib.helpers")
+local http_request = require("lib.http")
+local json = require("cjson")
+local util = require("lapis.util")
 local errors = helpers.create_error
-local ngx_resp = require("ngx.resp")
 local config = require("lapis.config").get()
+local ngx_resp = require("ngx.resp")
 local web_state = ngx.shared.web_state
 
 local WINDOW_LENGTH = config.ratelimits.window_length
 local REQUEST_LIMIT = config.ratelimits.request_limit
 
 local function create_headers(lsd, csrftoken, friendly_name, cookie)
-    local headers =  {
-        { "accept", "*/*"},
+    local headers = {
+        { "accept", "*/*" },
         { "content-type", "application/x-www-form-urlencoded" },
-        { "cookie", cookie},
-        { "user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"},
+        { "cookie", cookie },
+        {
+            "user-agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        },
         { "sec-ch-prefers-color-scheme", "dark" },
-        { "sec-ch-ua", "\"Chromium\";v=\"135\", \"Not)A;Brand\";v=\"24\"" },
-        { "sec-ch-ua-full-version-list", "\"Google Chrome\";v=\"135.0.0.0\", \"Chromium\";v=\"135.0.0.0\", \"Not.A/Brand\";v=\"24\"" },
-        { "sec-ch-ua-mobile", "?0"},
-        { "sec-ch-ua-model", "\"\"" },
-        { "sec-ch-ua-platform-version", "\"10.0.19045\""},
+        { "sec-ch-ua", '"Chromium";v="135", "Not)A;Brand";v="24"' },
+        {
+            "sec-ch-ua-full-version-list",
+            '"Google Chrome";v="135.0.0.0", "Chromium";v="135.0.0.0", "Not.A/Brand";v="24"',
+        },
+        { "sec-ch-ua-mobile", "?0" },
+        { "sec-ch-ua-model", '""' },
+        { "sec-ch-ua-platform-version", '"10.0.19045"' },
         { "sec-fetch-dest", "empty" },
         { "sec-fetch-mode", "cors" },
         { "sec-fetch-site", "same-origin" },
         { "x-csrftoken", csrftoken or "exampletexthere" },
         { "x-fb-friendly_name", friendly_name },
-        { "x-fb-lsd", lsd},
+        { "x-fb-lsd", lsd },
         { "x-ig-app-id", "936619743392459" },
         { "x-ig-max-touch-points", "0" },
-
     }
 
     return headers
@@ -39,7 +44,7 @@ end
 
 local gql_endpoints = {
     query = "https://www.instagram.com/graphql/query",
-    api = "https://www.instagram.com/api/graphql"
+    api = "https://www.instagram.com/api/graphql",
 }
 
 local doc_ids = {
@@ -49,7 +54,7 @@ local doc_ids = {
         endpoint = "api",
         method = "POST",
         requires_auth = false,
-        requires_anonymous_session = true
+        requires_anonymous_session = true,
     },
     anon_comments_pagination = {
         doc_id = "27261273046856309",
@@ -64,7 +69,7 @@ local doc_ids = {
         endpoint = "query",
         method = "POST",
         requires_auth = true,
-        requires_anonymous_session = false
+        requires_anonymous_session = false,
     },
     user_posts = {
         doc_id = "37691262543822084",
@@ -72,7 +77,7 @@ local doc_ids = {
         endpoint = "query",
         method = "POST",
         requires_auth = false,
-        requires_anonymous_session = false
+        requires_anonymous_session = false,
     },
     explore_search = {
         doc_id = "27319959457629526",
@@ -105,7 +110,7 @@ local doc_ids = {
         method = "POST",
         requires_auth = false,
         -- unsure of this
-        requires_anonymous_session = false
+        requires_anonymous_session = false,
     },
     -- Query used to get user info from hover cards. Doesn't include a bio/links, has almost everything else.
     user_hover_info = {
@@ -114,7 +119,7 @@ local doc_ids = {
         endpoint = "api",
         method = "POST",
         requires_auth = false,
-        requires_anonymous_session = true
+        requires_anonymous_session = true,
     },
     anon_user_info = {
         doc_id = "27981003384861049",
@@ -130,7 +135,7 @@ local doc_ids = {
         endpoint = "api",
         method = "POST",
         requires_auth = false,
-        requires_anonymous_session = true
+        requires_anonymous_session = true,
     },
     anon_paginated_grid = {
         doc_id = "27389614800735091",
@@ -138,7 +143,7 @@ local doc_ids = {
         endpoint = "api",
         method = "POST",
         requires_auth = false,
-        requires_anonymous_session = true
+        requires_anonymous_session = true,
     },
     anon_reel_initial_grid = {
         doc_id = "27838951732404191",
@@ -146,7 +151,7 @@ local doc_ids = {
         endpoint = "api",
         method = "POST",
         requires_auth = false,
-        requires_anonymous_session = true
+        requires_anonymous_session = true,
     },
     anon_reel_paginated_grid = {
         doc_id = "27420265870989234",
@@ -155,7 +160,7 @@ local doc_ids = {
         method = "POST",
         requires_auth = false,
         requires_anonymous_session = true,
-    }
+    },
 }
 
 local queries = {
@@ -163,8 +168,9 @@ local queries = {
         return {
             after = cursor,
             first = 10,
-            media_id = media_id
-        }, doc_ids.anon_comments_pagination
+            media_id = media_id,
+        },
+            doc_ids.anon_comments_pagination
     end,
     user_info = function(user_id)
         return {
@@ -176,8 +182,9 @@ local queries = {
             __relay_internal__pv__PolarisWebSchoolsEnabledrelayprovider = false,
             __relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider = true,
             __relay_internal__pv__PolarisShortDramaEnabledrelayprovider = false,
-             __relay_internal__pv__PolarisLongformEnabledrelayprovider = false,
-        }, doc_ids.user_info
+            __relay_internal__pv__PolarisLongformEnabledrelayprovider = false,
+        },
+            doc_ids.user_info
     end,
     user_posts = function(username, count, after_cursor)
         return {
@@ -188,7 +195,7 @@ local queries = {
                 include_reel_media_seen_timestamp = true,
                 include_relationship_info = true,
                 latest_besties_reel_media = true,
-                latest_reel_media = true
+                latest_reel_media = true,
             },
             first = 12,
             include_multi_captions = false,
@@ -198,29 +205,33 @@ local queries = {
             __relay_internal__pv__PolarisShortDramaEnabledrelayprovider = false,
             __relay_internal__pv__PolarisAIGMAccountLabelEnabledrelayprovider = false,
             __relay_internal__pv__PolarisReelsRecoDebugOverlayEnabledrelayprovider = false,
-        }, doc_ids.user_posts
+        },
+            doc_ids.user_posts
     end,
     search = function(query)
         return {
             hasQuery = true,
             data = {
-                query = query
-            }
-        }, doc_ids.search
+                query = query,
+            },
+        },
+            doc_ids.search
     end,
     explore_search = function(query, after)
         return {
             after = after or json.null,
             debug = json.null,
             keyword = query,
-            media_count = 8
-        }, doc_ids.explore_search
+            media_count = 8,
+        },
+            doc_ids.explore_search
     end,
     shortcode_post_info = function(shortcode)
         return {
             shortcode = shortcode,
-            __relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider = false
-        }, doc_ids.shortcode_post_info
+            __relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider = false,
+        },
+            doc_ids.shortcode_post_info
     end,
     media_id_post_info = function(media_id)
         return {
@@ -233,18 +244,19 @@ local queries = {
     user_hover_info = function(target_id)
         return {
             userID = target_id,
-            __relay_internal__pv__PolarisAIGMAccountLabelEnabledrelayprovider = false
-        }, doc_ids.user_hover_info
+            __relay_internal__pv__PolarisAIGMAccountLabelEnabledrelayprovider = false,
+        },
+            doc_ids.user_hover_info
     end,
     anon_user_info = function(username)
         return {
-            username = username
+            username = username,
         }, doc_ids.anon_user_info
     end,
     anon_initial_grid = function(username)
         return {
             first = 12,
-            username = username
+            username = username,
         }, doc_ids.anon_initial_grid
     end,
     anon_paginated_grid = function(cursor, id)
@@ -252,12 +264,13 @@ local queries = {
             after = cursor,
             first = 12,
             id = id,
-        }, doc_ids.anon_paginated_grid
+        },
+            doc_ids.anon_paginated_grid
     end,
     anon_reel_initial_grid = function(username)
         return {
             first = 12,
-            username = username
+            username = username,
         }, doc_ids.anon_reel_initial_grid
     end,
     anon_reel_paginated_grid = function(cursor, id)
@@ -265,10 +278,10 @@ local queries = {
             after = cursor,
             first = 12,
             id = id,
-        }, doc_ids.anon_reel_paginated_grid
-    end
+        },
+            doc_ids.anon_reel_paginated_grid
+    end,
 }
-
 
 local function cooldown(doc_id)
     if config.ratelimits.cooldown_on_ratelimit then
@@ -291,16 +304,10 @@ local default_tokens = {
     revision = "1045311908",
     connection_class = "EXCELLENT",
     actor_id = "0",
-    lsd = encoding.encode_base64(math.random())
-        :gsub("+", "-")
-        :gsub("/", "_")
-        :gsub("=", ""),
-    csrf_token = encoding.encode_base64(math.random())
-        :gsub("+", "-")
-        :gsub("/", "_")
-        :gsub("=", ""),
+    lsd = encoding.encode_base64(math.random()):gsub("+", "-"):gsub("/", "_"):gsub("=", ""),
+    csrf_token = encoding.encode_base64(math.random()):gsub("+", "-"):gsub("/", "_"):gsub("=", ""),
     hsi = "7674722996112187910",
-    comet_env = "7"
+    comet_env = "7",
 }
 
 local function graphql_request(request_payload, doc_id, request_type, page_info)
@@ -310,7 +317,7 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
     -- Note that the 200 reqs / 11 minutes ratelimit does not apply to most server/datacenter ips, those are ratelimited much more aggressively, and in most cases entirely blocked.
     local request_count = web_state:incr("graphql:" .. doc_id.doc_id, 1, 0, WINDOW_LENGTH)
     if request_count > REQUEST_LIMIT and config.ratelimits.cooldown_on_ratelimit then
-        return errors.ratelimited{
+        return errors.ratelimited {
             message = "The server has blocked further requests to Instagram temporarily.",
         }
     end
@@ -327,7 +334,7 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
 
     local request_url = gql_endpoints[doc_id.endpoint]
     if not page_info or page_info == {} then
-        page_info  = default_tokens
+        page_info = default_tokens
     end
 
     local unencoded_body = {
@@ -351,7 +358,7 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
         { "fb_api_req_friendly_name", doc_id.query_name },
         { "server_timestamps", "true" },
         { "variables", json.encode(request_payload) },
-        { "doc_id", doc_id.doc_id }
+        { "doc_id", doc_id.doc_id },
     }
 
     local request_body
@@ -361,13 +368,12 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
         request_url = request_url .. "?" .. request_body
     else
         request_body = helpers.encode_query_string(unencoded_body)
-
     end
 
     local headers = create_headers(page_info.lsd, page_info.csrf_token, doc_id.query_name, cookie)
     local request_opts = {
         method = doc_id.method,
-        headers = headers
+        headers = headers,
     }
 
     if doc_id.method == "POST" then
@@ -379,7 +385,6 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
         request_opts.proxy_opts = { https_proxy = config.proxies[request_type] }
     end
 
-
     local request, err = http_request(request_url, request_opts)
 
     if config.include_debug_headers then
@@ -388,52 +393,52 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
 
     if not request then
         ngx.log(ngx.ERR, "Network error: " .. err)
-        return errors.network_error{
-            blob = err
+        return errors.network_error {
+            blob = err,
         }
     elseif request.status == 302 then
         -- Since a 302 usually indicates a ratelimit or block of some sort,
         cooldown(doc_id.doc_id)
-        return errors.ratelimited{
-            message = "Instagram returned 302 with location: " .. tostring(request.headers.location)
+        return errors.ratelimited {
+            message = "Instagram returned 302 with location: " .. tostring(request.headers.location),
         }
     end
 
     local decode_status, decoded_body = helpers.safe_json_decode(request.body)
 
     if not decode_status then
-        return errors.unknown{
+        return errors.unknown {
             message = "Instagram returned invalid json. Status code: " .. request.status,
-            blob = request.body
+            blob = request.body,
         }
     end
 
     if decoded_body.status == "fail" and decoded_body.require_login then
         cooldown(doc_id.doc_id)
-        return errors.ratelimited{
-            blob = decoded_body
+        return errors.ratelimited {
+            blob = decoded_body,
         }
     elseif (decoded_body.data == json.null or not decoded_body.data) and decoded_body.errors then
         for _, gql_error in ipairs(decoded_body.errors) do
             if gql_error.code == 4630001 then
-                return errors.not_found{
+                return errors.not_found {
                     message = "Item (likely a user) not found.",
-                    blob = decoded_body
+                    blob = decoded_body,
                 }
             elseif gql_error.code == 1675004 then
                 cooldown(doc_id.doc_id)
-                return errors.ratelimited{
-                    blob = decoded_body
+                return errors.ratelimited {
+                    blob = decoded_body,
                 }
             end
         end
-        return errors.unknown{
-            blob = decoded_body
+        return errors.unknown {
+            blob = decoded_body,
         }
     elseif not decoded_body.data or decoded_body.data == json.null then
-        return errors.unknown{
+        return errors.unknown {
             message = "`data` field not present in response.",
-            blob = decoded_body
+            blob = decoded_body,
         }
     else
         return decoded_body
@@ -456,5 +461,5 @@ return {
     request = graphql_request,
     queries = queries,
     doc_ids = doc_ids,
-    query_and_format = query_and_format
+    query_and_format = query_and_format,
 }

@@ -13,7 +13,7 @@ return {
         likes = " likes",
         comments = "Comments",
         error_loading_comments = "Error loading comments: ",
-        fetching_comments_impossible = "Fetching more comments is currently impossible."
+        fetching_comments_impossible = "Fetching more comments is currently impossible.",
     },
     user = {
         list = "List",
@@ -37,7 +37,7 @@ return {
         results_for = "Search results for ",
         users = "Users",
         hashtags = "Hashtags",
-        missing_info_warning = "Search is limited on this instance. Users will only be found if they were previously seen by this instance"
+        missing_info_warning = "Search is limited on this instance. Users will only be found if they were previously seen by this instance",
     },
     settings = {
         settings = "Settings",
@@ -47,5 +47,5 @@ return {
         language = "Language",
         save_settings = "Save settings",
         reset_settings = "Reset settings",
-    }
+    },
 }

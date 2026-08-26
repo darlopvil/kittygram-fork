@@ -1,32 +1,40 @@
-local http_request = require("lib.http")
-local html = require("htmlparser")
 local helpers = require("lib.helpers")
+local html = require("htmlparser")
 local html_util = require("lib.instagram.web.html_util")
+local http_request = require("lib.http")
 local web_state = ngx.shared.web_state
 local errors = require("lib.helpers").create_error
 local config = require("lapis.config").get()
-local ngx_resp = require("ngx.resp")
 local json = require("cjson")
+local ngx_resp = require("ngx.resp")
 
 local function create_headers(cookie)
     return {
-        { "accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7" },
+        {
+            "accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        },
         { "accept-language", "en-GB,en;q=0.9" },
         { "dpr", "1" },
-        { "user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" },
+        {
+            "user-agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        },
         { "sec-ch-prefers-color-scheme", "dark" },
-        { "sec-ch-ua", "\"Chromium\";v=\"135\", \"Not)A;Brand\";v=\"24\"" },
-        { "sec-ch-ua-full-version-list", "\"Google Chrome\";v=\"135.0.0.0\", \"Chromium\";v=\"135.0.0.0\", \"Not.A/Brand\";v=\"24\"" },
-        { "sec-ch-ua-mobile", "?0"},
-        { "sec-ch-ua-model", "\"\"" },
-        { "sec-ch-ua-platform-version", "\"10.0.19045\""},
+        { "sec-ch-ua", '"Chromium";v="135", "Not)A;Brand";v="24"' },
+        {
+            "sec-ch-ua-full-version-list",
+            '"Google Chrome";v="135.0.0.0", "Chromium";v="135.0.0.0", "Not.A/Brand";v="24"',
+        },
+        { "sec-ch-ua-mobile", "?0" },
+        { "sec-ch-ua-model", '""' },
+        { "sec-ch-ua-platform-version", '"10.0.19045"' },
         { "sec-fetch-dest", "document" },
         { "sec-fetch-mode", "navigate" },
         { "sec-fetch-site", "none" },
-        { "upgrade-insecure-requests", "1" }
+        { "upgrade-insecure-requests", "1" },
     }
 end
-
 
 local function process_json(array, collector)
     local function insert_key(key, value, _dbg_itm)
@@ -44,7 +52,7 @@ local function process_json(array, collector)
             table.insert(collector[key], value)
         else
             collector[key] = {
-                value
+                value,
             }
         end
     end
@@ -79,7 +87,6 @@ local function process_json(array, collector)
         end
     end
 
-
     if array.require then
         for _, item in ipairs(array.require) do
             process_item(4, item)
@@ -100,7 +107,6 @@ local function parse_initial_html(html_body)
 
     local collector = {}
     for _, element in ipairs(json_elements) do
-
         local json_content = element:getcontent()
         local decode_status, decoded_content = helpers.safe_json_decode(json_content)
 
@@ -133,7 +139,7 @@ end
 local function html_request(url, pattern, skip_processing)
     local request_count = web_state:incr("html:" .. pattern, 1, 0, WINDOW_LENGTH)
     if request_count > REQUEST_LIMIT and config.ratelimits.cooldown_on_ratelimit then
-        return errors.ratelimited{
+        return errors.ratelimited {
             message = "The server has blocked further requests to Instagram temporarily.",
         }
     end
@@ -142,7 +148,7 @@ local function html_request(url, pattern, skip_processing)
 
     local request, err = http_request(url, {
         headers = headers,
-        method = "GET"
+        method = "GET",
     })
 
     if config.include_debug_headers then
@@ -151,21 +157,21 @@ local function html_request(url, pattern, skip_processing)
 
     if request.status == 302 then
         cooldown(pattern)
-        return errors.ratelimited{
+        return errors.ratelimited {
             message = "Instagram returned 302 with location: " .. tostring(request.headers.location),
-            blob = request.body
+            blob = request.body,
         }
     elseif request.status == 429 then
         cooldown(pattern)
-        return errors.ratelimited{
-            message = "Instagram returned 429."
+        return errors.ratelimited {
+            message = "Instagram returned 429.",
         }
     end
 
     if skip_processing then
         return {
             raw_content = request.body,
-            status = request.status
+            status = request.status,
         }
     end
 
@@ -174,9 +180,8 @@ local function html_request(url, pattern, skip_processing)
     return {
         data = html_util.pare_initial_data(processed_data),
         raw_content = request.body,
-        status = request.status
+        status = request.status,
     }
-
 end
 
 return {

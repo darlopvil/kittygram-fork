@@ -1,10 +1,11 @@
-local http = require("resty.http")
 local cache = require("lib.cache")
-local version = require("version")
-local helpers = require("lib.helpers")
 local config = require("lapis.config").get()
+local helpers = require("lib.helpers")
+local http = require("resty.http")
+local version = require("version")
 
-local INSTANCES_LIST_URI = config.instances_list or "https://codeberg.org/irelephant/kittygram/raw/branch/main/instances.json"
+local INSTANCES_LIST_URI = config.instances_list
+    or "https://codeberg.org/irelephant/kittygram/raw/branch/main/instances.json"
 
 local function get_instances()
     local query = cache.query_item("kg:instances_list")
@@ -15,8 +16,8 @@ local function get_instances()
     local httpc = http.new()
     local request, err = httpc:request_uri(INSTANCES_LIST_URI, {
         headers = {
-            ["User-Agent"] = "Kittygram/" .. version .. " (Lua; Openresty) (+mailto:irelephant@disroot)"
-        }
+            ["User-Agent"] = "Kittygram/" .. version .. " (Lua; Openresty) (+mailto:irelephant@disroot)",
+        },
     })
     if err then
         ngx.log(ngx.ERR, "Network error: " .. err)
@@ -35,5 +36,5 @@ local function get_instances()
 end
 
 return {
-    get_list = get_instances
+    get_list = get_instances,
 }

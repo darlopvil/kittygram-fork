@@ -13,7 +13,7 @@ return {
         likes = " j'aime",
         comments = "Commentaires",
         error_loading_comments = "Erreur lors du chargement des commentaires\u{00a0}: ",
-        fetching_comments_impossible = "Charger plus de commentaires est actuellement impossible."
+        fetching_comments_impossible = "Charger plus de commentaires est actuellement impossible.",
     },
     user = {
         list = "Liste",
@@ -37,7 +37,7 @@ return {
         results_for = "Résultat de recherche pour ",
         users = "Profils",
         hashtags = "Hashtags",
-        missing_info_warning = "La recherche est restreinte sur cette instance. Les profils ne seront trouvés que s'ils ont déjà été visité depuis cette instance"
+        missing_info_warning = "La recherche est restreinte sur cette instance. Les profils ne seront trouvés que s'ils ont déjà été visité depuis cette instance",
     },
     settings = {
         settings = "Paramètres",
@@ -47,5 +47,5 @@ return {
         language = "Langue",
         save_settings = "Enregistrer ces paramètres",
         reset_settings = "Réinitialiser les paramètres",
-    }
+    },
 }

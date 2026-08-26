@@ -2,7 +2,6 @@
 -- note: use 127.0.0.1 instead of localhost.
 -- This only supports http proxies, not SOCKS.
 
-
 local proxies = {
     posts = false, -- Posts/reels, anything with a shortcode.
     user_info = false,

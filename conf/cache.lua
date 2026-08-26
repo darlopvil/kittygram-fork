@@ -1,11 +1,10 @@
-
 local cache = {
     -- the time it takes for a cached item to expire, in seconds.
     -- Positive is for when an item is found, negative for if an item doesn't exist.
     expire_times = {
         posts = {
             negative = 1800,
-            positive = 3600
+            positive = 3600,
         },
         user_info = {
             positive = 86400,
@@ -19,8 +18,8 @@ local cache = {
         explore = 3600 * 3,
         comments = 3600,
         popular_index = 3600 * 6, -- This doesn't really include much dynamic content, so it can be cached for a long time.
-        instances_list = 3600 * 60
-    }
+        instances_list = 3600 * 60,
+    },
 }
 
 return cache

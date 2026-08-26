@@ -1,5 +1,5 @@
-local encoding = require("lapis.util.encoding")
 local config = require("lapis.config").get()
+local encoding = require("lapis.util.encoding")
 local instagram_graphql_request = require("lib.instagram.web.graphql").request
 local ig_api = require("lib.instagram.web.api")
 local queries = require("lib.instagram.web.graphql").queries
@@ -32,7 +32,7 @@ local function get_comments_anon(post_id, encoded_cursor)
     if request.data and request.data.xig_polaris_media and request.data.xig_polaris_media.comments_connection then
         cache.bulk_save_users.from_comments(request.data.xig_polaris_media.comments_connection)
         local formatted_comments = format_comments.from_web_graphql(request.data.xig_polaris_media.comments_connection)
-        cache.cache_item(key,  formatted_comments, "comments")
+        cache.cache_item(key, formatted_comments, "comments")
 
         return formatted_comments
     end
@@ -58,13 +58,18 @@ local function get_comments_auth(post_id, encoded_cursor)
     end
 
     local formatted_comments = format_comments.from_web_api(request)
-    cache.cache_item(key,  formatted_comments, "comments")
+    cache.cache_item(key, formatted_comments, "comments")
 
     return formatted_comments
 end
 
 local function get_comments(post_id, cursor)
-    if config.web_session and config.web_session.cookies and config.web_session.use_for and config.web_session.use_for.comments then
+    if
+        config.web_session
+        and config.web_session.cookies
+        and config.web_session.use_for
+        and config.web_session.use_for.comments
+    then
         return get_comments_auth(post_id, cursor)
     else
         return get_comments_anon(post_id, cursor)

@@ -7,7 +7,7 @@ local util = require("lapis.util")
 local WHITELIST = {
     "cdninstagram.com",
     "fbcdn.net",
-    "fbsbx.com"
+    "fbsbx.com",
 }
 
 app:get("/mediaproxy", function(self)
@@ -16,7 +16,7 @@ app:get("/mediaproxy", function(self)
     local parsed_uri = httpc:parse_uri(image_uri)
 
     if not parsed_uri then
-      return { status = 400, "Invalid URL" }
+        return { status = 400, "Invalid URL" }
     end
 
     local scheme, host, port, path = unpack(parsed_uri)
@@ -33,24 +33,24 @@ app:get("/mediaproxy", function(self)
         return { status = 403, "Domain Not Allowed", layout = false, content_type = "text/plain" }
     end
 
-    local ok, err, ssl_session = httpc:connect({
-      scheme = scheme,
-      host = host,
-      port = 443,
-    })
+    local ok, err, ssl_session = httpc:connect {
+        scheme = scheme,
+        host = host,
+        port = 443,
+    }
 
     if err then
-      ngx.log(ngx.ERR, "[mediaproxy] Connecting failed: ", err)
-      return { status = 502, "Request Failed" }
+        ngx.log(ngx.ERR, "[mediaproxy] Connecting failed: ", err)
+        return { status = 502, "Request Failed" }
     end
 
-    local res, err = httpc:request({
-      path = path,
-      headers = {
-        ["Host"] = host,
-        ["Range"] = self.req.headers["Range"]
-      }
-    })
+    local res, err = httpc:request {
+        path = path,
+        headers = {
+            ["Host"] = host,
+            ["Range"] = self.req.headers["Range"],
+        },
+    }
 
     if not res then
         ngx.log(ngx.ERR, "[mediaproxy] Request Failed: ", err)
@@ -63,19 +63,19 @@ app:get("/mediaproxy", function(self)
     ngx.header.content_range = res.headers["Content-Range"]
 
     repeat
-      local buffer, err = res.body_reader(8192)
-      if err then
-        ngx.log(ngx.ERR, err)
-        break
-      end
+        local buffer, err = res.body_reader(8192)
+        if err then
+            ngx.log(ngx.ERR, err)
+            break
+        end
 
-      if buffer then
-        ngx.print(buffer)
-      end
+        if buffer then
+            ngx.print(buffer)
+        end
     until not buffer
 
     return {
-        skip_render = true
+        skip_render = true,
     }
 end)
 
