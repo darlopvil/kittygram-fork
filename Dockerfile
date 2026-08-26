@@ -12,7 +12,6 @@ RUN /usr/local/openresty/luajit/bin/luarocks install lapis && \
     /usr/local/openresty/luajit/bin/luarocks install lsqlite3 && \
     /usr/local/openresty/luajit/bin/luarocks install luautf8
 
-
 FROM docker.io/openresty/openresty:alpine
 
 WORKDIR /app

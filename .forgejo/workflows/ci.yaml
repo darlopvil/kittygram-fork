@@ -1,26 +1,32 @@
-name: Build and Push Docker Image
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+name: CI
 
 on:
   push:
     branches:
       - main
     paths-ignore:
-      - 'README.md'
-      - 'instances.json'
+      - "README.md"
+      - "instances.json"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
+    name: Build
     runs-on: codeberg-medium
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
         with:
           lfs: true
 
-      - name: Install buildah
+      - name: Install Buildah
         run: apt-get update && apt-get install buildah ca-certificates -y
 
-      - name: Log in to Codeberg registry
+      - name: Auth Codeberg registry
         run: buildah login --authfile=/tmp/auth.json --username=${{ secrets.REGISTRY_USER }} --password=${{ secrets.REGISTRY_TOKEN }} codeberg.org
 
       - name: Build and push image
