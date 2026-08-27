@@ -28,14 +28,10 @@ local function create_html_content(post)
     if post.images and #post.images >= 1 then
         for _, media in ipairs(post.images) do
             if media.image_url then
-                html_string = html_string
-                    .. string.format([[<img src="%s" />]], base_url_path .. proxy_url(media.image_url))
+                html_string = html_string .. string.format([[<img src="%s" />]], base_url_path .. proxy_url(media.image_url))
             elseif media.video_url then
                 html_string = html_string
-                    .. string.format(
-                        [[<video controls><source src="%s"></video>]],
-                        base_url_path .. proxy_url(media.video_url)
-                    )
+                    .. string.format([[<video controls><source src="%s"></video>]], base_url_path .. proxy_url(media.video_url))
             end
         end
     else
@@ -43,10 +39,7 @@ local function create_html_content(post)
             html_string = html_string .. string.format([[<img src="%s"/>]], base_url_path .. proxy_url(post.image_url))
         elseif post.video_url then
             html_string = html_string
-                .. string.format(
-                    [[<video controls><source src="%s"></video>]],
-                    base_url_path .. proxy_url(post.video_url)
-                )
+                .. string.format([[<video controls><source src="%s"></video>]], base_url_path .. proxy_url(post.video_url))
         end
     end
     if post.caption then
@@ -111,15 +104,9 @@ local function create_feed_xml(username, posts)
         xml_escape("https://www.instagram.com/" .. username)
     )
 
-    for _, post in ipairs(posts) do
+    for _, post in ipairs(posts.items) do
         local html_content = create_html_content(post)
-        local post_xml = create_feed_item(
-            username,
-            post.caption,
-            base_url_path .. "p/" .. post.shortcode,
-            post.timestamp,
-            html_content
-        )
+        local post_xml = create_feed_item(username, post.caption, base_url_path .. "p/" .. post.shortcode, post.timestamp, html_content)
         feed_xml = feed_xml .. post_xml
     end
     feed_xml = feed_xml .. "</feed>"
@@ -130,11 +117,13 @@ app:get("/:username/atom.xml(/)", function(self)
     if not config.enable_atom then
         return { "Atom is not enabled on this instance.", layout = false, content_type = "text/plain" }
     else
-        local user = get_user(self.params.username, nil, "all")
+        local user = get_user(self.params.username, nil, "all", "timeline")
         if user.has_errors then
             return { "Error while fetching user.", layout = false, content_type = "text/plain" }
+        elseif user.timeline and user.timeline.has_errors then
+            return { "Error while fetching user.", layout = false, content_type = "text/plain" }
         else
-            local feed_xml = create_feed_xml(self.params.username, user.posts)
+            local feed_xml = create_feed_xml(self.params.username, user.timeline)
             return { feed_xml, layout = false, content_type = "application/atom+xml; charset=utf-8" }
         end
     end
