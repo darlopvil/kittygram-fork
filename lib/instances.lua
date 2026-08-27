@@ -4,8 +4,7 @@ local helpers = require("lib.helpers")
 local http = require("resty.http")
 local version = require("version")
 
-local INSTANCES_LIST_URI = config.instances_list
-    or "https://codeberg.org/irelephant/kittygram/raw/branch/main/instances.json"
+local INSTANCES_LIST_URI = config.instances_list or "https://codeberg.org/irelephant/kittygram/raw/branch/main/instances.json"
 
 local function get_instances()
     local query = cache.query_item("kg:instances_list")

@@ -87,12 +87,7 @@ local function pare_initial_data(data)
 
     if data["CometPlatformRootClient"] then
         for _, item in ipairs(data["CometPlatformRootClient"]) do
-            if
-                item[1]
-                and item[1].initialRouteInfo
-                and item[1].initialRouteInfo ~= ngx.null
-                and item[1].initialRouteInfo.route
-            then
+            if item[1] and item[1].initialRouteInfo and item[1].initialRouteInfo ~= ngx.null and item[1].initialRouteInfo.route then
                 local route = item[1].initialRouteInfo.route
                 if route ~= ngx.null then
                     if route.rootView and route.rootView ~= ngx.null then

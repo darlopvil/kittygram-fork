@@ -64,12 +64,7 @@ local function get_comments_auth(post_id, encoded_cursor)
 end
 
 local function get_comments(post_id, cursor)
-    if
-        config.web_session
-        and config.web_session.cookies
-        and config.web_session.use_for
-        and config.web_session.use_for.comments
-    then
+    if config.web_session and config.web_session.cookies and config.web_session.use_for and config.web_session.use_for.comments then
         return get_comments_auth(post_id, cursor)
     else
         return get_comments_anon(post_id, cursor)

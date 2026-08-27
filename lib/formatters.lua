@@ -121,11 +121,7 @@ local format_post = {
                     })
                 end
             end
-        elseif
-            item.image_versions2 ~= json.null
-            and item.video_versions == json.null
-            and item.carousel_media == json.null
-        then
+        elseif item.image_versions2 ~= json.null and item.video_versions == json.null and item.carousel_media == json.null then
             post.image_url = item.image_versions2.candidates[1].url
         end
 
@@ -294,11 +290,7 @@ local format_comments = {
                 likes = comment.comment_like_count,
             }
 
-            if
-                comment.giphy_media_info
-                and comment.giphy_media_info ~= ngx.null
-                and type(comment.giphy_media_info) == "table"
-            then
+            if comment.giphy_media_info and comment.giphy_media_info ~= ngx.null and type(comment.giphy_media_info) == "table" then
                 formatted_comment.gif_media = comment.giphy_media_info.first_party_cdn_proxied_images.fixed_height.url
             end
 
@@ -602,10 +594,7 @@ local format_grid = {
             end
         end
 
-        if
-            grid.polaris_ordered_timeline_connection.page_info
-            and grid.polaris_ordered_timeline_connection.page_info.has_next_page
-        then
+        if grid.polaris_ordered_timeline_connection.page_info and grid.polaris_ordered_timeline_connection.page_info.has_next_page then
             local encoded_cursor = encoding.encode_base64(json.encode {
                 cursor = grid.polaris_ordered_timeline_connection.page_info.end_cursor,
                 page_data = page_data,

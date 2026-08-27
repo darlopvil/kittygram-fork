@@ -87,8 +87,7 @@ config("docker", {
         window_length = tonumber(os.getenv("RATELIMIT_WINDOW_SIZE")) or 11 * 60,
         request_limit = tonumber(os.getenv("RATELIMIT_REQUEST_LIMIT")) or 194,
     },
-    about_message = os.getenv("ABOUT_MESSAGE")
-        or "<p>The operator of this message has not written an about message yet.",
+    about_message = os.getenv("ABOUT_MESSAGE") or "<p>The operator of this message has not written an about message yet.",
     require_api_token = os.getenv("REQUIRE_API_TOKEN") ~= "false",
     api_token_expire_length = tonumber(os.getenv("API_TOKEN_EXPIRE_LENGTH")) or 365 * 86400,
     http_sidecar = {

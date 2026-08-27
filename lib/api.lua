@@ -53,8 +53,7 @@ local function get_request_counts()
 end
 
 app:before_filter(function(self)
-    local decoded_token =
-        encoding.decode_with_secret((self.req.headers["Authorization"] or ""):gsub("Bearer ", "", 1), config.secret)
+    local decoded_token = encoding.decode_with_secret((self.req.headers["Authorization"] or ""):gsub("Bearer ", "", 1), config.secret)
     if decoded_token and decoded_token.expires then
         if not (decoded_token.expires < os.time()) then
             self.token_is_valid = true
@@ -269,8 +268,7 @@ app:get("/api/user/:username(/:path)(/)", function(self)
     user.end_cursor = user.timeline.cursor
     user.timeline = nil
 
-    user._message =
-        "This endpoint is deprecated and will be removed soon. Please use users/grid or users/timeline instead. "
+    user._message = "This endpoint is deprecated and will be removed soon. Please use users/grid or users/timeline instead. "
     user.status = "ok"
     return { json = user }
 end)

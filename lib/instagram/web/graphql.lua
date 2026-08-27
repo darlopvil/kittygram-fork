@@ -214,8 +214,7 @@ local queries = {
             data = {
                 query = query,
             },
-        },
-            doc_ids.search
+        }, doc_ids.search
     end,
     explore_search = function(query, after)
         return {
@@ -264,8 +263,7 @@ local queries = {
             after = cursor,
             first = 12,
             id = id,
-        },
-            doc_ids.anon_paginated_grid
+        }, doc_ids.anon_paginated_grid
     end,
     anon_reel_initial_grid = function(username)
         return {
@@ -278,8 +276,7 @@ local queries = {
             after = cursor,
             first = 12,
             id = id,
-        },
-            doc_ids.anon_reel_paginated_grid
+        }, doc_ids.anon_reel_paginated_grid
     end,
 }
 

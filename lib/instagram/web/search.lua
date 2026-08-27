@@ -38,12 +38,7 @@ local function database_search(query)
 end
 
 local function search(query)
-    if
-        config.web_session
-        and config.web_session.cookies
-        and config.web_session.use_for
-        and config.web_session.use_for.search
-    then
+    if config.web_session and config.web_session.cookies and config.web_session.use_for and config.web_session.use_for.search then
         return web_search(query)
     else
         return database_search(query)
@@ -94,9 +89,7 @@ local function explore(query, after)
         and search_request.data.xig_logged_out_popular_search_media_info ~= ngx.null
     then
         cache.bulk_save_users.from_explore(search_request.data.xig_logged_out_popular_search_media_info)
-        local formatted = formatters.format_explore_results.from_anon_web(
-            search_request.data.xig_logged_out_popular_search_media_info
-        )
+        local formatted = formatters.format_explore_results.from_anon_web(search_request.data.xig_logged_out_popular_search_media_info)
         cache.cache_item(key, formatted, "explore")
         return formatted
     else

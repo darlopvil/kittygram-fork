@@ -88,8 +88,7 @@ local create_error = {
             has_errors = true,
             error_type = "blocked",
             error_info = {
-                message = args.message
-                    or "This instance has been blocked from accessing that content. This may be permanent",
+                message = args.message or "This instance has been blocked from accessing that content. This may be permanent",
                 blob = json.encode(args.blob),
             },
         }
@@ -99,8 +98,7 @@ local create_error = {
             has_errors = true,
             error_type = "network_error",
             error_info = {
-                message = args.message
-                    or "A network error occurred when trying to fetch this item. This is likely temporary.",
+                message = args.message or "A network error occurred when trying to fetch this item. This is likely temporary.",
                 blob = json.encode(args.blob),
             },
         }
