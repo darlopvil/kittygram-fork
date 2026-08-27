@@ -87,12 +87,14 @@ local function get_post_graphql_media_id(shortcode, comments_cursor)
 end
 
 local function fetch_post(shortcode, comments_cursor)
-    if
-        config.web_session
-        and config.web_session.cookies
-        and config.web_session.use_for
-        and config.web_session.use_for.comments
-    then
+    local match = ngx.re.match(shortcode, "^[a-zA-Z0-9_-]+$", "jo")
+    if not match then
+        return errors.not_found {
+            message = "Post shortcode is invalid. Open an issue if this post really exists.",
+        }
+    end
+
+    if config.web_session and config.web_session.cookies and config.web_session.use_for and config.web_session.use_for.comments then
         return get_post_graphql_shortcode(shortcode, comments_cursor)
     else
         return get_post_graphql_media_id(shortcode, comments_cursor)

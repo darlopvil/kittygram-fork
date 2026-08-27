@@ -1,6 +1,7 @@
 local html = require("lib.instagram.web.html")
 local user_db = require("models.users")
 local html_request = html.request
+local errors = require("lib.helpers").create_error
 local get_grid = require("lib.instagram.web.user.grid")
 local get_user_info = require("lib.instagram.web.user.info")
 local timeline = require("lib.instagram.web.user.timeline")
@@ -50,6 +51,13 @@ local function check_ratelimit(item)
 end
 
 local function get_user(username, cursor, feed_type, feed_view)
+    local match = ngx.re.match(username, "^[a-zA-Z0-9_\\.]+$", "jo")
+    if not match or #username > 30 then
+        return errors.not_found {
+            message = "Username is invalid. Open an issue if this user really exists.",
+        }
+    end
+
     if feed_view == "grid" then
         local grid_user = get_grid(username, cursor, feed_type)
         if check_ratelimit(grid_user) or check_ratelimit(grid_user.info) or check_ratelimit(grid_user.grid) then
