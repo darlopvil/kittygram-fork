@@ -88,7 +88,6 @@ local function explore(query, after)
         search_request.data.xig_logged_out_popular_search_media_info
         and search_request.data.xig_logged_out_popular_search_media_info ~= ngx.null
     then
-        cache.bulk_save_users.from_explore(search_request.data.xig_logged_out_popular_search_media_info)
         local formatted = formatters.format_explore_results.from_anon_web(search_request.data.xig_logged_out_popular_search_media_info)
         cache.cache_item(key, formatted, "explore")
         return formatted
