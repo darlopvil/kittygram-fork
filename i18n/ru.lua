@@ -3,7 +3,7 @@ return {
     view_on_instagram = "Посмотреть в Instagram.",
     about = "О проекте",
     about_this_instance = "Об этом инстансе",
-    thousand_separator = ",",
+    thousand_separator = " ",
     navbar = {
         kittygram_logo = "Логотип Kittygram",
         atom_feed = "Лента Atom",
@@ -18,10 +18,10 @@ return {
     user = {
         list = "Список",
         grid = "Сетка",
-        tile = "Tile",
+        tile = "Плитка",
         reels = "Reels",
         all = "Все",
-        highlights = "Highlights",
+        highlights = "Актуальное",
         posts = "Публикации",
         verified = "Верифицирован",
         followers = "Подписчики",
