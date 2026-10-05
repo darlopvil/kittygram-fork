@@ -24,4 +24,9 @@ return {
         id = "de",
         strings = require("i18n.de"),
     },
+    hr = {
+        name = "Hrvatski",
+        id = "hr",
+        strings = require("i18n.hr"),
+    },
 }
