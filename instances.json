@@ -54,5 +54,12 @@
         "i2p": null,
         "yggdrasil": null,
         "country": "DE"
+    },
+    {
+        "url": "https://gram.utilibre.org",
+        "tor": null,
+        "i2p": null,
+        "yggdrasil": null,
+        "country": "DE"
     }
 ]
