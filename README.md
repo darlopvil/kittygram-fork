@@ -55,6 +55,7 @@ requests are handled by Kittygram.
 | <https://kg.meowing.de>            | [patrick](https://patriick.dev)               |                      |
 | <https://kittygram.nadeko.net>     | [Fijxu](https://nadeko.net)                   |                      |
 | <https://kittygram.pussthecat.org> | [PussTheCat.org](https://pussthecat.org)      |                      |
+| <https://gram.utilibre.org>        | [Utilibre](https://utilibre.org)              | Cloudflare           |
 
 <!-- NOTE: If you add a new instance, then edit the entire table to correct the length of the cells. -->
 
