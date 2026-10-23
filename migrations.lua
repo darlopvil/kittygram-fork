@@ -9,7 +9,6 @@ local types = schema.types
 return {
     [1] = function()
         schema.create_table("user_ids", {
-            { "id", types.id },
             { "username", types.text }, -- Changed from types.varchar
             { "user_id", types.text }, -- Changed from types.varchar
             "PRIMARY KEY (username)",
@@ -17,7 +16,6 @@ return {
     end,
     [1779735501] = function()
         schema.create_table("api_codes", {
-            { "id", types.id },
             { "code", types.text }, -- Changed from types.varchar
             { "is_used", types.integer { default = 0 } },
             { "created_at", types.integer },
