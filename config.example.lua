@@ -21,6 +21,10 @@ config({ "development", "production", "docker" }, {
     about_message = "<p>The operator of this instance has not written a message yet.</p>", -- The about message to display on the homepage of your instance. Can contain any HTML.
     web_session = { -- **Really** basic session/auth support. Do not expect an account used here to survive.
         cookies = false, -- Replace with session cookies.
+        -- User agent of the browser the cookies were taken from. Instagram rejects
+        -- authenticated requests whose UA does not match the session's browser.
+        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        token_ttl = 3600, -- Seconds to cache the session tokens (fb_dtsg, lsd...) read from Instagram.
         -- Specify which endpoints to use auth for.
         -- currently, user_info and posts don't actually accept cookies.
         use_for = {

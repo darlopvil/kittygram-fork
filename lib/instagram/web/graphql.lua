@@ -7,6 +7,7 @@ local errors = helpers.create_error
 local config = require("lapis.config").get()
 local ngx_resp = require("ngx.resp")
 local web_state = ngx.shared.web_state
+local session = require("lib.instagram.web.session")
 
 local WINDOW_LENGTH = config.ratelimits.window_length
 local REQUEST_LIMIT = config.ratelimits.request_limit
@@ -65,8 +66,9 @@ local doc_ids = {
         requires_anonymous_session = true,
     },
     search = {
-        doc_id = "24146980661639222",
-        endpoint = "query",
+        doc_id = "27706427925724183",
+        query_name = "PolarisSearchBoxRefetchableQuery",
+        endpoint = "api",
         method = "POST",
         requires_auth = true,
         requires_anonymous_session = false,
@@ -163,6 +165,15 @@ local doc_ids = {
     },
 }
 
+local function uuid4()
+    return (
+        string.gsub("xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx", "[xy]", function(c)
+            local v = (c == "x") and math.random(0, 15) or math.random(8, 11)
+            return string.format("%x", v)
+        end)
+    )
+end
+
 local queries = {
     anon_comments_pagination = function(media_id, cursor)
         return {
@@ -210,10 +221,15 @@ local queries = {
     end,
     search = function(query)
         return {
-            hasQuery = true,
             data = {
+                context = "blended",
+                include_reel = "true",
                 query = query,
+                rank_token = "",
+                search_session_id = uuid4(),
+                search_surface = "web_top_search",
             },
+            hasQuery = true,
         }, doc_ids.search
     end,
     explore_search = function(query, after)
@@ -307,7 +323,7 @@ local default_tokens = {
     comet_env = "7",
 }
 
-local function graphql_request(request_payload, doc_id, request_type, page_info)
+local function graphql_request(request_payload, doc_id, request_type, page_info, retried)
     -- count the total number of requests sent using that doc_id, in an 11 minute window.
     -- Instagram ratelimits each server to 200 requests/11 minute window for most doc_ids.
     -- some instances may have workarounds in place, so they can disable the cooldown in their config.
@@ -330,7 +346,16 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
     end
 
     local request_url = gql_endpoints[doc_id.endpoint]
-    if not page_info or page_info == {} then
+    if cookie then
+        -- Authenticated requests must use tokens bound to the session.
+        local tokens, session_err = session.get_tokens()
+        if not tokens then
+            return errors.unknown {
+                message = "Could not start the web session: " .. tostring(session_err),
+            }
+        end
+        page_info = tokens
+    elseif not page_info or page_info == {} then
         page_info = default_tokens
     end
 
@@ -347,6 +372,8 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
         { "__hsi", page_info.hsi },
         { "__comet_req", page_info.comet_env },
         { "lsd", page_info.lsd },
+        { "fb_dtsg", page_info.fb_dtsg },
+        { "jazoest", page_info.jazoest },
         { "__spin_r", page_info.spin_r },
         { "__spin_b", page_info.spin_b },
         { "__spin_t", page_info.spin_t },
@@ -368,6 +395,9 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
     end
 
     local headers = create_headers(page_info.lsd, page_info.csrf_token, doc_id.query_name, cookie)
+    if cookie then
+        session.apply_headers(headers)
+    end
     local request_opts = {
         method = doc_id.method,
         headers = headers,
@@ -383,6 +413,12 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
     end
 
     local request, err = http_request(request_url, request_opts)
+
+    -- Stale session tokens: drop them and retry once with fresh ones.
+    if request and cookie and not retried and session.is_rejection(request) then
+        session.invalidate()
+        return graphql_request(request_payload, doc_id, request_type, nil, true)
+    end
 
     if config.include_debug_headers then
         ngx_resp.add_header("X-Kg-Debug-Endpoints", doc_id.doc_id)
@@ -401,7 +437,9 @@ local function graphql_request(request_payload, doc_id, request_type, page_info)
         }
     end
 
-    local decode_status, decoded_body = helpers.safe_json_decode(request.body)
+    -- Instagram prefixes some error responses with an anti-JSON-hijacking guard.
+    local body = (request.body or ""):gsub("^for %(;;%);", "")
+    local decode_status, decoded_body = helpers.safe_json_decode(body)
 
     if not decode_status then
         return errors.unknown {
