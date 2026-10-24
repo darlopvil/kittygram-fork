@@ -18,3 +18,5 @@ sessions.jsonl
 /lua
 /lua_modules
 /.luarocks
+docker-compose.yml
+data/

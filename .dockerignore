@@ -24,3 +24,6 @@ instances.json
 lib/disused/
 
 *.sqlite
+config.lua
+docker-compose.yml
+data/
