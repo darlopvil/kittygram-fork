@@ -60,6 +60,17 @@ app.cookie_attributes = function(self)
 end
 
 local function render_error(self, error)
+    -- Raw Instagram responses can contain the session account's data and
+    -- tokens: keep them out of pages and logs unless explicitly enabled.
+    self.show_error_details = config.show_error_details == true
+    local info = error.error_info or {}
+    local message = tostring(info.message or info.error_message)
+    local blob = info.blob
+    if self.show_error_details and blob and blob ~= "null" then
+        ngx.log(ngx.WARN, "[error] ", tostring(error.error_type), ": ", message, " | blob: ", string.sub(tostring(blob), 1, 2000))
+    else
+        ngx.log(ngx.WARN, "[error] ", tostring(error.error_type), ": ", message)
+    end
     self.error = error
 
     -- select an alternate instance.

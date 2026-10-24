@@ -32,6 +32,7 @@ config({ "development", "production", "docker" }, {
         },
     },
     include_debug_headers = false, -- Whether to include debug headers (mentions whether cache was hit; which endpoints were accessed.)
+    show_error_details = false, -- Render raw Instagram responses on error pages and API errors. Keep off on public instances: with a web session they can expose the account. When enabled they are also written to the server log.
     ratelimits = {
         cooldown_on_ratelimit = true, -- If set to true, your instance will block requests until a ratelimit is over.
         window_length = 11 * 60, -- Instagram ratelimits based on an 11 minute sliding window. Here, you can set a custom window length.

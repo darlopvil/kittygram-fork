@@ -70,7 +70,17 @@ app:before_filter(function(self)
     end
 end)
 
+-- Never expose raw Instagram responses through the API: they can contain
+-- the session account's data.
+local function strip_blob(err)
+    if type(err) == "table" and type(err.error_info) == "table" and config.show_error_details ~= true then
+        err.error_info.blob = nil
+    end
+    return err
+end
+
 local function return_error(err)
+    strip_blob(err)
     local status
     if err.error_type == "not_found" then
         status = 404
@@ -305,7 +315,7 @@ app:get("/api/search(/)", function(self)
     local query = instagram.search.search(self.params.query)
 
     if query.has_errors then
-        return { json = query }
+        return { json = strip_blob(query) }
     end
 
     query.status = "ok"

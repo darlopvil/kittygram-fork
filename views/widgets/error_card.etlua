@@ -10,9 +10,11 @@
         <details>
         <summary>More Details</summary>
             <p><%= error.error_info.message %></p>
+            <% if show_error_details and error.error_info.blob then %>
             <pre>
                 <%= error.error_info.blob %>
             </pre>
+            <% end %>
         </details>
     <% end %>
 
