@@ -32,7 +32,8 @@ project, its public instances and its community, see the
 - **Profiles that work again.** List and tile views and full-media Atom feeds
   go through the web session (`use_for.user_posts`), since Instagram now
   requires login for them; without it, profiles are shown as a grid. Private
-  profiles show a notice instead of an error.
+  profiles show a notice instead of an error. The post count, now hidden from
+  anonymous visitors, comes from the session too (`use_for.user_info`).
 - **Atom feeds** (`/<user>/atom.xml`) for any feed reader, served from the
   cache, newest post first.
 
@@ -79,7 +80,8 @@ Instagram may restrict or ban accounts used this way.
    `"sessionid=...; csrftoken=...; ds_user_id=...; mid=...; ig_did=..."`.
 3. Optionally set `web_session.user_agent` to the user agent of that browser.
 4. Enable `web_session.use_for` only where it is needed: `search` for live
-   search and `user_posts` for list and tile views and full-media feeds.
+   search, `user_posts` for list and tile views and full-media feeds, and
+   `user_info` for the post count on profiles.
    Grids, posts and comments work anonymously, and routing more through the
    account only increases the risk of losing it.
 

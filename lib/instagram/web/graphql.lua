@@ -55,7 +55,7 @@ local doc_ids = {
         endpoint = "api",
         method = "POST",
         requires_auth = false,
-        requires_anonymous_session = true,
+        requires_anonymous_session = false,
     },
     anon_comments_pagination = {
         doc_id = "27261273046856309",

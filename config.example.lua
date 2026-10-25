@@ -32,7 +32,7 @@ config({ "development", "production", "docker" }, {
             posts = false, -- ONLY works is `post_fetch_mode` is not set to web.
             comments = false,
             user_posts = false, -- List/tile views and full-media Atom feeds. Off: grid only, Atom from grid data.
-            user_info = false,
+            user_info = false, -- Post count on profiles (Instagram hides it from anonymous visitors).
         },
     },
     include_debug_headers = false, -- Whether to include debug headers (mentions whether cache was hit; which endpoints were accessed.)

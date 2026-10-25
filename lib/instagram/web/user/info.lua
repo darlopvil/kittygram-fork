@@ -11,7 +11,7 @@ local function get_user_hover_info(user_id, page_info)
     end
 
     local payload, doc_id = graphql.queries.user_hover_info(user_id)
-    local user_info = graphql.query_and_format(payload, doc_id, formatters.format_user_info.from_graphql, {
+    local user_info = graphql.query_and_format(payload, doc_id, formatters.format_user_info.from_hover_graphql, {
         purpose = "user_info",
         page_data = page_info,
     })
@@ -33,7 +33,7 @@ local function get_user_info(user_id, username, page_info)
     end
 
     local payload, doc_id = graphql.queries.user_info(user_id)
-    local user_info = graphql.query_and_format(payload, doc_id, formatters.format_user_info.from_hover_graphql, {
+    local user_info = graphql.query_and_format(payload, doc_id, formatters.format_user_info.from_graphql, {
         purpose = "user_info",
         page_data = page_info,
     })

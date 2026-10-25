@@ -7,6 +7,42 @@ local get_grid = require("lib.instagram.web.user.grid")
 local get_user_info = require("lib.instagram.web.user.info")
 local timeline = require("lib.instagram.web.user.timeline")
 local cache = require("lib.cache")
+local formatters = require("lib.formatters")
+local graphql = require("lib.instagram.web.graphql")
+
+-- Instagram no longer exposes the post count anonymously (all_media_count is
+-- null). With the web session enabled for user_info, it is read from the
+-- profile info query, the request Instagram's own profile page makes, and
+-- cached for the profile info TTL.
+local function add_media_count(result)
+    if not helpers.session_enabled_for("user_info") then
+        return result
+    end
+    local info = type(result) == "table" and result.info
+    if type(info) ~= "table" or info.has_errors or not info.id then
+        return result
+    end
+    if type(info.media_count) == "number" then
+        return result
+    end
+
+    local key = "ig:media_count:" .. tostring(info.id)
+    local cached = cache.query_item(key)
+    if cached ~= ngx.null and type(cached) == "table" and type(cached.count) == "number" then
+        info.media_count = cached.count
+        return result
+    end
+
+    local payload, doc_id = graphql.queries.user_info(tostring(info.id))
+    local full_info = graphql.query_and_format(payload, doc_id, formatters.format_user_info.from_graphql, {
+        purpose = "user_info",
+    })
+    if type(full_info) == "table" and not full_info.has_errors and type(full_info.media_count) == "number" then
+        info.media_count = full_info.media_count
+        cache.cache_item(key, { count = full_info.media_count }, "user_info")
+    end
+    return result
+end
 
 -- Anonymous (cached) profile info, used to detect private and missing
 -- accounts before requesting their posts. Instagram answers posts requests for
@@ -113,11 +149,11 @@ local function get_user(username, cursor, feed_type, feed_view)
         local grid_user = get_grid(username, cursor, feed_type)
         local rate_limited = check_ratelimit(grid_user) or check_ratelimit(grid_user.info) or check_ratelimit(grid_user.grid)
         if rate_limited and feed_type == "all" and helpers.session_enabled_for("user_posts") then
-            return get_timeline_or_private(username, cursor, feed_type, true)
+            return add_media_count(get_timeline_or_private(username, cursor, feed_type, true))
         end
-        return grid_user
+        return add_media_count(grid_user)
     else
-        return get_timeline_or_private(username, cursor, feed_type)
+        return add_media_count(get_timeline_or_private(username, cursor, feed_type))
     end
 end
 
