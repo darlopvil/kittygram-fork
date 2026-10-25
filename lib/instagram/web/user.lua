@@ -5,6 +5,30 @@ local errors = require("lib.helpers").create_error
 local get_grid = require("lib.instagram.web.user.grid")
 local get_user_info = require("lib.instagram.web.user.info")
 local timeline = require("lib.instagram.web.user.timeline")
+local cache = require("lib.cache")
+local formatters = require("lib.formatters")
+local graphql = require("lib.instagram.web.graphql")
+
+-- Anonymous (cached) profile info, used to detect private accounts before
+-- requesting their posts. Instagram answers posts requests for a private
+-- account with require_login, which is handled as a rate limit and puts that
+-- query on cooldown for every profile.
+local function get_private_info(username)
+    local key = "ig:user:" .. username
+    local info = cache.query_item(key)
+    if info == ngx.null then
+        local query, doc_id = graphql.queries.anon_user_info(username)
+        info = graphql.query_and_format(query, doc_id, formatters.format_user_info.from_anon_web_graphql, {
+            purpose = "user_info",
+        })
+        if type(info) == "table" and not info.has_errors and info.username then
+            cache.cache_item(key, info, "user_info")
+        end
+    end
+    if type(info) == "table" and info.is_private == true then
+        return info
+    end
+end
 
 local function get_timeline_user(username, cursor, feed_type, is_grid_fallback)
     local user_id, page_data
@@ -44,6 +68,18 @@ local function get_timeline_user(username, cursor, feed_type, is_grid_fallback)
     return { timeline = posts, info = info }
 end
 
+-- Timeline-based views never request the posts of a private account.
+local function get_timeline_or_private(username, cursor, feed_type, is_grid_fallback)
+    local private_info = get_private_info(username)
+    if private_info then
+        if is_grid_fallback then
+            return { info = private_info, grid = { items = {} } }
+        end
+        return { info = private_info, timeline = { items = {} } }
+    end
+    return get_timeline_user(username, cursor, feed_type, is_grid_fallback)
+end
+
 local function check_ratelimit(item)
     if item and item.has_errors and item.error_type == "ratelimited" then
         return true
@@ -61,11 +97,11 @@ local function get_user(username, cursor, feed_type, feed_view)
     if feed_view == "grid" then
         local grid_user = get_grid(username, cursor, feed_type)
         if check_ratelimit(grid_user) or check_ratelimit(grid_user.info) or check_ratelimit(grid_user.grid) then
-            return get_timeline_user(username, cursor, feed_type, true)
+            return get_timeline_or_private(username, cursor, feed_type, true)
         end
         return grid_user
     else
-        return get_timeline_user(username, cursor, feed_type)
+        return get_timeline_or_private(username, cursor, feed_type)
     end
 end
 

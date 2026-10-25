@@ -28,7 +28,7 @@ return {
         verified = "Fíoraithe",
         followers = "Leantóirí",
         following = "Ag leanúint",
-        user_is_private = "Tá an úsáideoir seo príobháideach.",
+        user_is_private = "Is cuntas príobháideach é seo. Ní féidir ach lena leantóirí ceadaithe a phostálacha agus a reels a fheiceáil.",
         has_no_posts = "Níl aon mhíreanna ag an úsáideoir seo.",
     },
     explore = {

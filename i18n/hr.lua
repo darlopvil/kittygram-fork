@@ -26,7 +26,7 @@ return {
         verified = "Potvrđeni",
         followers = "Pratitelji",
         following = "Praćenja",
-        user_is_private = "Ovaj je korisnik privatan.",
+        user_is_private = "Ovaj je račun privatan. Njegove objave i reelove mogu vidjeti samo odobreni pratitelji.",
         has_no_posts = "Ovaj korisnik nema objava.",
     },
     explore = {

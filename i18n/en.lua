@@ -26,7 +26,7 @@ return {
         verified = "Verified",
         followers = "Followers",
         following = "Following",
-        user_is_private = "This user is private.",
+        user_is_private = "This account is private. Only its approved followers can see its posts and reels.",
         has_no_posts = "This user has no posts.",
     },
     explore = {

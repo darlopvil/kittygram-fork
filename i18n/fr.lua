@@ -26,7 +26,7 @@ return {
         verified = "Verifié",
         followers = "Followers",
         following = "Suivi(e)s",
-        user_is_private = "Ce profil est privé.",
+        user_is_private = "Ce compte est privé. Seuls ses abonnés approuvés peuvent voir ses publications et ses reels.",
         has_no_posts = "Ce profil n'a rien publié.",
     },
     explore = {

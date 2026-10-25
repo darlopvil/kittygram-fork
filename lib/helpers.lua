@@ -29,6 +29,9 @@ end
 -- e.g., 100000, 100,000
 local function comma_value(separator)
     return function(amount)
+        if amount == nil or amount == json.null then
+            return "–" -- e.g. private accounts don't expose their post count
+        end
         if type(amount) ~= "number" then
             return amount
         end
