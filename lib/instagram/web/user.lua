@@ -7,27 +7,38 @@ local get_grid = require("lib.instagram.web.user.grid")
 local get_user_info = require("lib.instagram.web.user.info")
 local timeline = require("lib.instagram.web.user.timeline")
 local cache = require("lib.cache")
-local formatters = require("lib.formatters")
-local graphql = require("lib.instagram.web.graphql")
 
--- Anonymous (cached) profile info, used to detect private accounts before
--- requesting their posts. Instagram answers posts requests for a private
--- account with require_login, which is handled as a rate limit and puts that
--- query on cooldown for every profile.
+-- Anonymous (cached) profile info, used to detect private and missing
+-- accounts before requesting their posts. Instagram answers posts requests for
+-- a private account with require_login, which is handled as a rate limit and
+-- puts that query on cooldown for every profile. When the info is not cached,
+-- it comes from the anonymous profile page, the same request the grid view
+-- makes (and caches): the standalone profile info query no longer works
+-- anonymously (error 1357054).
 local function get_private_info(username)
-    local key = "ig:user:" .. username
-    local info = cache.query_item(key)
-    if info == ngx.null then
-        local query, doc_id = graphql.queries.anon_user_info(username)
-        info = graphql.query_and_format(query, doc_id, formatters.format_user_info.from_anon_web_graphql, {
-            purpose = "user_info",
-        })
-        if type(info) == "table" and not info.has_errors and info.username then
-            cache.cache_item(key, info, "user_info")
+    local info = cache.query_item("ig:user:" .. username)
+    if info == ngx.null or (type(info) == "table" and info.has_errors) then
+        local grid_user = get_grid(username, nil, "all")
+        if type(grid_user) ~= "table" then
+            return nil
+        end
+        if grid_user.has_errors then
+            info = grid_user
+        elseif type(grid_user.grid) == "table" and grid_user.grid.error_type == "not_found" then
+            -- For a missing profile the page has no user data: the posts
+            -- formatter reports not_found, while the info falls back to the
+            -- broken anonymous query and only reports an unknown error.
+            info = grid_user.grid
+        else
+            info = grid_user.info
         end
     end
     if type(info) == "table" and info.is_private == true then
         return info
+    end
+    -- Missing profiles are reported as such, without requesting their posts.
+    if type(info) == "table" and info.has_errors and info.error_type == "not_found" then
+        return nil, info
     end
 end
 
@@ -71,7 +82,10 @@ end
 
 -- Timeline-based views never request the posts of a private account.
 local function get_timeline_or_private(username, cursor, feed_type, is_grid_fallback)
-    local private_info = get_private_info(username)
+    local private_info, not_found = get_private_info(username)
+    if not_found then
+        return not_found
+    end
     if private_info then
         if is_grid_fallback then
             return { info = private_info, grid = { items = {} } }

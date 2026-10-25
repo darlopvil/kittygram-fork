@@ -42,8 +42,11 @@ local function get_user_info(user_id, username, page_info)
         return get_user_hover_info(user_id, page_info)
     end
 
-    cache.cache_item("ig:user:" .. username, user_info, "user_info")
-    user_db.save_user(user_info)
+    -- Never cache errors as profile info: they would be served for the whole TTL.
+    if not user_info.has_errors then
+        cache.cache_item("ig:user:" .. username, user_info, "user_info")
+        user_db.save_user(user_info)
+    end
 
     return user_info
 end

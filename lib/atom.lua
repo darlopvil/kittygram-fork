@@ -103,8 +103,15 @@ local function create_feed_xml(username, posts)
     local user_link = base_url_path .. username
 
     local self_link = user_link .. "/atom.xml"
+    -- Pinned posts come first on Instagram: order entries by date, newest first,
+    -- so the feed's <updated> is the latest post and readers see the right order.
+    posts = posts or { items = {} }
+    posts.items = posts.items or {}
+    table.sort(posts.items, function(a, b)
+        return (tonumber(a.timestamp) or 0) > (tonumber(b.timestamp) or 0)
+    end)
     local first_timestamp
-    if posts and posts.items and posts.items[1] then
+    if posts.items[1] then
         first_timestamp = posts.items[1].timestamp
     end
     local updated_timestamp = date(first_timestamp):toutc():fmt("${iso}") .. "Z"
@@ -140,6 +147,17 @@ local function create_feed_xml(username, posts)
     return feed_xml
 end
 
+-- Plain-text errors with a status code feed readers understand.
+local function feed_error(err)
+    local status = 502
+    if err and err.error_type == "not_found" then
+        status = 404
+    elseif err and err.error_type == "ratelimited" then
+        status = 503
+    end
+    return { "Error while fetching user.", status = status, layout = false, content_type = "text/plain" }
+end
+
 app:get("/:username/atom.xml(/)", function(self)
     if not config.enable_atom then
         return { "Atom is not enabled on this instance.", layout = false, content_type = "text/plain" }
@@ -147,9 +165,11 @@ app:get("/:username/atom.xml(/)", function(self)
         local view = helpers.session_enabled_for("user_posts") and "timeline" or "grid"
         local user = get_user(self.params.username, nil, "all", view)
         if user.has_errors then
-            return { "Error while fetching user.", layout = false, content_type = "text/plain" }
-        elseif (user.timeline and user.timeline.has_errors) or (user.grid and user.grid.has_errors) then
-            return { "Error while fetching user.", layout = false, content_type = "text/plain" }
+            return feed_error(user)
+        elseif user.timeline and user.timeline.has_errors then
+            return feed_error(user.timeline)
+        elseif user.grid and user.grid.has_errors then
+            return feed_error(user.grid)
         else
             local posts = user.timeline or posts_from_grid(user.grid)
             local feed_xml = create_feed_xml(self.params.username, posts)

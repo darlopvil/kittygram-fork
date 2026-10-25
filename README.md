@@ -29,6 +29,12 @@ project, its public instances and its community, see the
   volume and pending migrations run on every container start.
 - **No public instance list.** No runtime download of `instances.json` and no
   random-instance links.
+- **Profiles that work again.** List and tile views and full-media Atom feeds
+  go through the web session (`use_for.user_posts`), since Instagram now
+  requires login for them; without it, profiles are shown as a grid. Private
+  profiles show a notice instead of an error.
+- **Atom feeds** (`/<user>/atom.xml`) for any feed reader, served from the
+  cache, newest post first.
 
 ## Deployment
 
@@ -53,6 +59,15 @@ docker compose up -d --build
   resets its owner and permissions.
 - To update: `git pull && docker compose up -d --build`. Migrations run on start.
 
+### Atom feeds (optional)
+
+Set `enable_atom = true` and `base_atom_path` (the instance's public URL, with
+a trailing slash) in `config.lua`, or the `ENABLE_ATOM=true` and
+`BASE_ATOM_PATH` environment variables in the docker environment. With the web
+session enabled for `user_posts`, entries carry the full media and the real
+date; without it, they are built from the anonymous grid (thumbnail, caption
+and the date decoded from the media id). All media goes through `/mediaproxy`.
+
 ### Web session (optional)
 
 Live search needs a logged-in Instagram session. Use a dedicated account:
@@ -63,9 +78,10 @@ Instagram may restrict or ban accounts used this way.
 2. In `config.lua`, set `web_session.cookies` to
    `"sessionid=...; csrftoken=...; ds_user_id=...; mid=...; ig_did=..."`.
 3. Optionally set `web_session.user_agent` to the user agent of that browser.
-4. Keep `web_session.use_for` enabled for `search` only. Profiles, posts and
-   comments work anonymously, and routing them through the account only
-   increases the risk of losing it.
+4. Enable `web_session.use_for` only where it is needed: `search` for live
+   search and `user_posts` for list and tile views and full-media feeds.
+   Grids, posts and comments work anonymously, and routing more through the
+   account only increases the risk of losing it.
 
 Keep `show_error_details = false` when a session is configured: raw responses
 can reveal the account.
