@@ -12,22 +12,26 @@ local gql_documents = require("lib.instagram.web.graphql").doc_ids
 local api_endpoints = require("lib.instagram.web.api").endpoints
 local instagram = require("lib.instagram")
 
+-- Keys are namespaced ("graphql.", "api.", "html."): GraphQL queries and API
+-- endpoints share names (e.g. user_posts), and an "ok" endpoint used to
+-- overwrite a blocked query with the same name.
 local function get_ratelimits()
     local ratelimits = {}
+    local limit = config.ratelimits.request_limit
     for key, document in pairs(gql_documents) do
         local req_count = web_state:get("graphql:" .. document.doc_id)
-        if req_count and req_count > config.ratelimits.request_limit then
-            ratelimits[key] = "blocked"
-        else
-            ratelimits[key] = "ok"
-        end
+        ratelimits["graphql." .. key] = (req_count and req_count > limit) and "blocked" or "ok"
     end
     for key, endpoint in pairs(api_endpoints) do
         local req_count = web_state:get("api:" .. endpoint.path)
-        if req_count and req_count > config.ratelimits.request_limit then
-            ratelimits[key] = "blocked"
-        else
-            ratelimits[key] = "ok"
+        ratelimits["api." .. key] = (req_count and req_count > limit) and "blocked" or "ok"
+    end
+    -- HTML pages (profiles) are limited at half the request limit, see html.lua.
+    for _, state_key in ipairs(web_state:get_keys(0)) do
+        local pattern = state_key:match("^html:(.+)$")
+        if pattern then
+            local req_count = web_state:get(state_key)
+            ratelimits["html." .. pattern] = (req_count and req_count > limit / 2) and "blocked" or "ok"
         end
     end
 
