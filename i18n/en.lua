@@ -38,6 +38,7 @@ return {
         users = "Users",
         hashtags = "Hashtags",
         missing_info_warning = "Search is limited on this instance. Users will only be found if they were previously seen by this instance",
+        live_search_unavailable = "Live search is temporarily unavailable. Showing results from this instance only.",
     },
     settings = {
         settings = "Settings",

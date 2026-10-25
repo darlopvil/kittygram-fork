@@ -39,10 +39,18 @@ end
 
 local function search(query)
     if config.web_session and config.web_session.cookies and config.web_session.use_for and config.web_session.use_for.search then
-        return web_search(query)
-    else
-        return database_search(query)
+        local results = web_search(query)
+        if not results.has_errors then
+            return results
+        end
+        -- Keep search usable when the session is rejected or rate limited:
+        -- fall back to the users this instance has already seen.
+        ngx.log(ngx.WARN, "[search] live search failed (", tostring(results.error_type), "), falling back to local search")
+        local fallback = database_search(query)
+        fallback.live_search_failed = true
+        return fallback
     end
+    return database_search(query)
 end
 
 local function get_popular_page()

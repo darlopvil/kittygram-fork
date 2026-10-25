@@ -38,6 +38,7 @@ return {
         users = "Korisnici",
         hashtags = "Hashtagovi",
         missing_info_warning = "Pretraga je na ovoj instanci ograničena. Korisnici se pronalaze samo ako su već prije viđeni na ovoj instanci.",
+        live_search_unavailable = "Pretraga uživo trenutno nije dostupna. Prikazuju se samo rezultati s ove instance.",
     },
     settings = {
         settings = "Postavke",

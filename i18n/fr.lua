@@ -38,6 +38,7 @@ return {
         users = "Profils",
         hashtags = "Hashtags",
         missing_info_warning = "La recherche est restreinte sur cette instance. Les profils ne seront trouvés que s'ils ont déjà été visité depuis cette instance",
+        live_search_unavailable = "La recherche en direct est temporairement indisponible. Seuls les résultats de cette instance sont affichés.",
     },
     settings = {
         settings = "Paramètres",

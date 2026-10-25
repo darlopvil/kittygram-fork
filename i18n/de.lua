@@ -38,6 +38,7 @@ return {
         users = "Nutzer",
         hashtags = "Hashtags",
         missing_info_warning = "Die Suche ist für diese Instanz limitiert. Es werden nur Nutzer angezeigt, die bereits zuvor von dieser Instanz gesehen wurden.",
+        live_search_unavailable = "Die Live-Suche ist vorübergehend nicht verfügbar. Es werden nur Ergebnisse dieser Instanz angezeigt.",
     },
     settings = {
         settings = "Einstellungen",

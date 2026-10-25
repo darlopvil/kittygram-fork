@@ -26,6 +26,9 @@
 
     <% if search_results.search_source == "database" then %>
         <div class="item-card search-warning">
+            <% if search_results.live_search_failed then %>
+                <p><%= strings.explore.live_search_unavailable or "Live search is temporarily unavailable. Showing results from this instance only." %></p>
+            <% end %>
             <%= strings.explore.missing_info_warning %>
         </div>
     <% end %>
