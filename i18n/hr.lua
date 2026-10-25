@@ -10,6 +10,7 @@ return {
     },
     post = {
         posted_at = "Objavljeno: ",
+        download = "Preuzmi",
         likes = " sviđanja",
         comments = "Komentari",
         error_loading_comments = "Greška pri učitavanju komentara: ",

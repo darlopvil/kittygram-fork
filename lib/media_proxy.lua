@@ -4,6 +4,15 @@ local app = lapis.Application()
 local http = require("resty.http")
 local util = require("lapis.util")
 
+local DOWNLOAD_EXTENSIONS = {
+    ["image/jpeg"] = ".jpg",
+    ["image/png"] = ".png",
+    ["image/webp"] = ".webp",
+    ["image/heic"] = ".heic",
+    ["image/avif"] = ".avif",
+    ["video/mp4"] = ".mp4",
+}
+
 local WHITELIST = {
     "cdninstagram.com",
     "fbcdn.net",
@@ -61,6 +70,15 @@ app:get("/mediaproxy", function(self)
     ngx.header.content_type = res.headers["Content-Type"]
     ngx.header.content_length = res.headers["Content-Length"]
     ngx.header.content_range = res.headers["Content-Range"]
+
+    -- ?download=<name>: save the file instead of displaying it.
+    local download = self.params.download
+    if type(download) == "string" and download ~= "" then
+        local stem = download:gsub("[^%w%._-]", "_"):sub(1, 100)
+        local content_type = (res.headers["Content-Type"] or ""):match("^[^;%s]+") or ""
+        local extension = DOWNLOAD_EXTENSIONS[content_type:lower()] or ""
+        ngx.header["Content-Disposition"] = 'attachment; filename="' .. stem .. extension .. '"'
+    end
 
     repeat
         local buffer, err = res.body_reader(8192)

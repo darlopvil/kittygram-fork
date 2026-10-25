@@ -30,6 +30,38 @@ local proxy_url = function(url)
     return "/mediaproxy?url=" .. util.escape(url)
 end
 
+-- Download links for every media item of a post, through /mediaproxy.
+-- Files are named <username>_<shortcode>[_<n>]; the proxy adds the extension.
+local function download_links(post)
+    local urls = {}
+    local function add(url)
+        if type(url) == "string" and url ~= "" then
+            table.insert(urls, url)
+        end
+    end
+    if post.video_url then
+        add(post.video_url)
+    elseif type(post.images) == "table" then
+        for _, media in ipairs(post.images) do
+            add(media.video_url or media.image_url)
+        end
+    elseif post.image_url then
+        add(post.image_url)
+    end
+
+    local username = type(post.user) == "table" and post.user.username or "instagram"
+    local base = tostring(username) .. "_" .. tostring(post.shortcode or "post")
+    local links = {}
+    for i, url in ipairs(urls) do
+        local name = #urls > 1 and (base .. "_" .. i) or base
+        table.insert(links, {
+            label = tostring(i),
+            url = "/mediaproxy?url=" .. util.escape(url) .. "&download=" .. util.escape(name),
+        })
+    end
+    return links
+end
+
 local function safe_json_decode(data)
     local status, result = pcall(json.decode, data)
     return status, result
@@ -274,4 +306,5 @@ return {
     decode_csr_bitmap = decode_csr_bitmap,
     encode_query_string = encode_query_string,
     session_enabled_for = session_enabled_for,
+    download_links = download_links,
 }

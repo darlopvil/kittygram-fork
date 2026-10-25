@@ -42,6 +42,14 @@
         <div class="post-likes">
             <p><%= comma_value(post.likes) .. strings.post.likes %></p>
         </div>
+        <% local downloads = require("lib.helpers").download_links(post) %>
+        <% if #downloads == 1 then %>
+            <p class="post-downloads"><a href="<%= downloads[1].url %>" download><%= strings.post.download or "Download" %></a></p>
+        <% elseif #downloads > 1 then %>
+            <p class="post-downloads"><%= strings.post.download or "Download" %>:
+                <% for i, link in ipairs(downloads) do %><% if i > 1 then %> &middot; <% end %><a href="<%= link.url %>" download><%= link.label %></a><% end %>
+            </p>
+        <% end %>
         <div class="post-body">
             <div class="caption">
                 <% if post.caption then %>

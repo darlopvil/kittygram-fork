@@ -10,6 +10,7 @@ return {
     },
     post = {
         posted_at = "Posté à\u{00a0}: ",
+        download = "Télécharger",
         likes = " j'aime",
         comments = "Commentaires",
         error_loading_comments = "Erreur lors du chargement des commentaires\u{00a0}: ",

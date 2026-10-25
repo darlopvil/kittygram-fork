@@ -10,6 +10,7 @@ return {
     },
     post = {
         posted_at = "Опубликовано: ",
+        download = "Скачать",
         likes = " лайков",
         comments = "Комментарии",
         error_loading_comments = "Ошибка загрузки комментариев: ",

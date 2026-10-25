@@ -10,6 +10,7 @@ return {
     },
     post = {
         posted_at = "Gepostet am: ",
+        download = "Herunterladen",
         likes = " Likes",
         comments = "Kommentare",
         error_loading_comments = "Fehler beim Laden der Kommentare: ",
