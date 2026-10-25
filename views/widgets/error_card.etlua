@@ -18,9 +18,5 @@
         </details>
     <% end %>
 
-    <% if alternate_instance then %>
-        <p><a href="<%= alternate_instance %>">Try another random instance</a></p>
-    <% end %>
-
     <p><%= version %></p>
 </div>

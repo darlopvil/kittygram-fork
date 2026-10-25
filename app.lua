@@ -5,7 +5,6 @@ local date = require("date")
 local helpers = require("lib.helpers")
 local version = require("version")
 
-local instances = require("lib.instances")
 local locales = require("i18n.languages")
 
 app:enable("etlua")
@@ -73,13 +72,6 @@ local function render_error(self, error)
     end
     self.error = error
 
-    -- select an alternate instance.
-    local instances_list = instances.get_list()
-    if #instances_list > 1 then
-        local current_path = self.req.parsed_url.path .. (self.req.parsed_url.query or "")
-        local selected_instance = instances_list[math.random(1, #instances_list)]
-        self.alternate_instance = selected_instance.url .. current_path
-    end
     if error.error_type == "not_found" or error.error_type == "route_not_defined" then
         self.page_title = "Not Found | Kittygram"
         return { status = 404, render = "error" }

@@ -7,7 +7,6 @@ on:
       - main
     paths-ignore:
       - "README.md"
-      - "instances.json"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

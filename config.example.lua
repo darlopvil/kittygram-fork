@@ -60,7 +60,6 @@ config({ "development", "production", "docker" }, {
         url = "http://127.0.0.1:35358/fetch",
         proxy = false, -- This can be a SOCKS or HTTP proxy. Per-endpoint proxies will override this.
     },
-    instances_list = "https://codeberg.org/irelephant/kittygram/raw/branch/main/instances.json",
 })
 
 config("development", {

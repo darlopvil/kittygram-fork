@@ -18,7 +18,6 @@ tracking.
 
 - [Why Kittygram?](#why-kittygram)
   - [Limitations](#limitations)
-- [Instances](#instances)
 - [Installation](#installation)
   - [Method 1: Containers](#method-1-containers)
     - [Docker](#docker)
@@ -42,24 +41,6 @@ requests are handled by Kittygram.
 - Instagram aggressively rate-limits requests coming from servers, which can
   make running a public instance difficult.
 - Some features (such as stories) are not yet viewable.
-
-## Instances
-
-| Instance link:                     | Operated by:                                  | Notes:               |
-| ---------------------------------- | --------------------------------------------- | -------------------- |
-| <https://kittygram.irelephant.net> | [Irelephant](https://codeberg.org/irelephant) | Kittygram maintainer |
-| <https://kittygr.am>               | [FSKY](https://fsky.io)                       |                      |
-| <https://kittygram.kareem.one>     | [Kareem](https://kareem.one)                  | Cloudflare           |
-| <https://kittygram.nexussfan.cz>   | [NexusSfan](https://mrchicken.nexussfan.cz)   |                      |
-| <https://kg.lus.lu>                | [ffb0f3](https://lus.lu)                      |                      |
-| <https://kg.meowing.de>            | [patrick](https://patriick.dev)               |                      |
-| <https://kittygram.nadeko.net>     | [Fijxu](https://nadeko.net)                   |                      |
-| <https://kittygram.pussthecat.org> | [PussTheCat.org](https://pussthecat.org)      |                      |
-| <https://gram.utilibre.org>        | [Utilibre](https://utilibre.org)              | Cloudflare           |
-
-<!-- NOTE: If you add a new instance, then edit the entire table to correct the length of the cells. -->
-
-Also see the `instances.json` file.
 
 ## Installation
 

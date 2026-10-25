@@ -14,7 +14,6 @@ local NEGATIVE_USER_TIMELINE_EXPIRE_TIME = config.cache.expire_times.user_timeli
 local EXPLORE_PAGE_EXPIRE_TIME = config.cache.expire_times.explore
 local COMMENTS_EXPIRE_TIME = config.cache.expire_times.comments
 local POPULAR_PAGE_EXPIRE_TIME = config.cache.expire_times.popular_index
-local INSTANCES_LIST_EXPIRE_TIME = config.cache.expire_times.instances_list
 
 -- function to test that redis is operational
 local function test_redis()
@@ -47,8 +46,6 @@ local function cache_item(key, data, expire_type)
         ttl = EXPLORE_PAGE_EXPIRE_TIME
     elseif expire_type == "popular_index" then
         ttl = POPULAR_PAGE_EXPIRE_TIME
-    elseif expire_type == "instances_list" then
-        ttl = INSTANCES_LIST_EXPIRE_TIME
     else
         ngx.log(ngx.WARN, "Unknown expire type " .. tostring(expire_type) .. "Falling back to five minutes.")
         ttl = 360
