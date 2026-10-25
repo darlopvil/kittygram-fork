@@ -36,6 +36,9 @@ config({ "development", "production", "docker" }, {
         },
     },
     include_debug_headers = false, -- Whether to include debug headers (mentions whether cache was hit; which endpoints were accessed.)
+    -- Override GraphQL doc_ids / query names when Instagram rotates them, without rebuilding.
+    -- Keys are the query names in lib/instagram/web/graphql.lua (search, user_info, anon_initial_grid...).
+    -- graphql_overrides = { search = { doc_id = "27706427925724183", query_name = "PolarisSearchBoxRefetchableQuery" } },
     show_error_details = false, -- Render raw Instagram responses on error pages and API errors. Keep off on public instances: with a web session they can expose the account. When enabled they are also written to the server log.
     ratelimits = {
         cooldown_on_ratelimit = true, -- If set to true, your instance will block requests until a ratelimit is over.

@@ -165,6 +165,21 @@ local doc_ids = {
     },
 }
 
+-- Instagram rotates doc_ids regularly. config.graphql_overrides lets an
+-- instance replace doc_id / query_name / endpoint per query without a rebuild,
+-- e.g. graphql_overrides = { search = { doc_id = "123" } }
+for key, override in pairs(config.graphql_overrides or {}) do
+    if doc_ids[key] and type(override) == "table" then
+        for _, field in ipairs { "doc_id", "query_name", "endpoint" } do
+            if override[field] then
+                doc_ids[key][field] = tostring(override[field])
+            end
+        end
+    else
+        ngx.log(ngx.WARN, "[graphql] ignoring unknown override: ", tostring(key))
+    end
+end
+
 local function uuid4()
     return (
         string.gsub("xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx", "[xy]", function(c)
