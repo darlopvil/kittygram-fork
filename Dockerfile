@@ -27,9 +27,9 @@ COPY . .
 COPY config.example.lua config.lua
 COPY nginx.example.conf nginx.conf
 
-RUN /usr/local/openresty/luajit/bin/lapis migrate
-RUN chown -R nobody:nobody /app
+RUN mkdir -p /app/data && chown -R nobody:nobody /app
 
 EXPOSE 80
 
-CMD ["/usr/local/openresty/luajit/bin/lapis", "serve", "docker"]
+# Apply pending migrations to the persistent database on every start, then serve.
+CMD ["sh", "-c", "mkdir -p data && /usr/local/openresty/luajit/bin/lapis migrate docker && chown -R nobody:nobody data && exec /usr/local/openresty/luajit/bin/lapis serve docker"]

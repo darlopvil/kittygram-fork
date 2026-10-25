@@ -1,14 +1,17 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-go/master/schema/compose-spec.json
+# Copy to docker-compose.yml (ignored by git) and adapt it to your setup.
 services:
   kittygram:
-    image: kittygram:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
+    image: kittygram-fork
     container_name: kittygram
+    restart: unless-stopped
+    depends_on:
+      - redis
     ports:
       - 8080:80
-    restart: unless-stopped
+    volumes:
+      - ./config.lua:/app/config.lua:ro
+      - ./data:/app/data
   redis:
     image: valkey/valkey:latest
     container_name: valkey

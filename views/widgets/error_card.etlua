@@ -18,5 +18,4 @@
         </details>
     <% end %>
 
-    <p><%= version %></p>
 </div>

@@ -7,18 +7,17 @@
     </div>
     <h2 class="item-heading"><%= strings.about %></h2>
     <div class="item-card">
+        <% if about_message then %>
+            <%- about_message %>
+        <% end %>
+
         <p>Kittygram is an anonymous, privacy-friendly, lightweight, and open-source Instagram frontend inspired by <a href="https://github.com/zedeus/nitter">nitter</a>. It offers a clean, fast way to browse Instagram without the usual clutter or tracking.</p>
 
         <p>The official Instagram web interface is heavy on JavaScript, slow to load, and filled with pop-ups. Kittygram avoids all of that by serving fully prerendered pages, making it faster and easier to use. Kittygram also helps you avoid the heavy tracking instagram does, as all requests are handled by kittygram.</p>
 
         <p>To get started using it, you can search for users or hashtags by clicking on the search icon above, or replace www.instagram.com in any Instagram link with this domain.</p>
-        <p>The source code of this software is available on <a href="https://codeberg.org/irelephant/kittygram">Codeberg</a> under the AGPL-3.0 license.</p>
-        <p>Version: <strong><%= version %></strong></p>
-    </div>
 
-    <h2 class="item-heading"><%= strings.about_this_instance %></h2>
+        <p>This instance runs <a href="https://github.com/darlopvil/kittygram-fork">kittygram-fork</a>, an independent fork of <a href="https://codeberg.org/irelephant/kittygram">Kittygram</a>. Its source code is available under the AGPL-3.0 license.</p>
 
-    <div class="item-card">
-        <% render("views.about_instance") %>
     </div>
 </main>

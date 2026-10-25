@@ -1,145 +1,80 @@
-<div align="center">
+# kittygram-fork
 
-<!-- TODO: Update preview/cover image. -->
-<!-- https://colorhunt.co/palette/14279b3d56b25c7aeae6e6e6 -->
+An independent fork of [Kittygram](https://codeberg.org/irelephant/kittygram) by
+[irelephant](https://codeberg.org/irelephant), an anonymous, lightweight
+Instagram frontend inspired by [Nitter](https://github.com/zedeus/nitter).
 
-![Kittygram](./docs/assets/cover.png)
+This is a fork in its own right, not a fork for contributing back: it follows
+its own direction and changes are not sent upstream. It powers a personal
+instance, but issues and pull requests are welcome here. For the original
+project, its public instances and its community, see the
+[upstream repository](https://codeberg.org/irelephant/kittygram).
 
-# Kittygram
+## What this fork changes
 
-Kittygram is an anonymous, privacy-friendly, lightweight, and open-source
-Instagram frontend inspired by [Nitter](https://github.com/zedeus/nitter). It
-offers a clean, fast way to browse Instagram without the usual clutter or
-tracking.
+- **Working authenticated search.** With an optional web session, search queries
+  Instagram live through `PolarisSearchBoxRefetchableQuery`. The session tokens
+  (`fb_dtsg`, `lsd`, actor id, build tokens) are read from an authenticated page,
+  cached in Redis and refreshed automatically when Instagram rejects them. See
+  [`lib/instagram/web/session.lua`](lib/instagram/web/session.lua).
+- **Local search fallback.** If live search fails or no session is configured,
+  results come from the local index of users the instance has already seen.
+  Profiles are indexed from every view, and queries are normalized, so
+  `tomb raider`, `@TombRaider` and 1-2 character prefixes all match.
+- **No leaks on error pages.** Raw Instagram responses are no longer shown on
+  error pages, API errors or logs, unless `show_error_details` is enabled.
+- **GraphQL overrides.** Rotated `doc_id`s can be fixed from `config.lua`
+  (`graphql_overrides`) without rebuilding the image.
+- **Persistent database and automatic migrations.** SQLite lives in the `data/`
+  volume and pending migrations run on every container start.
+- **No public instance list.** No runtime download of `instances.json` and no
+  random-instance links.
 
-</div>
+## Deployment
 
-## Table of contents
+Requires Docker with Compose, plus Git LFS for the static assets.
 
-- [Why Kittygram?](#why-kittygram)
-  - [Limitations](#limitations)
-- [Installation](#installation)
-  - [Method 1: Containers](#method-1-containers)
-    - [Docker](#docker)
-    - [Podman](#podman)
-  - [Method 2: Native](#method-2-native)
-- [Info](#info)
-  - [License](#license)
-  - [Community](#community)
+```bash
+git clone https://github.com/darlopvil/kittygram-fork.git kittygram && cd kittygram
+git lfs pull
+cp config.example.lua config.lua
+cp compose.example.yaml docker-compose.yml
+mkdir -p data
+sudo chown 65534:65534 data
+sudo chown 1000:65534 config.lua && sudo chmod 640 config.lua
+docker compose up -d --build
+```
 
-## Why Kittygram?
+- Change `secret` in `config.lua`, and write your own `about_message`: it is
+  shown at the top of the home page.
+- The container serves as `nobody` (65534): `config.lua` must be readable by
+  that group and `data/` writable by it.
+- Edit `config.lua` in place (e.g. with `nano`). `sed -i` recreates the file and
+  resets its owner and permissions.
+- To update: `git pull && docker compose up -d --build`. Migrations run on start.
 
-The official Instagram web interface is heavy on JavaScript, slow to load, and
-filled with pop-ups. Kittygram avoids all of that by serving fully prerendered
-pages, making it faster and easier to use.
+### Web session (optional)
 
-Kittygram also helps you avoid the heavy tracking Instagram does, as all
-requests are handled by Kittygram.
+Live search needs a logged-in Instagram session. Use a dedicated account:
+Instagram may restrict or ban accounts used this way.
 
-### Limitations
+1. Log in with that account in a private window and copy these cookies:
+   `sessionid`, `csrftoken`, `ds_user_id`, `mid`, `ig_did`.
+2. In `config.lua`, set `web_session.cookies` to
+   `"sessionid=...; csrftoken=...; ds_user_id=...; mid=...; ig_did=..."`.
+3. Optionally set `web_session.user_agent` to the user agent of that browser.
+4. Keep `web_session.use_for` enabled for `search` only. Profiles, posts and
+   comments work anonymously, and routing them through the account only
+   increases the risk of losing it.
 
-- Instagram aggressively rate-limits requests coming from servers, which can
-  make running a public instance difficult.
-- Some features (such as stories) are not yet viewable.
+Keep `show_error_details = false` when a session is configured: raw responses
+can reveal the account.
 
-## Installation
+## License
 
-### Method 1: Containers
+[AGPL-3.0](LICENSE), as the original project. Kittygram is © irelephant and its
+contributors; the changes in this fork are © darlopvil. Anyone running a
+modified version as a network service must offer its source to the service's
+users: the home page links to this repository.
 
-> [!NOTE]
->
-> It's the recommended way to run Kittygram.
-
-#### Docker
-
-1. Install [git](https://git-scm.org), [git-lfs](https://git-lfs.com) and
-   [Docker](https://docs.docker.com/engine/install).
-
-   > [!TIP]
-   >
-   > You can also install
-   > [Docker Desktop for GUI](https://www.docker.com/products/docker-desktop),
-   > or [LazyDocker for TUI](https://github.com/jesseduffield/lazydocker).
-
-2. Clone the repository, move to the `kittygram` folder, set up Git LFS, and
-   start the container:
-
-   ```bash
-   git clone git@codeberg.org:irelephant/kittygram.git --depth=1 && cd kittygram && git lfs pull
-   sudo docker compose up
-   ```
-
-#### Podman
-
-1. Install [git](https://git-scm.org), [git-lfs](https://git-lfs.com),
-   [Podman](https://podman.io/docs/installation) and
-   [Podman Compose](https://docs.podman.io/en/latest/markdown/podman-compose.1.html).
-
-   > [!TIP]
-   >
-   > You can also install [Podman Desktop for GUI](https://podman-desktop.io),
-   > or [Podman TUI](https://github.com/containers/podman-tui).
-
-2. Clone the repository, move to the `kittygram` folder, set up Git LFS, and
-   start the container:
-
-   > [!WARNING]
-   >
-   > Don't run Podman as root (`sudo` / `doas`).
-
-   ```bash
-   git clone git@codeberg.org:irelephant/kittygram.git --depth=1 && cd kittygram && git lfs pull
-   podman-compose -p kittygram -f compose.yaml up -d
-   ```
-
-   > [!NOTE]
-   >
-   > If you have DNS/network issues, change DNS in `compose.yaml` to Podman
-   > native using: `podman compose exec kittygram cat /etc/resolv.conf`.
-
-### Method 2: Native
-
-1. Install [openresty](https://openresty.org/en/installation.html),
-   [redis](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis)
-   or [valkey](https://valkey.io/topics/installation),
-   [luarocks](https://luarocks.org) (likely in your distro's package manager)
-   and [git-lfs](https://git-lfs.com).
-
-2. Clone the repository, move to the `kittygram` folder, and set up Git LFS.
-
-   ```bash
-   git clone git@codeberg.org:irelephant/kittygram.git --depth=1 && cd kittygram && git lfs pull
-   ```
-
-3. Copy the example configuration files:
-
-   ```bash
-   cp nginx.example.conf nginx.conf && cp config.example.lua config.lua
-   ```
-
-4. Run:
-
-   ```bash
-   luarocks init --lua-version=5.1 --lua-versions=5.1
-   CC="gcc -std=gnu99" luarocks build && lapis migrate
-
-   lapis serve production
-   ```
-
-## Info
-
-### License
-
-Kittygram is licensed under the
-[AGPL-3.0](https://codeberg.org/irelephant/kittygram/src/branch/main/LICENSE).
-
-### Community
-
-Feel free to join the
-[Matrix room](https://matrix.to/#/#kittygram:private.coffee), or email me at
-[irelephant@disroot.org](mailto:irelephant@disroot.org).
-
-- Icon made by [nulla](https://codeberg.org/nulla).
-- README design made by [koru](https://codeberg.org/koru).
-
-⭐ If you like this project, please consider giving it a star!
+Icon by [nulla](https://codeberg.org/nulla).

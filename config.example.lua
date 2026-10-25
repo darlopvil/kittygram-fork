@@ -30,8 +30,8 @@ config({ "development", "production", "docker" }, {
         use_for = {
             search = true,
             posts = false, -- ONLY works is `post_fetch_mode` is not set to web.
-            comments = true,
-            user_posts = true,
+            comments = false,
+            user_posts = false,
             user_info = false,
         },
     },
@@ -101,6 +101,9 @@ config("docker", {
         enabled = os.getenv("USE_HTTP_SIDECAR") == "true" or false,
         url = os.getenv("HTTP_SIDECAR_URL") or "http://127.0.0.1:35358/fetch",
         proxy = os.getenv("HTTP_SIDECAR_PROXY") or false,
+    },
+    sqlite = {
+        database = os.getenv("SQLITE_DATABASE") or "data/kittygram.sqlite", -- keep it in the mounted data/ volume
     },
     redis = {
         host = os.getenv("REDIS_HOST") or "redis",
