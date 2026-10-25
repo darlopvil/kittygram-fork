@@ -6,6 +6,14 @@ local json = require("cjson")
 local errors = helpers.create_error
 local encoding = require("lapis.util.encoding")
 local html_request = require("lib.instagram.web.html").request
+local user_db = require("models.users")
+
+-- Add the profile to the local search index (grid is the default profile view).
+local function index_user(user)
+    if type(user) == "table" and not user.has_errors and user.id and user.username then
+        user_db.save_user(user)
+    end
+end
 
 local function paginate_grid(username, user_id, cursor, page_data, feed_type)
     local grid_key = string.format("ig:grid:%s:%s:%s", feed_type, username, cursor)
@@ -57,6 +65,7 @@ local function paginate_grid(username, user_id, cursor, page_data, feed_type)
 
     cache.cache_item(grid_key, grid, "cursored_timeline")
     cache.cache_item(user_key, user, "user_info")
+    index_user(user)
 
     return { info = user, grid = grid }
 end
@@ -75,6 +84,7 @@ local function get_user_grid(username, cursor, feed_type)
     local user_cache_query = cache.query_item(user_key)
 
     if grid_cache_query ~= ngx.null and user_cache_query ~= ngx.null then
+        index_user(user_cache_query)
         return { grid = grid_cache_query, info = user_cache_query }
     end
 
@@ -175,6 +185,7 @@ local function get_user_grid(username, cursor, feed_type)
 
     if not user.has_errors then
         cache.cache_item(user_key, user, "user_info")
+        index_user(user)
     end
 
     return { grid = grid, info = user }
