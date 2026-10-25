@@ -2,6 +2,16 @@ local bignum = require("openssl.bignum")
 local json = require("cjson")
 local util = require("lapis.util")
 
+-- Whether the web session (config.web_session) is configured and enabled for a purpose.
+local function session_enabled_for(purpose)
+    local web_session = require("lapis.config").get().web_session
+    return type(web_session) == "table"
+        and type(web_session.cookies) == "string"
+        and web_session.cookies ~= ""
+        and type(web_session.use_for) == "table"
+        and web_session.use_for[purpose] == true
+end
+
 local function check_nested_field(tbl, ...)
     local current = tbl
     for _, key in ipairs { ... } do
@@ -263,4 +273,5 @@ return {
     shortcode_to_id = shortcode_to_id,
     decode_csr_bitmap = decode_csr_bitmap,
     encode_query_string = encode_query_string,
+    session_enabled_for = session_enabled_for,
 }

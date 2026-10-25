@@ -17,7 +17,7 @@
             local all_link, reels_link
             if selectors.selected_view == "timeline" then
                 all_link = "/" .. username .. "?view=timeline"
-                reels_link = "/" .. username .. "/reels" .. "?view=timeline"
+                reels_link = "/" .. username .. "/reels"
             else
                 all_link = "/" .. username
                 reels_link = "/" .. username .. "/reels"

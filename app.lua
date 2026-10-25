@@ -139,14 +139,19 @@ app:get("/:username(/:path)(/)", function(self)
         self.selectors.selected_feed = "all"
     end
 
+    -- Anonymously, Instagram only serves profile posts as a grid (thumbnails).
+    -- List and tile views need full media, which needs the web session; the
+    -- reels tab is always a grid. Unavailable views fall back to the grid.
+    local timeline_views = helpers.session_enabled_for("user_posts") and feed_type ~= "reels"
+    self.is_grid_only = not timeline_views
+
     local view_type
-    if self.params.view == "timeline" or self.params.view == "tile" then
+    if timeline_views and (self.params.view == "timeline" or self.params.view == "tile") then
         view_type = self.params.view
-        self.selectors.selected_view = self.params.view
     else
         view_type = "grid"
-        self.selectors.selected_view = "grid"
     end
+    self.selectors.selected_view = view_type
 
     local user = instagram.get_user(self.params.username, self.params.after, feed_type, view_type)
 

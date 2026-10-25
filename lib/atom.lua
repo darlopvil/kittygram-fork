@@ -2,7 +2,34 @@ local lapis = require("lapis")
 local app = lapis.Application()
 local config = require("lapis.config").get()
 local get_user = require("lib.instagram").get_user
-local proxy_url = require("lib.helpers").proxy_url
+local helpers = require("lib.helpers")
+local proxy_url = helpers.proxy_url
+
+-- Instagram media ids embed their creation time: the bits above the lowest 23
+-- are milliseconds since Instagram's epoch. A double is precise enough here,
+-- since the low bits are discarded anyway. Scheduled posts get their upload time.
+local IG_EPOCH_MS = 1314220021721
+local function timestamp_from_id(id)
+    local n = tonumber(id)
+    if not n then
+        return nil
+    end
+    return math.floor((math.floor(n / 8388608) + IG_EPOCH_MS) / 1000)
+end
+
+-- Anonymous grid items only carry a thumbnail and the caption.
+local function posts_from_grid(grid)
+    local posts = { items = {} }
+    for _, item in ipairs((grid or {}).items or {}) do
+        table.insert(posts.items, {
+            shortcode = item.shortcode,
+            caption = item.caption,
+            timestamp = timestamp_from_id(item.id),
+            image_url = item.thumbnail,
+        })
+    end
+    return posts
+end
 local date = require("date")
 local utf8 = require("lua-utf8")
 local u8_gsub = utf8.gsub
@@ -77,8 +104,8 @@ local function create_feed_xml(username, posts)
 
     local self_link = user_link .. "/atom.xml"
     local first_timestamp
-    if posts and #posts >= 1 then
-        first_timestamp = posts[1].timestamp
+    if posts and posts.items and posts.items[1] then
+        first_timestamp = posts.items[1].timestamp
     end
     local updated_timestamp = date(first_timestamp):toutc():fmt("${iso}") .. "Z"
 
@@ -117,13 +144,15 @@ app:get("/:username/atom.xml(/)", function(self)
     if not config.enable_atom then
         return { "Atom is not enabled on this instance.", layout = false, content_type = "text/plain" }
     else
-        local user = get_user(self.params.username, nil, "all", "timeline")
+        local view = helpers.session_enabled_for("user_posts") and "timeline" or "grid"
+        local user = get_user(self.params.username, nil, "all", view)
         if user.has_errors then
             return { "Error while fetching user.", layout = false, content_type = "text/plain" }
-        elseif user.timeline and user.timeline.has_errors then
+        elseif (user.timeline and user.timeline.has_errors) or (user.grid and user.grid.has_errors) then
             return { "Error while fetching user.", layout = false, content_type = "text/plain" }
         else
-            local feed_xml = create_feed_xml(self.params.username, user.timeline)
+            local posts = user.timeline or posts_from_grid(user.grid)
+            local feed_xml = create_feed_xml(self.params.username, posts)
             return { feed_xml, layout = false, content_type = "application/atom+xml; charset=utf-8" }
         end
     end

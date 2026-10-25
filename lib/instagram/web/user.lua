@@ -1,7 +1,8 @@
 local html = require("lib.instagram.web.html")
 local user_db = require("models.users")
 local html_request = html.request
-local errors = require("lib.helpers").create_error
+local helpers = require("lib.helpers")
+local errors = helpers.create_error
 local get_grid = require("lib.instagram.web.user.grid")
 local get_user_info = require("lib.instagram.web.user.info")
 local timeline = require("lib.instagram.web.user.timeline")
@@ -96,7 +97,8 @@ local function get_user(username, cursor, feed_type, feed_view)
 
     if feed_view == "grid" then
         local grid_user = get_grid(username, cursor, feed_type)
-        if check_ratelimit(grid_user) or check_ratelimit(grid_user.info) or check_ratelimit(grid_user.grid) then
+        local rate_limited = check_ratelimit(grid_user) or check_ratelimit(grid_user.info) or check_ratelimit(grid_user.grid)
+        if rate_limited and feed_type == "all" and helpers.session_enabled_for("user_posts") then
             return get_timeline_or_private(username, cursor, feed_type, true)
         end
         return grid_user

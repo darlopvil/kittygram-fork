@@ -31,7 +31,7 @@ config({ "development", "production", "docker" }, {
             search = true,
             posts = false, -- ONLY works is `post_fetch_mode` is not set to web.
             comments = false,
-            user_posts = false,
+            user_posts = false, -- List/tile views and full-media Atom feeds. Off: grid only, Atom from grid data.
             user_info = false,
         },
     },
