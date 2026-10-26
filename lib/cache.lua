@@ -40,6 +40,10 @@ local function cache_item(key, data, expire_type)
         ttl = NEGATIVE_POST_EXPIRE_TIME
     elseif expire_type == "user_info" then
         ttl = USER_INFO_EXPIRE_TIME
+    elseif expire_type == "stories" then
+        ttl = config.cache.expire_times.stories or 600
+    elseif expire_type == "highlights" then
+        ttl = config.cache.expire_times.highlights or 3600
     elseif expire_type == "comments" then
         ttl = COMMENTS_EXPIRE_TIME
     elseif expire_type == "explore" then

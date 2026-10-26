@@ -1,10 +1,22 @@
 <% local proxy_url = require("lib.helpers").proxy_url %>
 
 <div class="popular-row item-card">
-    <% for _, item in ipairs(highlights) do %>
+    <% if stories_link then %>
+        <div class="popular-row-item">
+            <a href="<%= stories_link %>">
+                <% if stories_image then %>
+                    <img src="<%= proxy_url(stories_image) %>" loading="lazy">
+                <% end %>
+                <%= strings.user.stories or "Stories" %>
+            </a>
+        </div>
+    <% end %>
+    <% for _, item in ipairs(highlights or {}) do %>
         <div class="popular-row-item">
             <a href="/stories/highlights/<%= item.id %>">
-                <img src="<%= proxy_url(item.image) %>" loading="lazy">
+                <% if item.image then %>
+                    <img src="<%= proxy_url(item.image) %>" loading="lazy">
+                <% end %>
                 <%= item.title %>
             </a>
         </div>

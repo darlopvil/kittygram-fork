@@ -23,6 +23,8 @@ return {
         reels = "Reels",
         all = "Sve",
         highlights = "Istaknuto",
+        stories = "Priče",
+        no_stories = "Trenutno nema aktivnih priča.",
         posts = "Objave",
         verified = "Potvrđeni",
         followers = "Pratitelji",

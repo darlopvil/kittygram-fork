@@ -23,6 +23,8 @@ return {
         reels = "Reels",
         all = "Все",
         highlights = "Актуальное",
+        stories = "Истории",
+        no_stories = "Сейчас нет активных историй.",
         posts = "Публикации",
         verified = "Верифицирован",
         followers = "Подписчики",

@@ -18,6 +18,7 @@ app:include(atom)
 app:include(api)
 
 local instagram = require("lib.instagram")
+local stories = require("lib.instagram.web.stories")
 
 math.randomseed(os.time())
 
@@ -125,7 +126,28 @@ app:get("/:username/reels/:shortcode(/)", show_post)
 app:get("/p/:shortcode/embed(/)", show_post)
 app:get("/reel/:shortcode/embed(/)", show_post)
 
+-- Active stories of a profile, needs the web session (use_for.stories).
+local function show_stories(self)
+    if not helpers.session_enabled_for("stories") then
+        return render_error(self, helpers.create_error.feature_not_supported())
+    end
+    local reel = stories.get_stories(self.params.id)
+    if reel.has_errors then
+        return render_error(self, reel)
+    end
+    self.reel = reel
+    self.username = self.params.id
+    self.page_title = "Stories by @" .. self.params.id .. " | Kittygram"
+    return { render = "stories" }
+end
+
 app:get("/:username(/:path)(/)", function(self)
+    -- /stories/<user> matches this route before the stories one.
+    if self.params.username == "stories" and self.params.path then
+        self.params.id = self.params.path
+        return show_stories(self)
+    end
+
     self.selectors = {}
 
     local feed_type
@@ -177,20 +199,44 @@ app:get("/:username(/:path)(/)", function(self)
             -- fall back to the param if the username isn't available
             self.username = self.params.username
         end
+        -- Stories and highlights need the web session.
+        if
+            helpers.session_enabled_for("stories")
+            and feed_type == "all"
+            and type(user.info) == "table"
+            and not user.info.has_errors
+            and not user.info.is_private
+            and user.info.id
+        then
+            self.stories_enabled = true
+            local tray = stories.get_highlights_tray(user.info.id)
+            if type(tray) == "table" and not tray.has_errors then
+                self.highlights = tray.items
+            end
+        end
+
         self.page_title = "@" .. self.username .. " | kittygram"
 
         return { render = "user" }
     end
 end)
 
--- even though you can get a list of highlights, you need auth to view individual ones.
+-- Stories and highlights need the web session (use_for.stories).
 app:get("/stories/highlights/:id(/)", function(self)
-    return render_error(self, helpers.create_error.feature_not_supported())
+    if not helpers.session_enabled_for("stories") then
+        return render_error(self, helpers.create_error.feature_not_supported())
+    end
+    local reel = stories.get_highlight(self.params.id)
+    if reel.has_errors then
+        return render_error(self, reel)
+    end
+    self.reel = reel
+    self.username = reel.user and reel.user.username
+    self.page_title = (reel.title or "Highlight") .. " | Kittygram"
+    return { render = "stories" }
 end)
 
-app:get("/stories/:id(/)", function(self)
-    return render_error(self, helpers.create_error.feature_not_supported())
-end)
+app:get("/stories/:id(/:media_id)(/)", show_stories)
 
 app:get("/search(/)", function(self)
     local instagram_url_regex = [[^(?:https?://)?(?:www\.)?instagram\.com/(?:p|reel|[^/]+/(?:p|reel))/([A-Za-z0-9_-]+)/?(?:\?.*)?$]]

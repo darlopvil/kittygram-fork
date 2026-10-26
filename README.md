@@ -36,6 +36,10 @@ project, its public instances and its community, see the
   anonymous visitors, comes from the session too (`use_for.user_info`).
 - **Atom feeds** (`/<user>/atom.xml`) for any feed reader, served from the
   cache, newest post first.
+- **Stories and highlights** (`use_for.stories`): a stories and highlights
+  tray on profiles, `/stories/<user>` and `/stories/highlights/<id>`. Only the
+  media is requested: stories are never marked as seen, so the session account
+  does not show up in their viewers list.
 
 ## Deployment
 
@@ -81,7 +85,8 @@ Instagram may restrict or ban accounts used this way.
 3. Optionally set `web_session.user_agent` to the user agent of that browser.
 4. Enable `web_session.use_for` only where it is needed: `search` for live
    search, `user_posts` for list and tile views and full-media feeds, and
-   `user_info` for the post count on profiles.
+   `user_info` for the post count on profiles, and `stories` for stories and
+   highlights.
    Grids, posts and comments work anonymously, and routing more through the
    account only increases the risk of losing it.
 

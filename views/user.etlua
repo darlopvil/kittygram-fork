@@ -12,6 +12,14 @@
         <% render("views.widgets.user_info_card", { user_info = user.info }) %>
     <% end %>
 
+    <% if stories_enabled then %>
+        <% render("views.widgets.highlights_tray", {
+            highlights = highlights,
+            stories_link = "/stories/" .. username,
+            stories_image = user.info.profile_picture,
+        }) %>
+    <% end %>
+
     <div class="selector-group">
         <%
             local all_link, reels_link

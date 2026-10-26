@@ -1,0 +1,46 @@
+<% local proxy_url = require("lib.helpers").proxy_url %>
+<% local download_links = require("lib.helpers").download_links %>
+
+<main id="main">
+    <div class="item-card">
+        <% if reel.user and reel.user.username then %>
+            <div class="user-info">
+                <img src="<%= proxy_url(reel.user.profile_picture) %>" loading="lazy">
+                <a class="username" href="/<%= reel.user.username %>"> <%= reel.user.username %> </a>
+            </div>
+        <% elseif username then %>
+            <div class="user-info">
+                <a class="username" href="/<%= username %>"> <%= username %> </a>
+            </div>
+        <% end %>
+        <% if reel.title then %>
+            <h2><%= reel.title %></h2>
+        <% end %>
+        <% if not reel.items or #reel.items == 0 then %>
+            <h3><%= strings.user.no_stories or "No active stories right now." %></h3>
+        <% end %>
+    </div>
+
+    <% for _, item in ipairs(reel.items or {}) do %>
+        <div class="item-card post">
+            <div class="post-image">
+                <% if item.video_url then %>
+                    <video controls preload="none" poster="<%= proxy_url(item.video_thumbnail) %>">
+                        <source src="<%= proxy_url(item.video_url) %>">
+                    </video>
+                <% elseif item.image_url then %>
+                    <img src="<%= proxy_url(item.image_url) %>" loading="lazy">
+                <% end %>
+            </div>
+            <div class="post-info">
+                <% if item.timestamp then %>
+                    <time class="post-time"><%= strings.post.posted_at .. os.date('%Y-%m-%d %H:%M:%S', item.timestamp) %></time>
+                <% end %>
+                <% local downloads = download_links(item) %>
+                <% if #downloads == 1 then %>
+                    <p class="post-downloads"><a href="<%= downloads[1].url %>" download><%= strings.post.download or "Download" %></a></p>
+                <% end %>
+            </div>
+        </div>
+    <% end %>
+</main>

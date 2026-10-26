@@ -23,6 +23,8 @@ return {
         reels = "Reels",
         all = "Tout",
         highlights = "Highlights",
+        stories = "Stories",
+        no_stories = "Aucune story active pour le moment.",
         posts = "Publications",
         verified = "Verifié",
         followers = "Followers",

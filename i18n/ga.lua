@@ -25,6 +25,8 @@ return {
         reels = "Reels",
         all = "Gach",
         highlights = "Highlights",
+        stories = "Scéalta",
+        no_stories = "Níl aon scéal gníomhach faoi láthair.",
         posts = "Póstálacha",
         verified = "Fíoraithe",
         followers = "Leantóirí",

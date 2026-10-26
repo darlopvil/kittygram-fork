@@ -163,6 +163,25 @@ local doc_ids = {
         requires_auth = false,
         requires_anonymous_session = true,
     },
+    -- Stories and highlights, web session only. Only the media is requested:
+    -- the "seen" mutations (PolarisAPIReelSeenMutation,
+    -- PolarisAPIForceStorySeenMutation) are never sent.
+    reels_media = {
+        doc_id = "28449850404637481",
+        query_name = "PolarisStoriesV3ReelPageStandaloneQuery",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = true,
+        requires_anonymous_session = false,
+    },
+    highlights_tray = {
+        doc_id = "26970053832668570",
+        query_name = "PolarisProfileStoryHighlightsTrayContentQuery",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = true,
+        requires_anonymous_session = false,
+    },
 }
 
 -- Instagram rotates doc_ids regularly. config.graphql_overrides lets an
@@ -267,6 +286,15 @@ local queries = {
         return {
             media_id = media_id,
         }, doc_ids.media_id_post_info
+    end,
+    reels_media = function(reel_ids)
+        return {
+            reel_ids_arr = reel_ids,
+            __relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider = true,
+        }, doc_ids.reels_media
+    end,
+    highlights_tray = function(user_id)
+        return { user_id = user_id }, doc_ids.highlights_tray
     end,
     popular_page = function()
         return {}, doc_ids.popular_page

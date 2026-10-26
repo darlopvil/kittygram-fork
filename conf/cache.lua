@@ -17,6 +17,8 @@ local cache = {
         },
         explore = 3600 * 3,
         comments = 3600,
+        stories = 600, -- active stories of a profile (web session)
+        highlights = 3600, -- highlights trays and highlights (web session)
         popular_index = 3600 * 6, -- This doesn't really include much dynamic content, so it can be cached for a long time.
     },
 }
