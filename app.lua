@@ -186,6 +186,7 @@ app:get("/:username(/:path)(/)", function(self)
     else
         if config.enable_atom then
             self.atom_link = "/" .. self.params.username .. "/atom.xml"
+            self.atom_title = "Posts by @" .. self.params.username
         end
 
         self.user = user

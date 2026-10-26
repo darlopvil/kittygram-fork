@@ -19,7 +19,7 @@
         <% end %>
 
         <% if atom_link then %>
-            <link rel="alternate" href="<%= atom_link %>" type="application/atom+xml">
+            <link rel="alternate" href="<%= atom_link %>" type="application/atom+xml" title="<%= atom_title or "Atom feed" %>">
         <% end %>
     </head>
     <body>
