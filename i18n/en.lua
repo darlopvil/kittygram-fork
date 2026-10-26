@@ -22,6 +22,7 @@ return {
         grid = "Grid",
         tile = "Tile",
         reels = "Reels",
+        tagged = "Tagged",
         all = "All",
         highlights = "Highlights",
         stories = "Stories",
@@ -32,6 +33,7 @@ return {
         following = "Following",
         user_is_private = "This account is private. Only its approved followers can see its posts and reels.",
         has_no_posts = "This user has no posts.",
+        has_no_tagged_posts = "No posts tagging this user.",
     },
     explore = {
         posts_matching = "Posts matching: ",

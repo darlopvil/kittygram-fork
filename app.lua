@@ -19,6 +19,7 @@ app:include(api)
 
 local instagram = require("lib.instagram")
 local stories = require("lib.instagram.web.stories")
+local tagged = require("lib.instagram.web.user.tagged")
 
 math.randomseed(os.time())
 
@@ -141,11 +142,49 @@ local function show_stories(self)
     return { render = "stories" }
 end
 
+-- Posts a profile is tagged in (web session, use_for.tagged). The profile info
+-- and user id come from the profile grid page, cached with the profile.
+local function show_tagged(self)
+    if not helpers.session_enabled_for("tagged") then
+        return render_error(self, helpers.create_error.route_not_defined())
+    end
+
+    local user = instagram.get_user(self.params.username, nil, "all", "grid")
+    if user.has_errors then
+        return render_error(self, user)
+    elseif type(user.info) ~= "table" or user.info.has_errors or not user.info.id then
+        return render_error(self, type(user.info) == "table" and user.info.has_errors and user.info
+            or helpers.create_error.unknown { message = "Could not read the profile." })
+    end
+
+    self.user = { info = user.info }
+    if not user.info.is_private then
+        local posts = tagged.get_tagged(user.info.id, self.params.after)
+        if posts.has_errors then
+            return render_error(self, posts)
+        end
+        self.user.grid = posts
+    end
+
+    self.selectors = { selected_feed = "tagged" }
+    self.is_grid_only = true
+    self.username = user.info.username or self.params.username
+    if config.enable_atom then
+        self.atom_link = "/" .. self.username .. "/atom.xml"
+        self.atom_title = "Posts by @" .. self.username
+    end
+    self.page_title = "Posts tagging @" .. self.username .. " | kittygram"
+    return { render = "user" }
+end
+
 app:get("/:username(/:path)(/)", function(self)
     -- /stories/<user> matches this route before the stories one.
     if self.params.username == "stories" and self.params.path then
         self.params.id = self.params.path
         return show_stories(self)
+    end
+    if self.params.path == "tagged" then
+        return show_tagged(self)
     end
 
     self.selectors = {}

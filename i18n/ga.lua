@@ -24,6 +24,7 @@ return {
         grid = "Greille",
         tile = "Tile",
         reels = "Reels",
+        tagged = "Clibeáilte",
         all = "Gach",
         highlights = "Highlights",
         stories = "Scéalta",
@@ -34,6 +35,7 @@ return {
         following = "Ag leanúint",
         user_is_private = "Is cuntas príobháideach é seo. Ní féidir ach lena leantóirí ceadaithe a phostálacha agus a reels a fheiceáil.",
         has_no_posts = "Níl aon mhíreanna ag an úsáideoir seo.",
+        has_no_tagged_posts = "Níl aon phostálacha ann a bhfuil an t-úsáideoir seo clibeáilte iontu.",
     },
     explore = {
         posts_matching = "Póstálacha a mheaitseálann: ",

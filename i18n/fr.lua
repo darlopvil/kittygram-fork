@@ -22,6 +22,7 @@ return {
         grid = "Grille",
         tile = "Tile",
         reels = "Reels",
+        tagged = "Identifié",
         all = "Tout",
         highlights = "Highlights",
         stories = "Stories",
@@ -32,6 +33,7 @@ return {
         following = "Suivi(e)s",
         user_is_private = "Ce compte est privé. Seuls ses abonnés approuvés peuvent voir ses publications et ses reels.",
         has_no_posts = "Ce profil n'a rien publié.",
+        has_no_tagged_posts = "Aucune publication n'identifie ce profil.",
     },
     explore = {
         posts_matching = "Posts correspondant à\u{00a0}: ",

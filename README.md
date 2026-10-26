@@ -40,6 +40,9 @@ project, its public instances and its community, see the
   tray on profiles, `/stories/<user>` and `/stories/highlights/<id>`. Only the
   media is requested: stories are never marked as seen, so the session account
   does not show up in their viewers list.
+- **Tagged posts** (`use_for.tagged`): a Tagged tab on profiles,
+  `/<user>/tagged`, with the posts other accounts tagged the profile in, as a
+  grid with pagination.
 
 ## Deployment
 
@@ -85,8 +88,8 @@ Instagram may restrict or ban accounts used this way.
 3. Optionally set `web_session.user_agent` to the user agent of that browser.
 4. Enable `web_session.use_for` only where it is needed: `search` for live
    search, `user_posts` for list and tile views and full-media feeds, and
-   `user_info` for the post count on profiles, and `stories` for stories and
-   highlights.
+   `user_info` for the post count on profiles, `stories` for stories and
+   highlights, and `tagged` for the Tagged tab.
    Grids, posts and comments work anonymously, and routing more through the
    account only increases the risk of losing it.
 

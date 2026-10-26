@@ -34,6 +34,7 @@ config({ "development", "production", "docker" }, {
             user_posts = false, -- List/tile views and full-media Atom feeds. Off: grid only, Atom from grid data.
             user_info = false, -- Post count on profiles (Instagram hides it from anonymous visitors).
             stories = false, -- Stories and highlights. Stories are never marked as seen.
+            tagged = false, -- Tagged tab on profiles (posts other accounts tagged the profile in).
         },
     },
     include_debug_headers = false, -- Whether to include debug headers (mentions whether cache was hit; which endpoints were accessed.)

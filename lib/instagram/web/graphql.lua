@@ -182,6 +182,23 @@ local doc_ids = {
         requires_auth = true,
         requires_anonymous_session = false,
     },
+    -- Posts a profile is tagged in, web session only.
+    tagged_posts = {
+        doc_id = "28512785875070926",
+        query_name = "PolarisProfileTaggedTabContentQuery",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = true,
+        requires_anonymous_session = false,
+    },
+    tagged_posts_paginated = {
+        doc_id = "28555803087449153",
+        query_name = "PolarisProfileTaggedTabContentQuery_connection",
+        endpoint = "api",
+        method = "POST",
+        requires_auth = true,
+        requires_anonymous_session = false,
+    },
 }
 
 -- Instagram rotates doc_ids regularly. config.graphql_overrides lets an
@@ -295,6 +312,26 @@ local queries = {
     end,
     highlights_tray = function(user_id)
         return { user_id = user_id }, doc_ids.highlights_tray
+    end,
+    tagged_posts = function(user_id)
+        return {
+            count = 12,
+            user_id = user_id,
+            __relay_internal__pv__PolarisShortDramaEnabledrelayprovider = true,
+            __relay_internal__pv__PolarisSEOIsCrawlerrelayprovider = false,
+        }, doc_ids.tagged_posts
+    end,
+    tagged_posts_paginated = function(user_id, after)
+        return {
+            after = after,
+            before = json.null,
+            count = 12,
+            first = 12,
+            last = json.null,
+            user_id = user_id,
+            __relay_internal__pv__PolarisShortDramaEnabledrelayprovider = true,
+            __relay_internal__pv__PolarisSEOIsCrawlerrelayprovider = false,
+        }, doc_ids.tagged_posts_paginated
     end,
     popular_page = function()
         return {}, doc_ids.popular_page

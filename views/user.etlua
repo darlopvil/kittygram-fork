@@ -31,10 +31,14 @@
                 reels_link = "/" .. username .. "/reels"
             end
 
-            render("views.widgets.selector", { list_options = {
+            local feed_options = {
                 { type = "all", label = strings.user.all, link = all_link },
                 { type = "reels", label = strings.user.reels, link = reels_link }
-            }, selected_option = selectors.selected_feed })
+            }
+            if require("lib.helpers").session_enabled_for("tagged") then
+                table.insert(feed_options, { type = "tagged", label = strings.user.tagged or "Tagged", link = "/" .. username .. "/tagged" })
+            end
+            render("views.widgets.selector", { list_options = feed_options, selected_option = selectors.selected_feed })
         %>
 
         <% if not is_grid_only then %>
@@ -54,6 +58,10 @@
     <% elseif user.timeline and user.timeline.items and #user.timeline.items < 1 then %>
         <div class="item-card">
             <h3><%= strings.user.has_no_posts %></h3>
+        </div>
+    <% elseif selectors.selected_feed == "tagged" and user.grid and #user.grid.items < 1 then %>
+        <div class="item-card">
+            <h3><%= strings.user.has_no_tagged_posts or "No posts tagging this user." %></h3>
         </div>
     <% elseif user.grid then %>
         <div class="grid">

@@ -22,6 +22,7 @@ return {
         grid = "Gitter",
         tile = "Kacheln",
         reels = "Reels",
+        tagged = "Markiert",
         all = "Alle",
         highlights = "Highlights",
         stories = "Stories",
@@ -32,6 +33,7 @@ return {
         following = "Gefolgt",
         user_is_private = "Dieser Account ist privat. Nur bestätigte Follower können seine Beiträge und Reels sehen.",
         has_no_posts = "Dieser Nutzer hat noch nichts gepostet.",
+        has_no_tagged_posts = "Dieser Nutzer wurde in keinem Beitrag markiert.",
     },
     explore = {
         posts_matching = "Übereinstimmende Posts: ",

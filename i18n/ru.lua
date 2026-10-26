@@ -22,6 +22,7 @@ return {
         grid = "Сетка",
         tile = "Плитка",
         reels = "Reels",
+        tagged = "Отметки",
         all = "Все",
         highlights = "Актуальное",
         stories = "Истории",
@@ -32,6 +33,7 @@ return {
         following = "Подписки",
         user_is_private = "Этот аккаунт закрыт. Его публикации и Reels видят только одобренные подписчики.",
         has_no_posts = "У пользователя нет публикаций.",
+        has_no_tagged_posts = "На публикациях нет отметок этого пользователя.",
     },
     explore = {
         posts_matching = "Публикации по запросу: ",

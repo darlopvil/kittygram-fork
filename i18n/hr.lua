@@ -22,6 +22,7 @@ return {
         grid = "Mreža",
         tile = "Pločice",
         reels = "Reels",
+        tagged = "Označeno",
         all = "Sve",
         highlights = "Istaknuto",
         stories = "Priče",
@@ -32,6 +33,7 @@ return {
         following = "Praćenja",
         user_is_private = "Ovaj je račun privatan. Njegove objave i reelove mogu vidjeti samo odobreni pratitelji.",
         has_no_posts = "Ovaj korisnik nema objava.",
+        has_no_tagged_posts = "Ovaj korisnik nije označen ni u jednoj objavi.",
     },
     explore = {
         posts_matching = "Objave koje odgovaraju: ",
