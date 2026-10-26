@@ -13,6 +13,7 @@ return {
     post = {
         posted_at = "Cruthaithe ag: ",
         download = "Íoslódáil",
+        visit_link = "Tabhair cuairt ar an nasc",
         likes = " mholadh",
         comments = "Tráchtanna",
         error_loading_comments = "Tharla earráid agus tráchtanna á lódáil: ",

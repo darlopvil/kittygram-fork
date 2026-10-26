@@ -11,6 +11,7 @@ return {
     post = {
         posted_at = "Опубликовано: ",
         download = "Скачать",
+        visit_link = "Перейти по ссылке",
         likes = " лайков",
         comments = "Комментарии",
         error_loading_comments = "Ошибка загрузки комментариев: ",

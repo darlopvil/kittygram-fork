@@ -14,6 +14,66 @@ local function not_null(value)
     return value
 end
 
+-- Click and campaign trackers added to outgoing links (fbclid ties the visit
+-- to the click on Instagram).
+local TRACKING_PARAMS = { fbclid = true, gclid = true, igshid = true, igsh = true, mibextid = true, cmpid = true }
+
+local function strip_tracking(url)
+    local base, query, fragment = url:match("^([^?#]*)%??([^#]*)(#?.*)$")
+    if not base or query == "" then
+        return url
+    end
+    local kept = {}
+    for pair in query:gmatch("[^&]+") do
+        local key = (pair:match("^([^=]*)") or ""):lower()
+        if not TRACKING_PARAMS[key] and not key:match("^utm_") then
+            table.insert(kept, pair)
+        end
+    end
+    return base .. (#kept > 0 and ("?" .. table.concat(kept, "&")) or "") .. fragment
+end
+
+-- Instagram wraps outgoing links in its l.instagram.com redirector; link
+-- straight to the destination instead.
+local function unwrap_link(url)
+    if type(url) ~= "string" then
+        return nil
+    end
+    local wrapped = url:match("^https?://l%.instagram%.com/?%?u=([^&]+)") or url:match("^https?://l%.instagram%.com/?%?.-&u=([^&]+)")
+    if wrapped then
+        url = ngx.unescape_uri(wrapped)
+    end
+    if not url:match("^https?://") then
+        return nil
+    end
+    return strip_tracking(url)
+end
+
+-- Links from link stickers ("Read more", "Learn more"...).
+local function story_links(item)
+    local links, seen = {}, {}
+    local function add(url, label)
+        url = unwrap_link(url)
+        if url and not seen[url] then
+            seen[url] = true
+            if type(label) ~= "string" or label == "" then
+                label = url:match("^https?://([^/?#]+)") or url
+            end
+            table.insert(links, { url = url, label = label })
+        end
+    end
+    for _, sticker in ipairs(type(item.story_link_stickers) == "table" and item.story_link_stickers or {}) do
+        if type(sticker) == "table" then
+            local link = type(sticker.story_link) == "table" and sticker.story_link or sticker
+            add(not_null(link.url), not_null(link.display_url) or not_null(link.link_title))
+        end
+    end
+    if type(item.link) == "string" then
+        add(item.link)
+    end
+    return links
+end
+
 local function format_item(item, reel_user)
     local id = not_null(item.pk) or not_null(item.id)
     local formatted = {
@@ -23,6 +83,7 @@ local function format_item(item, reel_user)
         -- used by the download links to name files
         shortcode = "story_" .. tostring(id or ""),
         user = reel_user,
+        links = story_links(item),
     }
     local image = helpers.check_nested_field(item, "image_versions2", "candidates", 1, "url")
     local video = helpers.check_nested_field(item, "video_versions", 1, "url")

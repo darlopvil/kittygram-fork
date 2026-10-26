@@ -36,6 +36,9 @@
                 <% if item.timestamp then %>
                     <time class="post-time"><%= strings.post.posted_at .. os.date('%Y-%m-%d %H:%M:%S', item.timestamp) %></time>
                 <% end %>
+                <% for _, link in ipairs(item.links or {}) do %>
+                    <p class="story-link"><a href="<%= link.url %>" title="<%= link.label %>" rel="noopener noreferrer nofollow" target="_blank"><%= strings.post.visit_link or "Visit link" %></a></p>
+                <% end %>
                 <% local downloads = download_links(item) %>
                 <% if #downloads == 1 then %>
                     <p class="post-downloads"><a href="<%= downloads[1].url %>" download><%= strings.post.download or "Download" %></a></p>
