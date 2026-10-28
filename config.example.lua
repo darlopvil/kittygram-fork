@@ -46,6 +46,9 @@ config({ "development", "production", "docker" }, {
         cooldown_on_ratelimit = true, -- If set to true, your instance will block requests until a ratelimit is over.
         window_length = 11 * 60, -- Instagram ratelimits based on an 11 minute sliding window. Here, you can set a custom window length.
         request_limit = 194, -- The number of requests to allow per-window.
+        -- Longest pause after Instagram redirects anonymous profile pages to its login
+        -- page. Pauses start at one window and double while the redirect continues.
+        login_wall_max_cooldown = 2 * 3600,
     },
     secret = "CHANGE_THIS!", -- The secret used to sign tokens. Change this.
     require_api_token = true, -- Whether to require a token to use the api. Does not apply to the status or info endpoints.
@@ -88,13 +91,14 @@ config("docker", {
     num_workers = os.getenv("NUM_WORKERS") or "4",
     allow_json = os.getenv("ALLOW_JSON") == "true" or false,
     enable_atom = os.getenv("ENABLE_ATOM") == "true" or false,
-    logging = os.getenv("DISABLE_LOGGING") == "true" and false or { server = true, queries = true, requests = true },
+    logging = os.getenv("DISABLE_LOGGING") == "true" and false or { server = true, queries = os.getenv("LOG_QUERIES") == "true", requests = true },
     base_atom_path = os.getenv("BASE_ATOM_PATH") or "http://localhost/", -- The base path for generating links in atom feeds. Requires the trailing slash.
     resolver = os.getenv("RESOLVER") or "127.0.0.11",
     ratelimits = {
         cooldown_on_ratelimit = os.getenv("COOLDOWN_ON_RATELIMIT") == "true" or true,
         window_length = tonumber(os.getenv("RATELIMIT_WINDOW_SIZE")) or 11 * 60,
         request_limit = tonumber(os.getenv("RATELIMIT_REQUEST_LIMIT")) or 194,
+        login_wall_max_cooldown = tonumber(os.getenv("LOGIN_WALL_MAX_COOLDOWN")) or 2 * 3600,
     },
     about_message = os.getenv("ABOUT_MESSAGE") or "<p>The operator of this message has not written an about message yet.",
     require_api_token = os.getenv("REQUIRE_API_TOKEN") ~= "false",

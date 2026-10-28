@@ -136,6 +136,26 @@ local function cooldown(url_pattern)
     end
 end
 
+-- Instagram's login wall for anonymous visitors (302 to /accounts/login,
+-- usually with is_from_rle) can last for days, while profiles are served
+-- through GraphQL. Each consecutive wall doubles the pause, from one window
+-- up to login_wall_max_cooldown; a page that loads again resets it.
+local LOGIN_WALL_MAX_COOLDOWN = tonumber(config.ratelimits.login_wall_max_cooldown) or 2 * 3600
+
+local function login_wall_cooldown(url_pattern)
+    local level_key = "html_wall:" .. url_pattern
+    local level = web_state:get(level_key) or 0
+    local duration = math.min(WINDOW_LENGTH * 2 ^ level, LOGIN_WALL_MAX_COOLDOWN)
+    web_state:set(level_key, level + 1)
+    ngx.log(
+        ngx.WARN,
+        "Login wall on " .. tostring(url_pattern) .. " (" .. (level + 1) .. " in a row), pausing anonymous requests for " .. duration .. " s."
+    )
+    if config.ratelimits.cooldown_on_ratelimit then
+        web_state:set("html:" .. url_pattern, REQUEST_LIMIT + 999, duration)
+    end
+end
+
 -- The pattern paramter is used mostly for ratelimit tracking.
 local function html_request(url, pattern, skip_processing)
     local request_count = web_state:incr("html:" .. pattern, 1, 0, WINDOW_LENGTH)
@@ -157,7 +177,11 @@ local function html_request(url, pattern, skip_processing)
     end
 
     if request.status == 302 then
-        cooldown(pattern)
+        if tostring(request.headers.location or ""):find("/accounts/login", 1, true) then
+            login_wall_cooldown(pattern)
+        else
+            cooldown(pattern)
+        end
         return errors.ratelimited {
             message = "Instagram returned 302 with location: " .. tostring(request.headers.location),
             blob = request.body,
@@ -168,6 +192,8 @@ local function html_request(url, pattern, skip_processing)
             message = "Instagram returned 429.",
         }
     end
+
+    web_state:delete("html_wall:" .. pattern)
 
     if skip_processing then
         return {
