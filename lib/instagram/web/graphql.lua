@@ -515,6 +515,14 @@ local function graphql_request(request_payload, doc_id, request_type, page_info,
         return errors.ratelimited {
             message = "Instagram returned 302 with location: " .. tostring(request.headers.location),
         }
+    elseif request.status == 429 then
+        -- Answered with an HTML page, not JSON. Reported as a rate limit (like
+        -- the REST API and profile pages do) so profiles fall back to the web
+        -- session instead of showing an error.
+        cooldown(doc_id.doc_id)
+        return errors.ratelimited {
+            message = "Instagram returned 429 for " .. tostring(doc_id.query_name or doc_id.doc_id) .. ".",
+        }
     end
 
     -- Instagram prefixes some error responses with an anti-JSON-hijacking guard.
