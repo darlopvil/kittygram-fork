@@ -47,7 +47,10 @@ project, its public instances and its community, see the
   its host replaced: `/p/<code>/embed` and `/reel/<code>/embed` show the post
   alone (author, media, date and a link to the full post), and
   `/embed/captioned` adds the caption. No navbar, no JavaScript, no comments,
-  media through the proxy, and `?theme=dark` for a dark variant.
+  media through the proxy, and `?theme=dark` for a dark variant. The view
+  fills whatever frame it gets: the media takes the space left by the author,
+  caption and footer, a long caption scrolls in its own area, and carousels
+  show one item at a time in a row that scrolls sideways.
 - **Gentler with Instagram's limits.** A 429 from GraphQL counts as a rate
   limit, so profiles fall back to the web session instead of failing. When
   Instagram redirects anonymous profile pages to its login page, the instance
