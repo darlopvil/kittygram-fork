@@ -43,6 +43,16 @@ project, its public instances and its community, see the
 - **Tagged posts** (`use_for.tagged`): a Tagged tab on profiles,
   `/<user>/tagged`, with the posts other accounts tagged the profile in, as a
   grid with pagination.
+- **Gentler with Instagram's limits.** A 429 from GraphQL counts as a rate
+  limit, so profiles fall back to the web session instead of failing. When
+  Instagram redirects anonymous profile pages to its login page, the instance
+  stops requesting them for a pause that doubles while the redirect continues,
+  up to `ratelimits.login_wall_max_cooldown` (2 hours by default), instead of
+  retrying every 11 minutes.
+- **Quieter, more useful logs.** Database queries are only logged with
+  `LOG_QUERIES=true`. A profile shown without its highlights tray logs the
+  reason. Pages answer `OPTIONS` requests, sent by some feed readers, instead
+  of failing with a 500.
 
 ## Deployment
 
@@ -67,6 +77,16 @@ docker compose up -d --build
   resets its owner and permissions.
 - To update: `git pull && docker compose up -d --build`. Migrations run on start.
 
+### Monitoring
+
+Every check of a page that shows Instagram content (profiles, posts, search,
+stories, tagged posts) sends requests to Instagram. Frequent checks, or checks
+that run at the same moment, look like automation to Instagram and end up
+rate limited, often more than real visitors would ever be. Check the instance
+itself often (`/`, and `/api/status`, which only reports the instance's own
+rate-limit state), and pages with Instagram content every few hours, with
+intervals that are not multiples of each other so they never run together.
+
 ### Atom feeds (optional)
 
 Set `enable_atom = true` and `base_atom_path` (the instance's public URL, with
@@ -87,7 +107,7 @@ Instagram may restrict or ban accounts used this way.
    `"sessionid=...; csrftoken=...; ds_user_id=...; mid=...; ig_did=..."`.
 3. Optionally set `web_session.user_agent` to the user agent of that browser.
 4. Enable `web_session.use_for` only where it is needed: `search` for live
-   search, `user_posts` for list and tile views and full-media feeds, and
+   search, `user_posts` for list and tile views and full-media feeds,
    `user_info` for the post count on profiles, `stories` for stories and
    highlights, and `tagged` for the Tagged tab.
    Grids, posts and comments work anonymously, and routing more through the
