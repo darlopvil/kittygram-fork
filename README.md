@@ -43,6 +43,11 @@ project, its public instances and its community, see the
 - **Tagged posts** (`use_for.tagged`): a Tagged tab on profiles,
   `/<user>/tagged`, with the posts other accounts tagged the profile in, as a
   grid with pagination.
+- **Embeds** for iframes on Instagram's own paths, so an embed URL only needs
+  its host replaced: `/p/<code>/embed` and `/reel/<code>/embed` show the post
+  alone (author, media, date and a link to the full post), and
+  `/embed/captioned` adds the caption. No navbar, no JavaScript, no comments,
+  media through the proxy, and `?theme=dark` for a dark variant.
 - **Gentler with Instagram's limits.** A 429 from GraphQL counts as a rate
   limit, so profiles fall back to the web session instead of failing. When
   Instagram redirects anonymous profile pages to its login page, the instance

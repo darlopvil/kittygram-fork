@@ -14,6 +14,8 @@ return {
         posted_at = "Cruthaithe ag: ",
         download = "Íoslódáil",
         visit_link = "Tabhair cuairt ar an nasc",
+        view_on_kittygram = "Féach air ar Kittygram",
+        embed_unavailable = "Níorbh fhéidir an phostáil seo a luchtú.",
         likes = " mholadh",
         comments = "Tráchtanna",
         error_loading_comments = "Tharla earráid agus tráchtanna á lódáil: ",

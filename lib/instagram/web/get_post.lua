@@ -11,7 +11,7 @@ local helpers = require("lib.helpers")
 local users_db = require("models.users")
 
 -- TODO: It's hard to detect if a post wasn't made, vs if an actual error occurred, so a post being missing will trigger a 500
-local function get_post_graphql_shortcode(shortcode, comments_cursor)
+local function get_post_graphql_shortcode(shortcode, comments_cursor, without_comments)
     local post
     local post_query = cache.query_item("ig:shortcode:" .. shortcode)
     if post_query ~= ngx.null then
@@ -37,12 +37,15 @@ local function get_post_graphql_shortcode(shortcode, comments_cursor)
         post = formatted_post
     end
 
+    if without_comments then
+        return post
+    end
     local comments = get_comments(post.id, comments_cursor)
 
     return post, comments
 end
 
-local function get_post_graphql_media_id(shortcode, comments_cursor)
+local function get_post_graphql_media_id(shortcode, comments_cursor, without_comments)
     local post, initial_comments
     local post_query = cache.query_item("ig:shortcode:" .. shortcode)
     if post_query ~= ngx.null then
@@ -76,6 +79,9 @@ local function get_post_graphql_media_id(shortcode, comments_cursor)
         cache.cache_item("ig:comments:" .. post.id .. ":initial", initial_comments, "comments")
     end
 
+    if without_comments then
+        return post
+    end
     local comments
     if comments_cursor or not initial_comments then
         comments = get_comments(post.id, comments_cursor)
@@ -86,7 +92,8 @@ local function get_post_graphql_media_id(shortcode, comments_cursor)
     return post, comments
 end
 
-local function fetch_post(shortcode, comments_cursor)
+-- without_comments: only the post (embeds), skipping the comments request.
+local function fetch_post(shortcode, comments_cursor, without_comments)
     local match = ngx.re.match(shortcode, "^[a-zA-Z0-9_-]+$", "jo")
     if not match then
         return errors.not_found {
@@ -95,9 +102,9 @@ local function fetch_post(shortcode, comments_cursor)
     end
 
     if config.web_session and config.web_session.cookies and config.web_session.use_for and config.web_session.use_for.comments then
-        return get_post_graphql_shortcode(shortcode, comments_cursor)
+        return get_post_graphql_shortcode(shortcode, comments_cursor, without_comments)
     else
-        return get_post_graphql_media_id(shortcode, comments_cursor)
+        return get_post_graphql_media_id(shortcode, comments_cursor, without_comments)
     end
 end
 

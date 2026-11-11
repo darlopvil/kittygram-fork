@@ -12,6 +12,8 @@ return {
         posted_at = "Опубликовано: ",
         download = "Скачать",
         visit_link = "Перейти по ссылке",
+        view_on_kittygram = "Открыть в Kittygram",
+        embed_unavailable = "Не удалось загрузить эту публикацию.",
         likes = " лайков",
         comments = "Комментарии",
         error_loading_comments = "Ошибка загрузки комментариев: ",

@@ -12,6 +12,8 @@ return {
         posted_at = "Posté à\u{00a0}: ",
         download = "Télécharger",
         visit_link = "Visiter le lien",
+        view_on_kittygram = "Voir sur Kittygram",
+        embed_unavailable = "Impossible de charger cette publication.",
         likes = " j'aime",
         comments = "Commentaires",
         error_loading_comments = "Erreur lors du chargement des commentaires\u{00a0}: ",

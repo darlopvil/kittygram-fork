@@ -12,6 +12,8 @@ return {
         posted_at = "Objavljeno: ",
         download = "Preuzmi",
         visit_link = "Otvori poveznicu",
+        view_on_kittygram = "Pogledaj na Kittygramu",
+        embed_unavailable = "Ovu objavu nije moguće učitati.",
         likes = " sviđanja",
         comments = "Komentari",
         error_loading_comments = "Greška pri učitavanju komentara: ",

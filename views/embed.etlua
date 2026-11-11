@@ -1,0 +1,81 @@
+<% local proxy_url = require("lib.helpers").proxy_url %>
+<!DOCTYPE html>
+<html lang="en" class="<%= embed_theme %>">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="robots" content="noindex">
+        <title><%= page_title %></title>
+        <!-- Links open in the embedding page's window, not inside the iframe. -->
+        <base target="_top">
+        <style>
+            :root { --bg: #fff; --fg: #262626; --muted: #737373; --border: #dbdbdb; --link: #00376b; }
+            html.dark { --bg: #121212; --fg: #f5f5f5; --muted: #a8a8a8; --border: #363636; --link: #e0f1ff; }
+            * { box-sizing: border-box; }
+            html, body { margin: 0; background: var(--bg); color: var(--fg); }
+            body { font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+            .embed { max-width: 540px; margin: 0 auto; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+            .author { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+            .author img { width: 32px; height: 32px; border-radius: 50%; }
+            .author a { color: var(--fg); font-weight: 600; text-decoration: none; }
+            .author .name { display: block; color: var(--muted); font-size: 12px; }
+            .media img, .media video { display: block; width: 100%; height: auto; }
+            .media > * + * { margin-top: 2px; }
+            .caption { margin: 0; padding: 10px 12px 0; white-space: pre-line; overflow-wrap: anywhere; }
+            .footer { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; color: var(--muted); font-size: 12px; }
+            .footer a { color: var(--link); font-weight: 600; text-decoration: none; }
+            .unavailable { margin: 0; padding: 16px 12px 0; }
+        </style>
+    </head>
+    <body>
+        <article class="embed">
+            <% if not post then %>
+                <p class="unavailable"><%= strings.post.embed_unavailable or "This post couldn't be loaded." %></p>
+                <div class="footer">
+                    <span></span>
+                    <a href="<%= "/p/" .. shortcode .. "/" %>"><%= strings.post.view_on_kittygram or "View on Kittygram" %></a>
+                </div>
+            <% else %>
+                <div class="author">
+                    <img src="<%= proxy_url(post.user.profile_picture) %>" alt="" loading="lazy">
+                    <div>
+                        <a href="<%= "/" .. post.user.username %>"><%= post.user.username %></a>
+                        <% if post.user.display_name and post.user.display_name ~= "" then %>
+                            <span class="name"><%= post.user.display_name %></span>
+                        <% end %>
+                    </div>
+                </div>
+                <div class="media">
+                    <% if post.video_url then %>
+                        <video controls playsinline preload="none" poster="<%= proxy_url(post.video_thumbnail) %>">
+                            <source src="<%= proxy_url(post.video_url) %>">
+                        </video>
+                    <% elseif post.images then %>
+                        <% for _, image in ipairs(post.images) do %>
+                            <% if image.video_url then %>
+                                <video controls playsinline preload="none" poster="<%= proxy_url(image.video_thumbnail) %>">
+                                    <source src="<%= proxy_url(image.video_url) %>">
+                                </video>
+                            <% else %>
+                                <img src="<%= proxy_url(image.image_url) %>" alt="<%= image.alt_text or "" %>" loading="lazy">
+                            <% end %>
+                        <% end %>
+                    <% elseif post.image_url then %>
+                        <img src="<%= proxy_url(post.image_url) %>" alt="<%= post.alt_text or "" %>" loading="lazy">
+                    <% end %>
+                </div>
+                <% if captioned and post.caption then %>
+                    <p class="caption"><%= post.caption %></p>
+                <% end %>
+                <div class="footer">
+                    <% if post.timestamp then %>
+                        <time datetime="<%= os.date('!%Y-%m-%dT%H:%M:%SZ', post.timestamp) %>"><%= os.date('!%Y-%m-%d', post.timestamp) %></time>
+                    <% else %>
+                        <span></span>
+                    <% end %>
+                    <a href="<%= "/p/" .. post.shortcode .. "/" %>"><%= strings.post.view_on_kittygram or "View on Kittygram" %></a>
+                </div>
+            <% end %>
+        </article>
+    </body>
+</html>

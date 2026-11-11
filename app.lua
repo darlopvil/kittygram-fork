@@ -69,6 +69,21 @@ local function describe_error(error)
     return tostring(error.error_type) .. ": " .. tostring(info.message or info.error_message)
 end
 
+-- HTTP status and page title for each error type.
+local ERROR_STATUS = {
+    not_found = { 404, "Not Found" },
+    route_not_defined = { 404, "Not Found" },
+    ratelimited = { 503, "Ratelimited" },
+    null_content = { 410, "Unavailable" },
+    network_error = { 500, "Error" },
+    blocked = { 502, "Blocked" },
+}
+
+local function error_status(error)
+    local entry = ERROR_STATUS[error.error_type] or { 500, "Error" }
+    return entry[1], entry[2]
+end
+
 local function render_error(self, error)
     -- Raw Instagram responses can contain the session account's data and
     -- tokens: keep them out of pages and logs unless explicitly enabled.
@@ -83,25 +98,9 @@ local function render_error(self, error)
     end
     self.error = error
 
-    if error.error_type == "not_found" or error.error_type == "route_not_defined" then
-        self.page_title = "Not Found | Kittygram"
-        return { status = 404, render = "error" }
-    elseif error.error_type == "ratelimited" then
-        self.page_title = "Ratelimited | Kittygram"
-        return { status = 503, render = "error" }
-    elseif error.error_type == "null_content" then
-        self.page_title = "Unavailable | Kittygram"
-        return { status = 410, render = "error" }
-    elseif error.error_type == "network_error" then
-        self.page_title = "Error | Kittygram"
-        return { status = 500, render = "error" }
-    elseif error.error_type == "blocked" then
-        self.page_title = "Blocked | Kittygram"
-        return { status = 502, render = "error" }
-    else
-        self.page_title = "Error | Kittygram"
-        return { status = 500, render = "error" }
-    end
+    local status, title = error_status(error)
+    self.page_title = title .. " | Kittygram"
+    return { status = status, render = "error" }
 end
 
 app:get("/", function(self)
@@ -133,8 +132,38 @@ app:get("/reel/:shortcode(/)", show_post)
 app:get("/:username/reel/:shortcode(/)", show_post)
 app:get("/reels/:shortcode(/)", show_post)
 app:get("/:username/reels/:shortcode(/)", show_post)
-app:get("/p/:shortcode/embed(/)", show_post)
-app:get("/reel/:shortcode/embed(/)", show_post)
+-- Compact view for iframes, on Instagram's own embed paths: only the post,
+-- without navbar, layout or JavaScript, and without comments (one request to
+-- Instagram less). /captioned adds the caption, as on Instagram.
+-- ?theme=dark gives the dark variant.
+local function show_embed(self, captioned)
+    self.embed_theme = self.params.theme == "dark" and "dark" or "light"
+    self.captioned = captioned
+    self.shortcode = self.params.shortcode
+    local post = instagram.get_post(self.params.shortcode, nil, true)
+    if type(post) ~= "table" or post.has_errors then
+        ngx.log(ngx.WARN, "[error] embed: ", describe_error(post))
+        self.page_title = "Kittygram"
+        local status = type(post) == "table" and error_status(post) or 500
+        return { status = status, render = "embed", layout = false }
+    end
+    self.post = post
+    self.page_title = "A post by " .. post.user.username .. " | Kittygram"
+    return { render = "embed", layout = false }
+end
+
+local function show_embed_plain(self)
+    return show_embed(self, false)
+end
+
+local function show_embed_captioned(self)
+    return show_embed(self, true)
+end
+
+app:get("/p/:shortcode/embed(/)", show_embed_plain)
+app:get("/reel/:shortcode/embed(/)", show_embed_plain)
+app:get("/p/:shortcode/embed/captioned(/)", show_embed_captioned)
+app:get("/reel/:shortcode/embed/captioned(/)", show_embed_captioned)
 
 -- Active stories of a profile, needs the web session (use_for.stories).
 local function show_stories(self)

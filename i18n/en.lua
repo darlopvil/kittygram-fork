@@ -12,6 +12,8 @@ return {
         posted_at = "Posted at: ",
         download = "Download",
         visit_link = "Visit link",
+        view_on_kittygram = "View on Kittygram",
+        embed_unavailable = "This post couldn't be loaded.",
         likes = " likes",
         comments = "Comments",
         error_loading_comments = "Error loading comments: ",
