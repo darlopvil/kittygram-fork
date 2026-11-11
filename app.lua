@@ -60,6 +60,15 @@ app.cookie_attributes = function(self)
     return "Expires=" .. expires .. "; Path=/; HttpOnly"
 end
 
+-- Error type and message only: raw Instagram responses (blob) stay out of logs.
+local function describe_error(error)
+    if type(error) ~= "table" then
+        return tostring(error)
+    end
+    local info = type(error.error_info) == "table" and error.error_info or {}
+    return tostring(error.error_type) .. ": " .. tostring(info.message or info.error_message)
+end
+
 local function render_error(self, error)
     -- Raw Instagram responses can contain the session account's data and
     -- tokens: keep them out of pages and logs unless explicitly enabled.
@@ -239,19 +248,22 @@ app:get("/:username(/:path)(/)", function(self)
             -- fall back to the param if the username isn't available
             self.username = self.params.username
         end
-        -- Stories and highlights need the web session.
-        if
-            helpers.session_enabled_for("stories")
-            and feed_type == "all"
-            and type(user.info) == "table"
-            and not user.info.has_errors
-            and not user.info.is_private
-            and user.info.id
-        then
-            self.stories_enabled = true
-            local tray = stories.get_highlights_tray(user.info.id)
-            if type(tray) == "table" and not tray.has_errors then
-                self.highlights = tray.items
+        -- Stories and highlights need the web session. A profile page without
+        -- its highlights tray is logged with the reason, since the page itself
+        -- still loads.
+        if helpers.session_enabled_for("stories") and feed_type == "all" then
+            local info = user.info
+            if type(info) ~= "table" or info.has_errors or not info.id then
+                local reason = type(info) == "table" and info.has_errors and describe_error(info) or "no user id"
+                ngx.log(ngx.WARN, "[highlights] no tray for @", tostring(self.username), ": profile info unavailable (", reason, ")")
+            elseif not info.is_private then
+                self.stories_enabled = true
+                local tray = stories.get_highlights_tray(info.id)
+                if type(tray) == "table" and not tray.has_errors then
+                    self.highlights = tray.items
+                else
+                    ngx.log(ngx.WARN, "[highlights] no tray for @", tostring(self.username), ": ", describe_error(tray))
+                end
             end
         end
 
