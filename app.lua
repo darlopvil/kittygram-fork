@@ -20,6 +20,7 @@ app:include(api)
 local instagram = require("lib.instagram")
 local stories = require("lib.instagram.web.stories")
 local tagged = require("lib.instagram.web.user.tagged")
+local missing = require("lib.instagram.web.user.missing")
 
 math.randomseed(os.time())
 
@@ -180,6 +181,15 @@ local function show_stories(self)
     return { render = "stories" }
 end
 
+-- A profile that Instagram reports as not found gets an explanation (renamed,
+-- gone, or unknown) instead of the generic not found page.
+local function explain_missing(self, error)
+    if type(error) == "table" and error.error_type == "not_found" then
+        return missing.explain(self.params.username, error)
+    end
+    return error
+end
+
 -- Posts a profile is tagged in (web session, use_for.tagged). The profile info
 -- and user id come from the profile grid page, cached with the profile.
 local function show_tagged(self)
@@ -189,7 +199,7 @@ local function show_tagged(self)
 
     local user = instagram.get_user(self.params.username, nil, "all", "grid")
     if user.has_errors then
-        return render_error(self, user)
+        return render_error(self, explain_missing(self, user))
     elseif type(user.info) ~= "table" or user.info.has_errors or not user.info.id then
         return render_error(self, type(user.info) == "table" and user.info.has_errors and user.info
             or helpers.create_error.unknown { message = "Could not read the profile." })
@@ -255,11 +265,11 @@ app:get("/:username(/:path)(/)", function(self)
     local user = instagram.get_user(self.params.username, self.params.after, feed_type, view_type)
 
     if user.has_errors then
-        return render_error(self, user)
+        return render_error(self, explain_missing(self, user))
     elseif user.grid and user.grid.has_errors then
-        return render_error(self, user.grid)
+        return render_error(self, explain_missing(self, user.grid))
     elseif user.timeline and user.timeline.has_errors then
-        return render_error(self, user.timeline)
+        return render_error(self, explain_missing(self, user.timeline))
     else
         if config.enable_atom then
             self.atom_link = "/" .. self.params.username .. "/atom.xml"

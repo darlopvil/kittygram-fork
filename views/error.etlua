@@ -1,8 +1,10 @@
 
 <main id="main">
     <% if error.error_type == "not_found" then %>
-        <% render("views.widgets.error_card", { title = "Not Found.",
-            description = "The requested content was not found. Your link could be broken, or the item may have been deleted.",
+        <% render("views.widgets.error_card", {
+            title = error.error_info.title or "Not Found.",
+            description = error.error_info.description or "The requested content was not found. Your link could be broken, or the item may have been deleted.",
+            link = error.error_info.link,
             has_details = true,
             error = error
         }) %>

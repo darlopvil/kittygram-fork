@@ -110,7 +110,7 @@ local function get_user_grid(username, cursor, feed_type)
         -- Ratelimits almost always use 302.
         if request.data.canonical_route_name and request.data.canonical_route_name == "comet.igweb.PolarisErrorRoute" then
             return errors.not_found {
-                message = "Initial html indicated 404. Open an issue if this user really exists.",
+                message = "Instagram answered the profile page with its error page.",
                 blob = page_data,
             }
         end

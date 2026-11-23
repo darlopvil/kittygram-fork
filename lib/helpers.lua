@@ -115,6 +115,10 @@ local create_error = {
             error_info = {
                 message = args.message or "The requested content was not found.",
                 blob = json.encode(args.blob),
+                -- Optional, shown instead of the generic texts.
+                title = args.title,
+                description = args.description,
+                link = args.link,
             },
         }
     end,

@@ -61,6 +61,13 @@ project, its public instances and its community, see the
   `LOG_QUERIES=true`. A profile shown without its highlights tray logs the
   reason. Pages answer `OPTIONS` requests, sent by some feed readers, instead
   of failing with a 500.
+- **Missing profiles explained.** Instagram shows the same page for accounts
+  that never existed and for deleted, deactivated, suspended or renamed ones.
+  When the instance has seen the username before, it asks for the account by
+  its user id through the web session (`use_for.user_info`): a renamed account
+  gets a link to its new username, and one that is gone is reported as
+  deleted, deactivated or suspended. Otherwise the page says why it cannot
+  tell.
 
 ## Deployment
 

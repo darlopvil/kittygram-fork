@@ -2,6 +2,10 @@
     <h2><%= title %></h2>
     <p><%= description %>
 
+    <% if link then %>
+        <p><a href="<%= link.href %>"><%= link.text %></a></p>
+    <% end %>
+
     <% if include_instagram_link then %>
         <p><a href="<%= view_on_instagram_link %>">View on instagram</a></p>
     <% end %>

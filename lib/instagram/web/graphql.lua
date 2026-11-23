@@ -553,6 +553,13 @@ local function graphql_request(request_payload, doc_id, request_type, page_info,
                 return errors.ratelimited {
                     blob = decoded_body,
                 }
+            elseif gql_error.code == 1675030 and type(gql_error.path) == "table" and gql_error.path[1] == "user" then
+                -- "field_exception" on the user field: there is no account
+                -- behind the user id that was asked for.
+                return errors.not_found {
+                    message = "Instagram has no user for this id.",
+                    blob = decoded_body,
+                }
             end
         end
         return errors.unknown {
